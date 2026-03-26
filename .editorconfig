@@ -1,0 +1,12 @@
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{kt,kts}]
+ktlint_code_style = intellij_idea
+ktlint_standard_no-wildcard-imports = enabled
+ktlint_standard_max-line-length = disabled
