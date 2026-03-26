@@ -13,8 +13,19 @@ plugins {
     alias(libs.plugins.ktlint)
 }
 
+configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+    filter {
+        exclude { element -> element.file.path.contains("/build/") }
+    }
+}
+
 subprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
+    configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+        filter {
+            exclude { element -> element.file.path.contains("/build/") }
+        }
+    }
     afterEvaluate {
         extensions.findByType<org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension>()
             ?.jvmToolchain(11)
