@@ -183,7 +183,7 @@ google-services = { id = "com.google.gms.google-services", version.ref = "google
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildkonfig" }
 android-lint = { id = "com.android.lint", version.ref = "agp" }
-ktlint = { id = "org.jlleitschuh.gradle.ktlint", version = "12.1.2" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version = "14.2.0" }
 
 [bundles]
 koin-common = [
