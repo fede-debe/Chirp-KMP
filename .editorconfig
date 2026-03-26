@@ -10,3 +10,12 @@ trim_trailing_whitespace = true
 ktlint_code_style = intellij_idea
 ktlint_standard_no-wildcard-imports = enabled
 ktlint_standard_max-line-length = disabled
+ktlint_function_naming_ignore_when_annotated_with = Composable
+
+# JVM entry point - main.kt is a standard JVM convention, PascalCase not required
+[**/jvmMain/**/*.kt]
+ktlint_standard_filename = disabled
+
+# iOS KMP entry point - factory functions follow iOS/UIKit naming conventions
+[**/iosMain/**/*.kt]
+ktlint_standard_function-naming = disabled
