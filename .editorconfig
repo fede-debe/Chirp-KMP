@@ -10,3 +10,4 @@ trim_trailing_whitespace = true
 ktlint_code_style = intellij_idea
 ktlint_standard_no-wildcard-imports = enabled
 ktlint_standard_max-line-length = disabled
+ktlint_function_naming_ignore_when_annotated_with = Composable
