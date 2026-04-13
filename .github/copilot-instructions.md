@@ -1,0 +1,86 @@
+# Copilot Instructions for Chirp-KMP
+
+## Project Overview
+
+Chirp is a **Kotlin Multiplatform** (KMP) app targeting Android, iOS, and Desktop (JVM).
+UI is built with **Compose Multiplatform** and **Material3**.
+
+## Module Architecture
+
+```
+composeApp/          # KMP entry point (Compose Multiplatform)
+androidApp/          # Android wrapper
+iosApp/              # iOS wrapper
+
+core/
+├── domain/          # Business logic, use cases, models — no platform deps
+├── data/            # Repositories, Ktor API clients, Room DAOs
+├── presentation/    # ViewModels, UI state — shared across platforms
+└── designsystem/    # Shared design tokens and Compose components
+
+feature/<name>/
+├── domain/          # Feature-specific use cases and models
+├── presentation/    # Feature ViewModels and UI
+├── data/            # Feature-specific repos and API calls
+└── database/        # Feature-specific Room setup (where applicable)
+```
+
+**Dependency flow:** `presentation → domain ← data → database`
+Core modules never depend on feature modules.
+
+## Tech Stack
+
+| Concern | Library |
+|---|---|
+| HTTP | Ktor Client (OkHttp/Android, Darwin/iOS, Default/JVM) |
+| DI | Koin 4 |
+| DB | Room + SQLite KMP |
+| Async | Kotlin Coroutines + Flow |
+| Serialization | kotlinx-serialization |
+| Images | Coil 3 |
+| Permissions | Moko Permissions |
+| Push | Firebase Cloud Messaging |
+| Date/Time | kotlinx-datetime |
+
+## Code Conventions
+
+- **Kotlin style:** IntelliJ IDEA code style, 4-space indent, LF line endings
+- **Imports:** No wildcard imports — explicit only
+- **Package root:** `com.project.chirp`, features under `com.project.<feature>.<layer>`
+- **Platform sources:** `commonMain/`, `androidMain/`, `iosMain/`, `jvmMain/`
+- **expect/actual:** `Platform.kt` declares `expect`, platform files implement as `Platform.android.kt`, `Platform.ios.kt`, etc.
+- **JVM target:** 17 everywhere
+- **Coroutines:** `@OptIn(ExperimentalCoroutinesApi::class)` is pre-enabled globally
+
+## Review Guidelines
+
+### Focus on
+
+- **KMP compatibility:** Code in `commonMain` must not use Android/iOS/JVM-only APIs. Flag any platform-specific calls that belong in `androidMain`/`iosMain`.
+- **Layer violations:** `domain` must not depend on `data`, `presentation`, or any framework (Room, Ktor, Koin). Flag imports that break this.
+- **Koin module registration:** New classes with DI should be registered in the appropriate Koin module. Flag missing registrations.
+- **Flow vs suspend:** Prefer `Flow` for streams of data, `suspend` for one-shot operations. Flag mismatches.
+- **Room queries:** Check for missing `@Transaction` on multi-step DB operations and missing indices on frequently queried columns.
+- **Ktor error handling:** Network calls should handle `HttpException` and timeout cases. Flag uncaught exceptions.
+- **State management:** ViewModels should expose `StateFlow`/`SharedFlow`, not mutable state directly.
+- **Resource leaks:** Coroutine scopes in ViewModels should use `viewModelScope`. Flag manual scope creation without proper cancellation.
+
+### Do not flag
+
+- Lowercase `main.kt` in `jvmMain/` — intentional, ktlint rule disabled for that path
+- iOS-style function names in `iosMain/` — ktlint naming rule disabled there
+- Long lines — no line length limit is enforced in this project
+- `@Composable` function names that start with uppercase — that's the correct convention
+
+## Build System
+
+Convention plugins live in `build-logic/convention/`. When reviewing changes there, check:
+- SDK versions (`minSdk 26`, `targetSdk/compileSdk 36`) are not accidentally changed
+- New convention plugins are registered in `build-logic/convention/build.gradle.kts`
+- `ProjectExt.kt` helpers are used for accessing version catalog entries
+
+## PR Scope Expectations
+
+- **Sub-branches** merge into their parent `feature/*` branch, not `main`
+- `main` only receives merges from completed `feature/*` branches
+- Each PR should be scoped to a single layer or concern — flag PRs that mix domain, data, and UI changes without clear reason
