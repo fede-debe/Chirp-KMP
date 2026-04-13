@@ -28,7 +28,7 @@ core-splashscreen = "1.2.0"
 
 # Kotlinx
 kotlinx-coroutines = "1.10.2"
-kotlinx-serialization = "1.10.0"
+kotlinx-serialization = "1.11.0"
 kotlinx-datetime = "0.7.1" # work with timestamps, datetime ( we can't use Java time)
 
 # Third party
