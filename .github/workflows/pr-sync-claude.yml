@@ -69,10 +69,10 @@ jobs:
                         const queryData = await queryResponse.json();
                         task = queryData.results?.[0] ?? null;
                         if (!task) {
-                          console.log(`⚠️ No Notion task found for branch "${branch}" — was it created by notion-task-sync?`);
+                          console.log(`No Notion task found for branch "${branch}". It may not have been created yet, or the branch does not map to a tracked feature.`);
                         }
                       } else {
-                        console.log(`ℹ️ Skipping Notion task sync: "${branch}" is not a tracked type (feature/bug/improve).`);
+                        console.log(`Skipping Notion task sync: "${branch}" is not a tracked type (feature/bug/improve).`);
                       }
 
                       // Update task status based on PR action
@@ -97,7 +97,7 @@ jobs:
                               }
                             }),
                           });
-                          console.log(`✅ Notion task updated: ${newStatus} | PR: ${prUrl}`);
+                          console.log(`Notion task updated: ${newStatus} | PR: ${prUrl}`);
                         }
                       }
 
@@ -111,4 +111,25 @@ jobs:
                       let diffContent = '';
                       try {
                         diffStat = execSync('git diff origin/main...HEAD --stat').toString().slice(0, 2000);
-                        diffContent = execSync("git diff origin/main...HEAD -- '*.kt' '*.kts' '*.yaml' '*
+                        diffContent = execSync("git diff origin/main...HEAD -- '*.kt' '*.kts' '*.yaml' '*.yml'").toString().slice(0, 8000);
+                      } catch (e) {
+                        console.log('Could not get diff:', e.message);
+                      }
+
+                      const promptLines = [
+                        'You are a developer writing a GitHub PR description. Be concise and technical. No fluff.',
+                        '',
+                        'Change type: ' + typeLabel,
+                        'Branch: ' + branch,
+                        'PR: #' + prNumber,
+                        '',
+                        'Changed files:',
+                        diffStat,
+                        '',
+                        'Diff (Kotlin/config files):',
+                        diffContent,
+                        '',
+                        'Write a PR description with exactly these three sections using markdown headers:',
+                        '## What - one sentence summary of what this PR does.',
+                        '## Changes - bullet points of the key changes (max 5).',
+                        '## Notes - important context or trade-offs. Write None if
