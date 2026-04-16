@@ -4,6 +4,8 @@ on:
     push:
         branches:
             - 'feature/**'
+            - 'bug/**'
+            - 'improve/**'
 
 jobs:
     sync:
@@ -21,21 +23,26 @@ jobs:
                   script: |
                       const branch = context.ref.replace('refs/heads/', '');
 
-                      // Parse feature/feature-name--task-name
-                      const match = branch.match(/^feature\/(.+)--(.+)$/);
+                      // Parse <type>/<feature-slug>--<task-slug>
+                      const match = branch.match(/^(feature|bug|improve)\/(.+)--(.+)$/);
                       if (!match) {
-                        console.log(`Branch "${branch}" does not follow feature/feature-name--task-name convention, skipping.`);
+                        console.log(`Branch "${branch}" does not follow <type>/<feature>--<task> convention (types: feature|bug|improve). Skipping.`);
                         return;
                       }
 
-                      const featureSlug = match[1].toLowerCase();
-                      const taskSlug = match[2].toLowerCase();
+                      const typeSlug = match[1];
+                      const featureSlug = match[2].toLowerCase();
+                      const taskSlug = match[3].toLowerCase();
                       const taskName = taskSlug.replace(/-/g, ' ');
                       const featureName = featureSlug.replace(/-/g, ' ');
-                      const branchUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/tree/${branch}`;
 
-                      // Normalize for matching: lowercase, replace - and _ with spaces,
-                      // strip other punctuation, collapse whitespace
+                      const typeMap = {
+                        feature: 'Feature',
+                        bug: 'Bug',
+                        improve: 'Improvement',
+                      };
+                      const typeValue = typeMap[typeSlug];
+
                       const normalize = (s) => (s ?? '')
                         .toLowerCase()
                         .replace(/[-_]/g, ' ')
@@ -43,7 +50,7 @@ jobs:
                         .replace(/\s+/g, ' ')
                         .trim();
 
-                      console.log(`Feature: "${featureName}" | Task: "${taskName}"`);
+                      console.log(`Type: "${typeValue}" | Feature: "${featureName}" | Task: "${taskName}"`);
 
                       const headers = {
                         'Authorization': `Bearer ${process.env.NOTION_TOKEN}`,
@@ -51,7 +58,7 @@ jobs:
                         'Content-Type': 'application/json',
                       };
 
-                      // Check if task already exists
+                      // Check if task already exists for this branch
                       const existingQuery = await fetch(
                         `https://api.notion.com/v1/databases/${process.env.NOTION_TASKS_DB_ID}/query`,
                         {
@@ -90,19 +97,18 @@ jobs:
                       });
 
                       if (!feature) {
-                        console.log(`No Notion feature found matching "${featureName}"`);
+                        console.log(`❌ No Notion feature found matching "${featureName}"`);
                         console.log(`Available features: ${featuresData.results?.map(p => p.properties.Name?.title?.[0]?.plain_text).join(', ')}`);
+                        core.setFailed(`Feature "${featureName}" not found in Notion. Create it first, then re-run.`);
                         return;
                       }
 
                       console.log(`Found feature: ${feature.properties.Name.title[0].plain_text}`);
 
-                      // Infer platform from branch or feature
                       const platform = branch.includes('mobile') || branch.includes('ui') || branch.includes('compose')
                         ? 'Mobile/Desktop'
                         : 'Backend';
 
-                      // Create task
                       const createResponse = await fetch('https://api.notion.com/v1/pages', {
                         method: 'POST',
                         headers,
@@ -114,6 +120,9 @@ jobs:
                             },
                             Status: {
                               select: { name: '🔨 In Progress' }
+                            },
+                            Type: {
+                              select: { name: typeValue }
                             },
                             Platform: {
                               select: { name: platform }
@@ -130,7 +139,8 @@ jobs:
 
                       const created = await createResponse.json();
                       if (created.id) {
-                        console.log(`✅ Task created in Notion: "${taskName}" linked to "${feature.properties.Name.title[0].plain_text}"`);
+                        console.log(`✅ Task "${taskName}" [${typeValue}] created, linked to "${feature.properties.Name.title[0].plain_text}"`);
                       } else {
                         console.log('Failed to create task:', JSON.stringify(created));
+                        core.setFailed('Notion task creation failed.');
                       }
