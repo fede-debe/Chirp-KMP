@@ -1,146 +1,159 @@
 name: Notion Task Sync
 
 on:
-    push:
-        branches:
-            - 'feature/**'
-            - 'bug/**'
-            - 'improve/**'
+  push:
+    branches:
+      - 'feature/**'
+      - 'bug/**'
+      - 'improve/**'
 
 jobs:
-    sync:
-        name: Sync Branch to Notion Task
-        runs-on: ubuntu-latest
+  sync:
+    name: Sync Branch to Notion Task
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Create or update Notion task
-              uses: actions/github-script@v7
-              env:
-                  NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
-                  NOTION_TASKS_DB_ID: ${{ secrets.NOTION_TASKS_DB_ID }}
-                  NOTION_FEATURES_DB_ID: ${{ secrets.NOTION_FEATURES_DB_ID }}
-              with:
-                  script: |
-                      const branch = context.ref.replace('refs/heads/', '');
+    steps:
+      - name: Create or update Notion task
+        uses: actions/github-script@v7
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_TASKS_DB_ID: ${{ secrets.NOTION_TASKS_DB_ID }}
+          NOTION_FEATURES_DB_ID: ${{ secrets.NOTION_FEATURES_DB_ID }}
+        with:
+          script: |
+            const branch = context.ref.replace('refs/heads/', '');
 
-                      // Parse <type>/<feature-slug>--<task-slug>
-                      const match = branch.match(/^(feature|bug|improve)\/(.+)--(.+)$/);
-                      if (!match) {
-                        console.log(`Branch "${branch}" does not follow <type>/<feature>--<task> convention (types: feature|bug|improve). Skipping.`);
-                        return;
-                      }
+            var match = branch.match(/^(feature|bug|improve)\/(.+)--(.+)$/);
+            if (!match) {
+              console.log('Branch ' + branch + ' does not follow <type>/<feature>--<task> convention. Skipping.');
+              return;
+            }
 
-                      const typeSlug = match[1];
-                      const featureSlug = match[2].toLowerCase();
-                      const taskSlug = match[3].toLowerCase();
-                      const taskName = taskSlug.replace(/-/g, ' ');
-                      const featureName = featureSlug.replace(/-/g, ' ');
+            var typeSlug = match[1];
+            var featureSlug = match[2].toLowerCase();
+            var taskSlug = match[3].toLowerCase();
+            var taskName = taskSlug.replace(/-/g, ' ');
+            var featureName = featureSlug.replace(/-/g, ' ');
 
-                      const typeMap = {
-                        feature: 'Feature',
-                        bug: 'Bug',
-                        improve: 'Improvement',
-                      };
-                      const typeValue = typeMap[typeSlug];
+            var typeMap = {
+              feature: 'Feature',
+              bug: 'Bug',
+              improve: 'Improvement',
+            };
+            var typeValue = typeMap[typeSlug];
 
-                      const normalize = (s) => (s ?? '')
-                        .toLowerCase()
-                        .replace(/[-_]/g, ' ')
-                        .replace(/[^a-z0-9 ]/g, '')
-                        .replace(/\s+/g, ' ')
-                        .trim();
+            var normalize = function(s) {
+              return (s || '')
+                .toLowerCase()
+                .replace(/[-_]/g, ' ')
+                .replace(/[^a-z0-9 ]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+            };
 
-                      console.log(`Type: "${typeValue}" | Feature: "${featureName}" | Task: "${taskName}"`);
+            console.log('Type: ' + typeValue + ' | Feature: ' + featureName + ' | Task: ' + taskName);
 
-                      const headers = {
-                        'Authorization': `Bearer ${process.env.NOTION_TOKEN}`,
-                        'Notion-Version': '2022-06-28',
-                        'Content-Type': 'application/json',
-                      };
+            var headers = {
+              'Authorization': 'Bearer ' + process.env.NOTION_TOKEN,
+              'Notion-Version': '2022-06-28',
+              'Content-Type': 'application/json',
+            };
 
-                      // Check if task already exists for this branch
-                      const existingQuery = await fetch(
-                        `https://api.notion.com/v1/databases/${process.env.NOTION_TASKS_DB_ID}/query`,
-                        {
-                          method: 'POST',
-                          headers,
-                          body: JSON.stringify({
-                            filter: {
-                              property: 'Branch',
-                              rich_text: { equals: branch }
-                            }
-                          }),
-                        }
-                      );
-                      const existingData = await existingQuery.json();
+            var existingQuery = await fetch(
+              'https://api.notion.com/v1/databases/' + process.env.NOTION_TASKS_DB_ID + '/query',
+              {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({
+                  filter: {
+                    property: 'Branch',
+                    rich_text: { equals: branch }
+                  }
+                }),
+              }
+            );
+            var existingData = await existingQuery.json();
 
-                      if (existingData.results && existingData.results.length > 0) {
-                        console.log(`Task already exists for branch "${branch}", skipping creation.`);
-                        return;
-                      }
+            if (existingData.results && existingData.results.length > 0) {
+              console.log('Task already exists for branch ' + branch + ', skipping.');
+              return;
+            }
 
-                      // Find matching feature
-                      const featuresQuery = await fetch(
-                        `https://api.notion.com/v1/databases/${process.env.NOTION_FEATURES_DB_ID}/query`,
-                        {
-                          method: 'POST',
-                          headers,
-                          body: JSON.stringify({ page_size: 100 }),
-                        }
-                      );
-                      const featuresData = await featuresQuery.json();
+            var featuresQuery = await fetch(
+              'https://api.notion.com/v1/databases/' + process.env.NOTION_FEATURES_DB_ID + '/query',
+              {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({ page_size: 100 }),
+              }
+            );
+            var featuresData = await featuresQuery.json();
 
-                      const target = normalize(featureName);
-                      const feature = featuresData.results?.find(p => {
-                        const title = normalize(p.properties.Name?.title?.[0]?.plain_text);
-                        return title === target || title.includes(target) || target.includes(title);
-                      });
+            var target = normalize(featureName);
+            var feature = null;
+            var results = featuresData.results || [];
+            for (var i = 0; i < results.length; i++) {
+              var p = results[i];
+              var title = normalize(p.properties.Name && p.properties.Name.title && p.properties.Name.title[0] ? p.properties.Name.title[0].plain_text : '');
+              if (title === target || title.indexOf(target) !== -1 || target.indexOf(title) !== -1) {
+                feature = p;
+                break;
+              }
+            }
 
-                      if (!feature) {
-                        console.log(`❌ No Notion feature found matching "${featureName}"`);
-                        console.log(`Available features: ${featuresData.results?.map(p => p.properties.Name?.title?.[0]?.plain_text).join(', ')}`);
-                        core.setFailed(`Feature "${featureName}" not found in Notion. Create it first, then re-run.`);
-                        return;
-                      }
+            if (!feature) {
+              var names = results.map(function(p) {
+                return p.properties.Name && p.properties.Name.title && p.properties.Name.title[0] ? p.properties.Name.title[0].plain_text : '(unnamed)';
+              }).join(', ');
+              console.log('No Notion feature found matching ' + featureName);
+              console.log('Available features: ' + names);
+              core.setFailed('Feature "' + featureName + '" not found in Notion. Create it first, then re-run.');
+              return;
+            }
 
-                      console.log(`Found feature: ${feature.properties.Name.title[0].plain_text}`);
+            var featureTitle = feature.properties.Name.title[0].plain_text;
+            console.log('Found feature: ' + featureTitle);
 
-                      const platform = branch.includes('mobile') || branch.includes('ui') || branch.includes('compose')
-                        ? 'Mobile/Desktop'
-                        : 'Backend';
+            var featurePlatform = feature.properties.Platform && feature.properties.Platform.select ? feature.properties.Platform.select.name : 'Backend';
+            var featureProjects = feature.properties.Projects && feature.properties.Projects.relation ? feature.properties.Projects.relation : [];
 
-                      const createResponse = await fetch('https://api.notion.com/v1/pages', {
-                        method: 'POST',
-                        headers,
-                        body: JSON.stringify({
-                          parent: { database_id: process.env.NOTION_TASKS_DB_ID },
-                          properties: {
-                            Name: {
-                              title: [{ text: { content: taskName } }]
-                            },
-                            Status: {
-                              select: { name: '🔨 In Progress' }
-                            },
-                            Type: {
-                              select: { name: typeValue }
-                            },
-                            Platform: {
-                              select: { name: platform }
-                            },
-                            Branch: {
-                              rich_text: [{ text: { content: branch } }]
-                            },
-                            Features: {
-                              relation: [{ id: feature.id }]
-                            }
-                          }
-                        }),
-                      });
+            console.log('Inheriting Platform: ' + featurePlatform + ' | Projects: ' + featureProjects.length + ' linked');
 
-                      const created = await createResponse.json();
-                      if (created.id) {
-                        console.log(`✅ Task "${taskName}" [${typeValue}] created, linked to "${feature.properties.Name.title[0].plain_text}"`);
-                      } else {
-                        console.log('Failed to create task:', JSON.stringify(created));
-                        core.setFailed('Notion task creation failed.');
-                      }
+            var createResponse = await fetch('https://api.notion.com/v1/pages', {
+              method: 'POST',
+              headers: headers,
+              body: JSON.stringify({
+                parent: { database_id: process.env.NOTION_TASKS_DB_ID },
+                properties: {
+                  Name: {
+                    title: [{ text: { content: taskName } }]
+                  },
+                  Status: {
+                    select: { name: '\u{1F528} In Progress' }
+                  },
+                  Type: {
+                    select: { name: typeValue }
+                  },
+                  Platform: {
+                    select: { name: featurePlatform }
+                  },
+                  Projects: {
+                    relation: featureProjects
+                  },
+                  Branch: {
+                    rich_text: [{ text: { content: branch } }]
+                  },
+                  Features: {
+                    relation: [{ id: feature.id }]
+                  }
+                }
+              }),
+            });
+
+            var created = await createResponse.json();
+            if (created.id) {
+              console.log('Task "' + taskName + '" [' + typeValue + '] created, linked to "' + featureTitle + '" (' + featurePlatform + ')');
+            } else {
+              console.log('Failed to create task: ' + JSON.stringify(created));
+              core.setFailed('Notion task creation failed.');
+            }
