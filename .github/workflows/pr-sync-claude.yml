@@ -3,7 +3,7 @@ name: PR Sync & Claude Description
 on:
   pull_request:
     branches: [ main ]
-    types: [ opened, closed ]
+    types: [ opened, reopened, closed ]
 
 jobs:
   sync:
@@ -60,7 +60,7 @@ jobs:
               console.log(`No Notion task found for branch "${branch}"`);
             } else {
               let newStatus;
-              if (action === 'opened') {
+              if (action === 'opened' || action === 'reopened') {
                 newStatus = '👀 In Review';
               } else if (action === 'closed' && isMerged) {
                 newStatus = '✅ Done';
@@ -84,7 +84,7 @@ jobs:
             }
 
             // Generate Claude PR description only on PR opened
-            if (action !== 'opened') return;
+            if (action !== 'opened' && action !== 'reopened') return;
 
             console.log('Generating PR description with Claude...');
 
@@ -98,27 +98,27 @@ jobs:
               console.log('Could not get diff:', e.message);
             }
 
-              const promptLines = [
-                'You are a developer writing a GitHub PR description. Be concise and technical. No fluff.',
-                '',
-                'Branch: ' + branch,
-                'PR: #' + prNumber,
-                '',
-                'Changed files:',
-                diffStat,
-                '',
-                'Diff (Kotlin/config files):',
-                diffContent,
-                '',
-                'Write a PR description with exactly these three sections using markdown headers:',
-                '## What - one sentence summary of what this PR does.',
-                '## Changes - bullet points of the key changes (max 5).',
-                '## Notes - important context or trade-offs. Write None if nothing relevant.',
-                'Keep it short. Only use those three headers.',
-              ];
-              const prompt = promptLines.join('\n');
+            const promptLines = [
+              'You are a developer writing a GitHub PR description. Be concise and technical. No fluff.',
+              '',
+              'Branch: ' + branch,
+              'PR: #' + prNumber,
+              '',
+              'Changed files:',
+              diffStat,
+              '',
+              'Diff (Kotlin/config files):',
+              diffContent,
+              '',
+              'Write a PR description with exactly these three sections using markdown headers:',
+              '## What - one sentence summary of what this PR does.',
+              '## Changes - bullet points of the key changes (max 5).',
+              '## Notes - important context or trade-offs. Write None if nothing relevant.',
+              'Keep it short. Only use those three headers.',
+            ];
+            const prompt = promptLines.join('\n');
 
-              const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+            const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
               method: 'POST',
               headers: {
                 'x-api-key': process.env.ANTHROPIC_API_KEY,
@@ -128,7 +128,7 @@ jobs:
               body: JSON.stringify({
                 model: 'claude-sonnet-4-20250514',
                 max_tokens: 1024,
-                  messages: [{ role: 'user', content: prompt }]
+                messages: [{ role: 'user', content: prompt }]
               }),
             });
 
