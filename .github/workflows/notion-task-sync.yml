@@ -22,7 +22,7 @@ jobs:
             const branch = context.ref.replace('refs/heads/', '');
 
             // Parse feature/feature-name--task-name
-            const match = branch.match(/^feature\/([^-]+)--(.+)$/);
+              const match = branch.match(/^feature\/(.+)--(.+)$/);
             if (!match) {
               console.log(`Branch "${branch}" does not follow feature/feature-name--task-name convention, skipping.`);
               return;
