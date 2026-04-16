@@ -1,135 +1,180 @@
 name: PR Sync & Claude Description
 
 on:
-    pull_request:
-        branches: [ main ]
-        types: [ opened, reopened, closed ]
+  pull_request:
+    branches: [ main ]
+    types: [ opened, reopened, closed ]
 
 jobs:
-    sync:
-        name: Sync PR to Notion
-        runs-on: ubuntu-latest
-        permissions:
-            pull-requests: write
-            contents: read
+  sync:
+    name: Sync PR to Notion
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
 
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-            - name: Sync PR status and generate description
-              uses: actions/github-script@v7
-              env:
-                  NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
-                  NOTION_TASKS_DB_ID: ${{ secrets.NOTION_TASKS_DB_ID }}
-                  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-              with:
-                  script: |
-                      const branch = context.payload.pull_request.head.ref;
-                      const prNumber = context.payload.pull_request.number;
-                      const prUrl = context.payload.pull_request.html_url;
-                      const isMerged = context.payload.pull_request.merged === true;
-                      const action = context.payload.action;
+      - name: Sync PR status and generate description
+        uses: actions/github-script@v7
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_TASKS_DB_ID: ${{ secrets.NOTION_TASKS_DB_ID }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        with:
+          script: |
+            const branch = context.payload.pull_request.head.ref;
+            const prNumber = context.payload.pull_request.number;
+            const prUrl = context.payload.pull_request.html_url;
+            const isMerged = context.payload.pull_request.merged === true;
+            const action = context.payload.action;
 
-                      // Detect branch type for clearer logging and Claude framing
-                      const typeMatch = branch.match(/^(feature|bug|improve)\//);
-                      const branchType = typeMatch ? typeMatch[1] : null;
-                      const typeLabel = {
-                        feature: 'Feature',
-                        bug: 'Bug fix',
-                        improve: 'Improvement',
-                      }[branchType] ?? 'Chore/infra';
+            const typeMatch = branch.match(/^(feature|bug|improve)\//);
+            const branchType = typeMatch ? typeMatch[1] : null;
+            const typeLabel = {
+              feature: 'Feature',
+              bug: 'Bug fix',
+              improve: 'Improvement',
+            }[branchType] || 'Chore/infra';
 
-                      console.log(`Branch: ${branch} | Type: ${typeLabel}`);
+            console.log('Branch: ' + branch + ' | Type: ' + typeLabel);
 
-                      const headers = {
-                        'Authorization': `Bearer ${process.env.NOTION_TOKEN}`,
-                        'Notion-Version': '2022-06-28',
-                        'Content-Type': 'application/json',
-                      };
+            const headers = {
+              'Authorization': 'Bearer ' + process.env.NOTION_TOKEN,
+              'Notion-Version': '2022-06-28',
+              'Content-Type': 'application/json',
+            };
 
-                      // Only tracked types (feature/bug/improve) have Notion tasks
-                      let task = null;
-                      if (branchType) {
-                        const queryResponse = await fetch(
-                          `https://api.notion.com/v1/databases/${process.env.NOTION_TASKS_DB_ID}/query`,
-                          {
-                            method: 'POST',
-                            headers,
-                            body: JSON.stringify({
-                              filter: {
-                                property: 'Branch',
-                                rich_text: { equals: branch }
-                              }
-                            }),
-                          }
-                        );
-                        const queryData = await queryResponse.json();
-                        task = queryData.results?.[0] ?? null;
-                        if (!task) {
-                          console.log(`No Notion task found for branch "${branch}". It may not have been created yet, or the branch does not map to a tracked feature.`);
-                        }
-                      } else {
-                        console.log(`Skipping Notion task sync: "${branch}" is not a tracked type (feature/bug/improve).`);
-                      }
+            let task = null;
+            if (branchType) {
+              const queryResponse = await fetch(
+                'https://api.notion.com/v1/databases/' + process.env.NOTION_TASKS_DB_ID + '/query',
+                {
+                  method: 'POST',
+                  headers,
+                  body: JSON.stringify({
+                    filter: {
+                      property: 'Branch',
+                      rich_text: { equals: branch }
+                    }
+                  }),
+                }
+              );
+              const queryData = await queryResponse.json();
+              task = queryData.results && queryData.results[0] ? queryData.results[0] : null;
+              if (!task) {
+                console.log('No Notion task found for branch ' + branch);
+              }
+            } else {
+              console.log('Skipping Notion task sync: ' + branch + ' is not a tracked type.');
+            }
 
-                      // Update task status based on PR action
-                      if (task) {
-                        let newStatus;
-                        if (action === 'opened' || action === 'reopened') {
-                          newStatus = '👀 In Review';
-                        } else if (action === 'closed' && isMerged) {
-                          newStatus = '✅ Done';
-                        } else if (action === 'closed' && !isMerged) {
-                          newStatus = '📦 Archived';
-                        }
+            if (task) {
+              let newStatus;
+              if (action === 'opened' || action === 'reopened') {
+                newStatus = '\u{1F440} In Review';
+              } else if (action === 'closed' && isMerged) {
+                newStatus = '\u2705 Done';
+              } else if (action === 'closed' && !isMerged) {
+                newStatus = '\u{1F4E6} Archived';
+              }
 
-                        if (newStatus) {
-                          await fetch(`https://api.notion.com/v1/pages/${task.id}`, {
-                            method: 'PATCH',
-                            headers,
-                            body: JSON.stringify({
-                              properties: {
-                                Status: { select: { name: newStatus } },
-                                PR: { url: prUrl }
-                              }
-                            }),
-                          });
-                          console.log(`Notion task updated: ${newStatus} | PR: ${prUrl}`);
-                        }
-                      }
+              if (newStatus) {
+                await fetch('https://api.notion.com/v1/pages/' + task.id, {
+                  method: 'PATCH',
+                  headers,
+                  body: JSON.stringify({
+                    properties: {
+                      Status: { select: { name: newStatus } },
+                      PR: { url: prUrl }
+                    }
+                  }),
+                });
+                console.log('Notion task updated: ' + newStatus + ' | PR: ' + prUrl);
+              }
+            }
 
-                      // Generate Claude PR description only on PR opened/reopened
-                      if (action !== 'opened' && action !== 'reopened') return;
+            if (action !== 'opened' && action !== 'reopened') return;
 
-                      console.log('Generating PR description with Claude...');
+            console.log('Generating PR description with Claude...');
 
-                      const { execSync } = require('child_process');
-                      let diffStat = '';
-                      let diffContent = '';
-                      try {
-                        diffStat = execSync('git diff origin/main...HEAD --stat').toString().slice(0, 2000);
-                        diffContent = execSync("git diff origin/main...HEAD -- '*.kt' '*.kts' '*.yaml' '*.yml'").toString().slice(0, 8000);
-                      } catch (e) {
-                        console.log('Could not get diff:', e.message);
-                      }
+            const { execSync } = require('child_process');
+            let diffStat = '';
+            let diffContent = '';
+            try {
+              diffStat = execSync('git diff origin/main...HEAD --stat').toString().slice(0, 2000);
+              diffContent = execSync("git diff origin/main...HEAD -- '*.kt' '*.kts' '*.yaml' '*.yml'").toString().slice(0, 8000);
+            } catch (e) {
+              console.log('Could not get diff: ' + e.message);
+            }
 
-                      const promptLines = [
-                        'You are a developer writing a GitHub PR description. Be concise and technical. No fluff.',
-                        '',
-                        'Change type: ' + typeLabel,
-                        'Branch: ' + branch,
-                        'PR: #' + prNumber,
-                        '',
-                        'Changed files:',
-                        diffStat,
-                        '',
-                        'Diff (Kotlin/config files):',
-                        diffContent,
-                        '',
-                        'Write a PR description with exactly these three sections using markdown headers:',
-                        '## What - one sentence summary of what this PR does.',
-                        '## Changes - bullet points of the key changes (max 5).',
-                        '## Notes - important context or trade-offs. Write None if
+            const promptLines = [
+              'You are a developer writing a GitHub PR description. Be concise and technical. No fluff.',
+              '',
+              'Change type: ' + typeLabel,
+              'Branch: ' + branch,
+              'PR: #' + prNumber,
+              '',
+              'Changed files:',
+              diffStat,
+              '',
+              'Diff (Kotlin/config files):',
+              diffContent,
+              '',
+              'Write a PR description with exactly these three sections using markdown headers:',
+              '## What - one sentence summary of what this PR does.',
+              '## Changes - bullet points of the key changes (max 5).',
+              '## Notes - important context or trade-offs. Write None if nothing relevant.',
+              'Keep it short. Only use those three headers.',
+            ];
+            const prompt = promptLines.join('\n');
+
+            const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+              method: 'POST',
+              headers: {
+                'x-api-key': process.env.ANTHROPIC_API_KEY,
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json',
+              },
+              body: JSON.stringify({
+                model: 'claude-sonnet-4-5',
+                max_tokens: 1024,
+                messages: [{ role: 'user', content: prompt }]
+              }),
+            });
+
+            const claudeData = await claudeResponse.json();
+            const description = claudeData.content && claudeData.content[0] ? claudeData.content[0].text : null;
+
+            if (!description) {
+              console.log('Claude did not return a description: ' + JSON.stringify(claudeData));
+              return;
+            }
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              body: description,
+            });
+
+            console.log('PR description updated with Claude output');
+
+            if (task) {
+              await fetch('https://api.notion.com/v1/pages/' + task.id, {
+                method: 'PATCH',
+                headers,
+                body: JSON.stringify({
+                  properties: {
+                    Goal: {
+                      rich_text: [{ text: { content: description.slice(0, 500) } }]
+                    }
+                  }
+                }),
+              });
+              console.log('PR description saved to Notion task Goal field');
+            }
