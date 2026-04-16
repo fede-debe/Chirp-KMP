@@ -59,7 +59,6 @@ jobs:
             if (!task) {
               console.log(`No Notion task found for branch "${branch}"`);
             } else {
-              // Determine new status
               let newStatus;
               if (action === 'opened') {
                 newStatus = '👀 In Review';
@@ -70,7 +69,6 @@ jobs:
               }
 
               if (newStatus) {
-                // Update task status and PR URL
                 await fetch(`https://api.notion.com/v1/pages/${task.id}`, {
                   method: 'PATCH',
                   headers,
@@ -90,7 +88,6 @@ jobs:
 
             console.log('Generating PR description with Claude...');
 
-            // Get diff
             const { execSync } = require('child_process');
             let diffStat = '';
             let diffContent = '';
@@ -101,7 +98,27 @@ jobs:
               console.log('Could not get diff:', e.message);
             }
 
-            const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+              const promptLines = [
+                'You are a developer writing a GitHub PR description. Be concise and technical. No fluff.',
+                '',
+                'Branch: ' + branch,
+                'PR: #' + prNumber,
+                '',
+                'Changed files:',
+                diffStat,
+                '',
+                'Diff (Kotlin/config files):',
+                diffContent,
+                '',
+                'Write a PR description with exactly these three sections using markdown headers:',
+                '## What - one sentence summary of what this PR does.',
+                '## Changes - bullet points of the key changes (max 5).',
+                '## Notes - important context or trade-offs. Write None if nothing relevant.',
+                'Keep it short. Only use those three headers.',
+              ];
+              const prompt = promptLines.join('\n');
+
+              const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
               method: 'POST',
               headers: {
                 'x-api-key': process.env.ANTHROPIC_API_KEY,
@@ -111,31 +128,7 @@ jobs:
               body: JSON.stringify({
                 model: 'claude-sonnet-4-20250514',
                 max_tokens: 1024,
-                messages: [{
-                  role: 'user',
-                  content: `You are a developer writing a GitHub PR description. Be concise and technical. No fluff.
-
-Branch: ${branch}
-PR: #${prNumber}
-
-Changed files:
-${diffStat}
-
-Diff (Kotlin/config files):
-${diffContent}
-
-Write a PR description with exactly these sections:
-## What
-One sentence summary of what this PR does.
-
-## Changes
-Bullet points of the key changes (max 5).
-
-## Notes
-Any important context, trade-offs, or things to watch out for. If nothing relevant, write 'None'.
-
-Keep it short. Only use the markdown headers specified above.`
-                }]
+                  messages: [{ role: 'user', content: prompt }]
               }),
             });
 
@@ -147,7 +140,6 @@ Keep it short. Only use the markdown headers specified above.`
               return;
             }
 
-            // Update PR description
             await github.rest.pulls.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -157,7 +149,6 @@ Keep it short. Only use the markdown headers specified above.`
 
             console.log('✅ PR description updated with Claude output');
 
-            // Also save description to Notion task if found
             if (task) {
               await fetch(`https://api.notion.com/v1/pages/${task.id}`, {
                 method: 'PATCH',
