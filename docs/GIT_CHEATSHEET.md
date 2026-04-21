@@ -8,8 +8,10 @@ Copy-paste. Swap `<feature-slug>` and `<task-slug>` for what you're doing. Every
 
 ## Legend — what to swap
 
-- `<feature-slug>` — lowercase kebab, matches a Notion Feature. Examples: `auth-users`, `architecture-setup`, `chat`, `home-dashboard`
+- `<feature-slug>` — **must exactly match the `Slug` property** of a Feature in the Notion Features DB. Project-prefixed for uniqueness. Examples: `chirp-auth-users`, `chirp-architecture-setup`, `petapp-auth-users`, `petapp-home-dashboard`, `infrastructure`
 - `<task-slug>` — ≤ 5 words, lowercase kebab. Examples: `login-screen`, `version-catalog`, `push-notifications`
+
+**Check the Slug before branching.** Open Notion → Features DB → copy the Slug value from the Feature row. Don't guess — exact match required.
 
 ---
 
@@ -64,7 +66,7 @@ git commit --allow-empty -m "chore: start <task-slug>"
 git push -u origin feature/<feature-slug>--<task-slug>
 ```
 
-Notion Task created at `🔨 In Progress`, linked to Feature.
+Notion Task created at `🔨 In Progress`, linked to the Feature with matching Slug.
 
 ### 3. Work → commit → push
 
@@ -111,50 +113,50 @@ git push origin --delete feature/<feature-slug>
 
 ## Concrete example — filled in
 
-Starting Module 6 Auth, first sub-task is the login screen.
+Starting Module 6 Auth in Chirp. The `🔐 Auth & Users` Feature in Notion has Slug `chirp-auth-users`.
 
 **Parent (once):**
 
 ```
 git checkout main && git pull
-git checkout -b feature/auth-users
-git push -u origin feature/auth-users
+git checkout -b feature/chirp-auth-users
+git push -u origin feature/chirp-auth-users
 ```
 
 **First sub-task — login screen:**
 
 ```
-git checkout feature/auth-users
+git checkout feature/chirp-auth-users
 git pull
-git checkout -b feature/auth-users--login-screen
+git checkout -b feature/chirp-auth-users--login-screen
 git commit --allow-empty -m "chore: start login-screen"
-git push -u origin feature/auth-users--login-screen
+git push -u origin feature/chirp-auth-users--login-screen
 # ...work...
 git add .
 git commit
 git push
-gh pr create --base feature/auth-users --fill
+gh pr create --base feature/chirp-auth-users --fill
 ```
 
 **Next sub-task — signup flow:**
 
 ```
-git checkout feature/auth-users
+git checkout feature/chirp-auth-users
 git pull                                          # picks up merged login-screen
-git checkout -b feature/auth-users--signup-flow
+git checkout -b feature/chirp-auth-users--signup-flow
 git commit --allow-empty -m "chore: start signup-flow"
-git push -u origin feature/auth-users--signup-flow
+git push -u origin feature/chirp-auth-users--signup-flow
 # ...work...
 git add .
 git commit
 git push
-gh pr create --base feature/auth-users --fill
+gh pr create --base feature/chirp-auth-users --fill
 ```
 
 **Final — parent to main (after all sub-tasks merged):**
 
 ```
-git checkout feature/auth-users
+git checkout feature/chirp-auth-users
 git pull
 gh pr create --base main --fill
 ```
@@ -187,8 +189,8 @@ git stash pop
 **Committed to main by accident — move the commit to a new branch:**
 
 ```
-git branch feature/<feature-slug>--<task-slug>    # save current state as new branch
-git reset --hard origin/main                      # reset main to remote
+git branch feature/<feature-slug>--<task-slug>
+git reset --hard origin/main
 git checkout feature/<feature-slug>--<task-slug>
 ```
 
@@ -200,13 +202,23 @@ git branch -m <wrong-branch> <correct-branch>
 git push -u origin <correct-branch>
 ```
 
-**Claude-generated commit message is wrong / you want to edit it:**
+**Wrong Feature slug in branch name — the workflow failed with `Feature with Slug "x" not found`:**
 
-The hook opens your editor with the message pre-filled. Edit it, save, quit — git commits with whatever you save. If the editor already closed and you want to fix the last commit:
+The Task didn't get created. Rename the branch locally and re-push:
 
 ```
-git commit --amend                                # edit message of last commit
-git push --force-with-lease                       # only if already pushed
+git branch -m feature/<correct-slug>--<task-slug>
+git push origin --delete feature/<wrong-slug>--<task-slug>
+git push -u origin feature/<correct-slug>--<task-slug>
+```
+
+**Claude-generated commit message is wrong / you want to edit it:**
+
+The hook opens your editor with the message pre-filled. Edit, save, quit. For the last commit that already landed:
+
+```
+git commit --amend
+git push --force-with-lease
 ```
 
 **Skip the hook entirely for one commit (override with explicit message):**
@@ -230,3 +242,25 @@ Press **Ctrl+C**. An unclosed `'` or `"` in a command — zsh is waiting for you
 | `improve/<slug>--<task>` | ✅ yes | Refactors / improvements under a Feature |
 | `feature/<slug>` (no `--`) | ❌ no (intentional) | Parent branch for Pattern B |
 | `fix/…`, `chore/…`, `docs/…` | ❌ no | One-off changes that don't belong to a Feature |
+
+---
+
+## Slugs reference (current projects)
+
+Copy the Slug column value into branch names. Keep this list updated as new Features are added to Notion.
+
+| Notion Feature | Slug |
+|---|---|
+| 🔺 Architecture setup (Chirp) | `chirp-architecture-setup` |
+| 🔐 Auth & Users (Chirp) | `chirp-auth-users` |
+| 🔐 Auth & Users (PetApp) | `petapp-auth-users` |
+| 🗃 Domain Model (PetApp) | `petapp-domain-model` |
+| 🏠 Pack (PetApp) | `petapp-pack` |
+| 🩺 HealthLog (PetApp) | `petapp-healthlog` |
+| 📊 Home Dashboard (PetApp) | `petapp-home-dashboard` |
+| 🔔 Notifications (PetApp) | `petapp-notifications` |
+| 🖼 Gallery (PetApp) | `petapp-gallery` |
+| 📁 Documents (PetApp) | `petapp-documents` |
+| 🏗 Infrastructure (shared) | `infrastructure` |
+
+**Source of truth:** the `Slug` property in Notion. If this table drifts from Notion, Notion wins.
