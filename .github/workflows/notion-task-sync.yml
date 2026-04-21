@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: Create or update Notion task
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_TASKS_DB_ID: ${{ secrets.NOTION_TASKS_DB_ID }}
