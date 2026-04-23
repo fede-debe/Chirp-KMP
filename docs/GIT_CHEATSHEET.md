@@ -11,7 +11,9 @@ Copy-paste. Swap `<feature-slug>` and `<task-slug>` for what you're doing. Every
 - `<feature-slug>` — **must exactly match the `Slug` property** of a Feature in the Notion Features DB. Project-prefixed for uniqueness. Examples: `chirp-auth-users`, `chirp-architecture-setup`, `petapp-auth-users`, `petapp-home-dashboard`, `infrastructure`
 - `<task-slug>` — ≤ 5 words, lowercase kebab. Examples: `login-screen`, `version-catalog`, `push-notifications`
 
-**Check the Slug before branching.** Open Notion → Features DB → copy the Slug value from the Feature row. Don't guess — exact match required.
+**How to find the slug:** the `Slug` property is hidden from the Features DB table views. Open the Feature page directly (click into the row) → scroll the properties → copy the `Slug` value. Or just use the "Slugs reference" table at the bottom of this file.
+
+**Do NOT use `Full Name`** (`🐦 Chirp - 🔐 Auth & Users`) in branch names. That's the picker display property. The branch matcher reads `Slug` only.
 
 ---
 
@@ -78,6 +80,16 @@ git push
 
 ### 4. Open sub-PR — base is the parent branch, NOT main
 
+**Use the safeguard function** (see "Shell setup" below):
+
+```
+gh-sub-pr
+```
+
+It auto-detects the parent from the current branch name. Fails if you're not on a sub-branch.
+
+**Or manual** (if you haven't set up the function yet — just type carefully):
+
 ```
 gh pr create --base feature/<feature-slug> --fill
 ```
@@ -111,6 +123,37 @@ git push origin --delete feature/<feature-slug>
 
 ---
 
+## Shell setup — `gh-sub-pr` safeguard
+
+Add to `~/.zshrc` once, then use `gh-sub-pr` for every sub-PR in Pattern B.
+
+```bash
+# Open a sub-PR against the auto-detected parent feature branch.
+# Parent is derived from the current branch name by stripping everything from `--` onward.
+# On a non-sub-branch (no `--`), prints an error and exits without calling gh.
+gh-sub-pr() {
+  local current parent
+  current=$(git branch --show-current)
+  parent="${current%%--*}"
+  if [ "$current" = "$parent" ]; then
+    echo "Not on a sub-branch (no -- in name). Use 'gh pr create --base main --fill' directly." >&2
+    return 1
+  fi
+  gh pr create --base "$parent" --fill
+}
+```
+
+Reload: `source ~/.zshrc`. Verify: `type gh-sub-pr` should show the function body.
+
+What it does:
+- On `feature/chirp-auth-users--login-screen` → runs `gh pr create --base feature/chirp-auth-users --fill`
+- On `feature/chirp-auth-users` (parent, no `--`) → prints error, doesn't run `gh`
+- On `main` or any other branch with no `--` → prints error
+
+Prevents the "accidentally merged to main instead of parent" mistake — the function literally can't create a PR to main from a sub-branch.
+
+---
+
 ## Concrete example — filled in
 
 Starting Module 6 Auth in Chirp. The `🔐 Auth & Users` Feature in Notion has Slug `chirp-auth-users`.
@@ -135,7 +178,7 @@ git push -u origin feature/chirp-auth-users--login-screen
 git add .
 git commit
 git push
-gh pr create --base feature/chirp-auth-users --fill
+gh-sub-pr
 ```
 
 **Next sub-task — signup flow:**
@@ -150,7 +193,7 @@ git push -u origin feature/chirp-auth-users--signup-flow
 git add .
 git commit
 git push
-gh pr create --base feature/chirp-auth-users --fill
+gh-sub-pr
 ```
 
 **Final — parent to main (after all sub-tasks merged):**
@@ -194,6 +237,19 @@ git reset --hard origin/main
 git checkout feature/<feature-slug>--<task-slug>
 ```
 
+**Sub-PR merged to main instead of parent** (happened on PR #30):
+
+Content's already in main — nothing to undo. Just sync the parent with main before cutting the next sub-task:
+
+```
+git checkout feature/<feature-slug>
+git fetch origin
+git merge origin/main
+git push
+```
+
+Then carry on. Use `gh-sub-pr` next time to avoid repeating the mistake.
+
 **Pushed to wrong remote branch — delete remote, push to correct one:**
 
 ```
@@ -202,9 +258,9 @@ git branch -m <wrong-branch> <correct-branch>
 git push -u origin <correct-branch>
 ```
 
-**Wrong Feature slug in branch name — the workflow failed with `Feature with Slug "x" not found`:**
+**Wrong Feature slug in branch name — workflow failed with `Feature with Slug "x" not found`:**
 
-The Task didn't get created. Rename the branch locally and re-push:
+Task didn't get created. Rename the branch locally and re-push:
 
 ```
 git branch -m feature/<correct-slug>--<task-slug>
@@ -247,20 +303,20 @@ Press **Ctrl+C**. An unclosed `'` or `"` in a command — zsh is waiting for you
 
 ## Slugs reference (current projects)
 
-Copy the Slug column value into branch names. Keep this list updated as new Features are added to Notion.
+Copy the Slug value into branch names. `Slug` is a hidden property on the Features DB — this table is the easiest way to look one up. Keep updated as new Features are added to Notion.
 
-| Notion Feature | Slug |
+| Notion Feature (Full Name in picker) | Slug |
 |---|---|
-| 🔺 Architecture setup (Chirp) | `chirp-architecture-setup` |
-| 🔐 Auth & Users (Chirp) | `chirp-auth-users` |
-| 🔐 Auth & Users (PetApp) | `petapp-auth-users` |
-| 🗃 Domain Model (PetApp) | `petapp-domain-model` |
-| 🏠 Pack (PetApp) | `petapp-pack` |
-| 🩺 HealthLog (PetApp) | `petapp-healthlog` |
-| 📊 Home Dashboard (PetApp) | `petapp-home-dashboard` |
-| 🔔 Notifications (PetApp) | `petapp-notifications` |
-| 🖼 Gallery (PetApp) | `petapp-gallery` |
-| 📁 Documents (PetApp) | `petapp-documents` |
+| 🐦 Chirp - 🔺 Architecture setup | `chirp-architecture-setup` |
+| 🐦 Chirp - 🔐 Auth & Users | `chirp-auth-users` |
+| 🐶 PetApp - 🔐 Auth & Users | `petapp-auth-users` |
+| 🐶 PetApp - 🗃 Domain Model | `petapp-domain-model` |
+| 🐶 PetApp - 🏠 Pack | `petapp-pack` |
+| 🐶 PetApp - 🩺 HealthLog | `petapp-healthlog` |
+| 🐶 PetApp - 📊 Home Dashboard | `petapp-home-dashboard` |
+| 🐶 PetApp - 🔔 Notifications | `petapp-notifications` |
+| 🐶 PetApp - 🖼 Gallery | `petapp-gallery` |
+| 🐶 PetApp - 📁 Documents | `petapp-documents` |
 | 🏗 Infrastructure (shared) | `infrastructure` |
 
-**Source of truth:** the `Slug` property in Notion. If this table drifts from Notion, Notion wins.
+**Source of truth:** the `Slug` property in Notion. If this table drifts, Notion wins.
