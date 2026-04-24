@@ -32,14 +32,16 @@ main
       └── feature/<feature-slug>--<task-c>       ← sub-branch, cut from parent
 ```
 
-**Step 1 — Feature must exist in Notion, with a Slug**
+**Step 1 — Feature must exist in Notion**
 
-Projects Hub → Features DB. Find or create the Feature:
+Projects Hub → Features DB. Find or create the Feature with:
 - `Name` — human-readable (`🔐 Auth & Users`)
-- `Slug` — unique, lowercase kebab, project-prefixed (`chirp-auth-users`)
-- `Project`, `Platform`, `Priority`, `Status = Backlog`
+- `Slug` — unique, lowercase kebab, project-prefixed (`chirp-auth-users`). **Hidden in views** but required in the DB.
+- `Projects`, `Platform`, `Priority`, `Status = Backlog`
 
-The `Slug` is what the workflow matches branches against. Not the `Name`. Two Features can share a Name (`🔐 Auth & Users` for Chirp and PetApp), but **Slug must be globally unique** across the whole Features DB.
+The `Full Name` formula property auto-generates the display string (`🐦 Chirp - 🔐 Auth & Users`) from `Projects + Name`. This is what you see in pickers to tell duplicates apart — you don't edit it.
+
+The `Slug` is what the workflow matches branches against. **Not `Name`, not `Full Name`.** Two Features can share a Name across projects (`🔐 Auth & Users` in Chirp and PetApp), but **Slug must be globally unique** across the whole Features DB.
 
 **Step 2 — Create the parent branch** (once per feature)
 
@@ -61,13 +63,15 @@ git commit --allow-empty -m "chore: start <task-slug>"
 git push -u origin feature/<feature-slug>--<task-slug>
 ```
 
-`notion-task-sync` queries the Features DB for `Slug = <feature-slug>` exact match, then creates a Task linked to that Feature. Platform + Project inherited.
+`notion-task-sync` queries the Features DB for `Slug = <feature-slug>` exact match, creates a Task linked to that Feature, Platform + Projects inherited.
 
 **Step 4 — Work, commit, push, open sub-PR into parent**
 
 ```
 gh pr create --base feature/<feature-slug> --fill
 ```
+
+**Note the `--base`**: the parent branch, NOT `main`. Getting this wrong is the easiest mistake to make — the sub-branch still works as code, but it lands in `main` directly and skips the parent's integration staging. If you prefer a safeguard, use the `gh-sub-pr` shell function in `docs/GIT_CHEATSHEET.md`.
 
 Task → `👀 In Review`. Claude writes the PR body. Merge on GitHub. Task → `✅ Done`.
 
@@ -120,6 +124,22 @@ Shared / cross-project Features (like `Infrastructure`) can skip the prefix if t
 
 ---
 
+## How Full Name and Slug play together
+
+Two properties, two jobs:
+
+| Property | Type | Visible where | Purpose |
+|---|---|---|---|
+| `Name` | Title | Page headers, rollup columns | Short human label (`🔐 Auth & Users`) |
+| `Full Name` | Formula (`Projects + " - " + Name`) | Pickers (when enabled), Tasks DB rollup | Disambiguates duplicate names across projects in pickers (`🐦 Chirp - 🔐 Auth & Users`) |
+| `Slug` | Text (hidden from views) | Used by automation only | Machine-readable identifier that branches match against |
+
+**When you're creating a Task or linking to a Feature in Notion** → look at `Full Name` in the picker (enable it via `⋯ → Show properties → Full Name` on each relation that points at Features).
+
+**When you're naming a git branch** → use the `Slug` value. Open the Feature page directly to see it, or keep the Slugs reference table in `docs/GIT_CHEATSHEET.md` up to date.
+
+---
+
 ## What the automation actually does
 
 | Event | Workflow | Result |
@@ -138,11 +158,13 @@ Shared / cross-project Features (like `Infrastructure`) can skip the prefix if t
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| Workflow fails: `Feature with Slug "<x>" not found in Notion` | The branch's feature-slug doesn't match any Feature's Slug property (check logs for the list of available slugs) | Add/fix the Slug on the Feature in Notion, or rename the branch |
+| Workflow fails: `Feature with Slug "<x>" not found in Notion` | Branch's feature-slug doesn't match any Feature's Slug property (check logs for available slugs) | Add/fix the Slug on the Feature in Notion, or rename the branch |
 | Workflow fails: `Slug "<x>" is not unique in Notion` | Two or more Features share the same Slug | Open the Features DB, make slugs unique, re-push |
+| All branch pushes failing with "not found" after you didn't change anything | The `Slug` property got deleted or renamed in Notion | Restore from Notion trash (Features DB → settings → deleted properties) or re-create from the Slugs table in `docs/GIT_CHEATSHEET.md` |
 | No Notion Task appeared, no workflow run | Branch prefix isn't `feature/`, `bug/`, or `improve/` | Rename the branch |
-| No Notion Task appeared, workflow logged "does not follow convention" | Missing `--` between feature and task | If this is a sub-branch: rename. If it's a parent branch: expected, no action. |
-| Task has wrong Platform / Project | Feature in Notion has wrong Platform / Project | Fix the Feature — Task was snapshotted at create time and won't auto-re-sync. Fix Task manually or re-create it. |
+| No Notion Task appeared, workflow logged "does not follow convention" | Missing `--` between feature and task | If this is a sub-branch: rename. If parent branch: expected, no action. |
+| Task linked to wrong Project | Picker doesn't show `Full Name` → you picked a same-named Feature from the wrong Project | Enable `Full Name` in the picker: `⋯ → Show properties → Full Name`. Fix the affected Task manually or re-push its branch. |
+| Sub-PR merged but to main instead of parent | `gh pr create --base main --fill` instead of `--base feature/<slug>` | Sync parent with main: `git checkout feature/<slug> && git fetch origin && git merge origin/main && git push`. Content's in main; you just skipped the staging layer for that one sub-task. |
 | Sub-PR opened but Task stuck at `🔨 In Progress` | `pr-sync-claude.yml` trigger doesn't include the base branch pattern | Check `on: pull_request: branches:` includes `'feature/**'`, `'bug/**'`, `'improve/**'` |
 | `Goal` field truncated mid-sentence | Claude's PR description was >500 chars | Expected — truncation is in the workflow to avoid Notion API errors |
 | PR description missing, logs `authentication_error: invalid x-api-key` | `ANTHROPIC_API_KEY` secret is expired, revoked, or out of credits | Rotate the key, update the GitHub Secret, close + reopen the PR to re-trigger |
