@@ -45,6 +45,7 @@ coil = "3.4.0" # Image loading library
 coil-network = "3.4.0" # Network support for Coil
 moko = "0.20.1" # Modern Kotlin, permission handling
 buildkonfig = "0.17.1" # Gradle plugin for generating build configuration configurations for different build variants
+kermit = "2.1.0"
 
 projectApplicationId = "com.project.chirp"
 projectVersionName = "1.0"
@@ -133,6 +134,9 @@ moko-permissions = { module = "dev.icerock.moko:permissions", version.ref = "mok
 moko-permissions-compose = { module = "dev.icerock.moko:permissions-compose", version.ref = "moko" }
 moko-permissions-notifications = { module = "dev.icerock.moko:permissions-notifications", version.ref = "moko" }
 
+# Logging
+touchlab-kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
+
 android-desugarJdkLibs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "androidDesugarJdkLibs" }
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
 android-tools-common = { group = "com.android.tools", name = "common", version.ref = "androidTools" }
@@ -164,7 +168,7 @@ convention-android-application = { id = "com.project.convention.android.applicat
 convention-android-library = { id = "com.project.convention.android.library", version = "unspecified" }
 convention-android-application-compose = { id = "com.project.convention.android.application.compose", version = "unspecified" }
 convention-cmp-application = { id = "com.project.convention.cmp.application", version = "unspecified" }
-
+convention-kmp-library = { id = "com.project.convention.kmp.library", version = "unspecified" }
 
 # Android
 android-application = { id = "com.android.application", version.ref = "agp" }
