@@ -54,5 +54,10 @@ gradlePlugin {
             id = "com.project.convention.android.application.compose"
             implementationClass = "AndroidApplicationComposeConventionPlugin"
         }
+
+        register("cmpApplication") {
+            id = "com.project.convention.cmp.application"
+            implementationClass = "CmpApplicationConventionPlugin"
+        }
     }
 }
