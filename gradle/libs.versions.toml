@@ -15,6 +15,7 @@ compose-multiplatform = "1.10.3"
 compose-lifecycle = "2.10.0"
 navigation-compose = "2.9.2"
 jetbrains-core-bundle = "1.0.1"
+material-icons = "1.7.3"
 
 # AndroidX
 androidx-activity = "1.13.0"
@@ -39,7 +40,7 @@ sqlite = "2.6.2" # SQLite in combination with Room to create a SQLite database
 datastore = "1.2.1" # Local preferences storage
 firebase-bom = "34.11.0" # Firebase dependencies (notifications)
 adaptive = "1.2.0" # Adaptive UI components for Material3
-compose-jetbrains = "1.10.3"
+compose-jetbrains = "1.8.2"
 jetbrains-savedstate = "1.4.0" # Access saved state handle
 coil = "3.4.0" # Image loading library
 coil-network = "3.4.0" # Network support for Coil
@@ -149,12 +150,13 @@ androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "u
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 
 koin-bom = { group = "io.insert-koin", name = "koin-bom", version.ref = "koin" }
-jetbrains-compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-jetbrains" }
-jetbrains-compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose-jetbrains" }
-jetbrains-compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-jetbrains" }
-jetbrains-compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-jetbrains" }
-jetbrains-compose-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose-jetbrains" }
-jetbrains-compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-jetbrains" }
+jetbrains-compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref="compose-jetbrains" }
+jetbrains-compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref="compose-jetbrains"}
+jetbrains-compose-material-icons-core = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "material-icons"}
+jetbrains-compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "material-icons"}
+jetbrains-compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref="compose-jetbrains"}
+jetbrains-compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref="compose-jetbrains"}
+
 jetbrains-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "compose-lifecycle" }
 jetbrains-lifecycle-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "compose-lifecycle" }
 jetbrains-lifecycle-viewmodel-savedstate = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-savedstate", version.ref = "compose-lifecycle" }
@@ -169,6 +171,8 @@ convention-android-library = { id = "com.project.convention.android.library", ve
 convention-android-application-compose = { id = "com.project.convention.android.application.compose", version = "unspecified" }
 convention-cmp-application = { id = "com.project.convention.cmp.application", version = "unspecified" }
 convention-kmp-library = { id = "com.project.convention.kmp.library", version = "unspecified" }
+convention-cmp-library = { id = "com.project.convention.cmp.library", version = "unspecified" }
+convention-cmp-feature = { id = "com.project.convention.cmp.feature", version = "unspecified" }
 
 # Android
 android-application = { id = "com.android.application", version.ref = "agp" }
