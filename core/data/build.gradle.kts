@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.convention.kmp.library)
+    alias(libs.plugins.convention.buildkonfig)
 }
 
 kotlin {
@@ -14,29 +15,29 @@ kotlin {
                 implementation(libs.kotlin.stdlib)
 
                 implementation(projects.core.domain)
-
-                implementation(libs.bundles.ktor.common)
-//                implementation(libs.touchlab.kermit)
-                implementation(libs.koin.core)
-
-                implementation(libs.datastore)
-                implementation(libs.datastore.preferences)
-
-                implementation(libs.androidx.room.runtime)
-                implementation(libs.sqlite.bundled)
+//
+//                implementation(libs.bundles.ktor.common)
+// //                implementation(libs.touchlab.kermit)
+//                implementation(libs.koin.core)
+//
+//                implementation(libs.datastore)
+//                implementation(libs.datastore.preferences)
+//
+//                implementation(libs.androidx.room.runtime)
+//                implementation(libs.sqlite.bundled)
             }
         }
 
         androidMain {
             dependencies {
-                implementation(libs.ktor.client.okhttp)
-                implementation(libs.koin.android)
+//                implementation(libs.ktor.client.okhttp)
+//                implementation(libs.koin.android)
             }
         }
 
         iosMain {
             dependencies {
-                implementation(libs.ktor.client.darwin)
+//                implementation(libs.ktor.client.darwin)
             }
         }
     }
