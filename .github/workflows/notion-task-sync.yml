@@ -33,7 +33,6 @@ jobs:
             var featureSlug = match[2].toLowerCase();
             var taskSlug = match[3].toLowerCase();
             var taskName = taskSlug.replace(/-/g, ' ');
-            var featureName = featureSlug.replace(/-/g, ' ');
 
             var typeMap = {
               feature: 'Feature',
@@ -42,16 +41,14 @@ jobs:
             };
             var typeValue = typeMap[typeSlug];
 
-            var normalize = function(s) {
-              return (s || '')
-                .toLowerCase()
-                .replace(/[-_]/g, ' ')
-                .replace(/[^a-z0-9 ]/g, '')
-                .replace(/\s+/g, ' ')
-                .trim();
+            var iconMap = {
+              feature: '\u{1F9E9}',
+              bug: '\u{1FAB2}',
+              improve: '\u{1F527}',
             };
+            var taskIcon = iconMap[typeSlug];
 
-            console.log('Type: ' + typeValue + ' | Feature: ' + featureName + ' | Task: ' + taskName);
+            console.log('Type: ' + typeValue + ' ' + taskIcon + ' | Feature slug: ' + featureSlug + ' | Task: ' + taskName);
 
             var headers = {
               'Authorization': 'Bearer ' + process.env.NOTION_TOKEN,
@@ -84,35 +81,51 @@ jobs:
               {
                 method: 'POST',
                 headers: headers,
-                body: JSON.stringify({ page_size: 100 }),
+                body: JSON.stringify({
+                  filter: {
+                    property: 'Slug',
+                    rich_text: { equals: featureSlug }
+                  },
+                  page_size: 2
+                }),
               }
             );
             var featuresData = await featuresQuery.json();
-
-            var target = normalize(featureName);
-            var feature = null;
             var results = featuresData.results || [];
-            for (var i = 0; i < results.length; i++) {
-              var p = results[i];
-              var title = normalize(p.properties.Name && p.properties.Name.title && p.properties.Name.title[0] ? p.properties.Name.title[0].plain_text : '');
-              if (title === target || title.indexOf(target) !== -1 || target.indexOf(title) !== -1) {
-                feature = p;
-                break;
-              }
-            }
 
-            if (!feature) {
-              var names = results.map(function(p) {
-                return p.properties.Name && p.properties.Name.title && p.properties.Name.title[0] ? p.properties.Name.title[0].plain_text : '(unnamed)';
+            if (results.length === 0) {
+              var allQuery = await fetch(
+                'https://api.notion.com/v1/databases/' + process.env.NOTION_FEATURES_DB_ID + '/query',
+                {
+                  method: 'POST',
+                  headers: headers,
+                  body: JSON.stringify({ page_size: 100 }),
+                }
+              );
+              var allData = await allQuery.json();
+              var slugs = (allData.results || []).map(function(p) {
+                var name = p.properties.Name && p.properties.Name.title && p.properties.Name.title[0] ? p.properties.Name.title[0].plain_text : '(unnamed)';
+                var slug = p.properties.Slug && p.properties.Slug.rich_text && p.properties.Slug.rich_text[0] ? p.properties.Slug.rich_text[0].plain_text : '(no slug)';
+                return slug + ' (' + name + ')';
               }).join(', ');
-              console.log('No Notion feature found matching ' + featureName);
-              console.log('Available features: ' + names);
-              core.setFailed('Feature "' + featureName + '" not found in Notion. Create it first, then re-run.');
+              console.log('No Notion Feature found with Slug = ' + featureSlug);
+              console.log('Available slugs: ' + slugs);
+              core.setFailed('Feature with Slug "' + featureSlug + '" not found in Notion. Add the slug to the Feature, or rename the branch.');
               return;
             }
 
+            if (results.length > 1) {
+              var names = results.map(function(p) {
+                return p.properties.Name && p.properties.Name.title && p.properties.Name.title[0] ? p.properties.Name.title[0].plain_text : '(unnamed)';
+              }).join(', ');
+              console.log('Multiple Features share Slug ' + featureSlug + ': ' + names);
+              core.setFailed('Slug "' + featureSlug + '" is not unique in Notion. Fix the duplicate before re-running.');
+              return;
+            }
+
+            var feature = results[0];
             var featureTitle = feature.properties.Name.title[0].plain_text;
-            console.log('Found feature: ' + featureTitle);
+            console.log('Found feature: ' + featureTitle + ' (slug: ' + featureSlug + ')');
 
             var featurePlatform = feature.properties.Platform && feature.properties.Platform.select ? feature.properties.Platform.select.name : 'Backend';
             var featureProjects = feature.properties.Projects && feature.properties.Projects.relation ? feature.properties.Projects.relation : [];
@@ -124,6 +137,7 @@ jobs:
               headers: headers,
               body: JSON.stringify({
                 parent: { database_id: process.env.NOTION_TASKS_DB_ID },
+                icon: { type: 'emoji', emoji: taskIcon },
                 properties: {
                   Name: {
                     title: [{ text: { content: taskName } }]
@@ -152,7 +166,7 @@ jobs:
 
             var created = await createResponse.json();
             if (created.id) {
-              console.log('Task "' + taskName + '" [' + typeValue + '] created, linked to "' + featureTitle + '" (' + featurePlatform + ')');
+              console.log('Task "' + taskName + '" [' + typeValue + ' ' + taskIcon + '] created, linked to "' + featureTitle + '" (' + featurePlatform + ')');
             } else {
               console.log('Failed to create task: ' + JSON.stringify(created));
               core.setFailed('Notion task creation failed.');

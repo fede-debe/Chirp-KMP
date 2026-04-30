@@ -8,9 +8,26 @@ import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-/***
- * Configures Kotlin Android for the given common extension.
- * It is a CommonExtension because it can be used for both Application and Library projects.
+/**
+ * Centralizes standard Android SDK limits, Java compatibility, and Kotlin compiler settings across the project, it can be used for both Application and Library projects.
+ *
+ * ## Strategy / Decisions
+ * - **Unified Configuration:** Compiler options are highly error-prone if mixed (e.g., compiling some modules in JVM 11 and others in JVM 17). Centralizing this logic enforces a single source of truth across all modules.
+ * - **API Backwards Compatibility:** Explicitly enables `coreLibraryDesugaring`. This guarantees that modern Java APIs (such as the `java.time` API introduced in API 26) can be safely utilized on older devices down to API 24.
+ *
+ * ## How It Works
+ * 1. Accepts a generic `CommonExtension` parameter from the applying module because it can be used for both Application and Library projects.
+ * 2. Applies `compileSdk` and `minSdk` retrieved from the Version Catalog.
+ * 3. Enforces Java 17 compatibility for both source and target compilation.
+ * 4. Automatically injects the `coreLibraryDesugaring` dependency directly into the module's dependency block.
+ * 5. Calls `configureKotlin()` to align the Kotlin compiler's JVM target to JVM 17 and attach free compiler arguments (e.g., enabling experimental APIs).
+ *
+ * ## Alternatives / Why Not
+ * - **Relying on `ApplicationExtension`:** Rejected. If this function required an `ApplicationExtension`, it would immediately break when applied to Kotlin Multiplatform library modules (which rely on `LibraryExtension`).
+ * Injecting `CommonExtension` ensures the logic remains perfectly reusable across completely distinct target types.
+ *
+ * ## Technical Details
+ * - Resolves the desugaring library dynamically via the Version Catalog using the `coreLibraryDesugaring` configuration keyword rather than standard `implementation`.
  */
 internal fun Project.configureKotlinAndroid(
     commonExtension: CommonExtension<*, *, *, *, *, *>
@@ -34,6 +51,12 @@ internal fun Project.configureKotlinAndroid(
     }
 }
 
+/**
+ * Configures base Kotlin compiler parameters.
+ *
+ * ## Strategy / Decisions
+ * - **Standalone Kotlin Config:** Maintained as a separate function because plain Kotlin library modules (which lack Android-specific blocks) might still need strict JVM target alignment and experimental API flags.
+ */
 internal fun Project.configureKotlin() {
     tasks.withType<KotlinCompile>().configureEach {
         compilerOptions {
