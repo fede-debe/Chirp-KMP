@@ -45,7 +45,7 @@ jetbrains-savedstate = "1.4.0" # Access saved state handle
 coil = "3.4.0" # Image loading library
 coil-network = "3.4.0" # Network support for Coil
 moko = "0.20.1" # Modern Kotlin, permission handling
-buildkonfig = "0.17.1" # Gradle plugin for generating build configuration configurations for different build variants
+buildkonfig = "0.18.0" # Gradle plugin for generating build configuration configurations for different build variants
 kermit = "2.1.0"
 
 projectApplicationId = "com.project.chirp"
