@@ -47,9 +47,7 @@ class BuildKonfigConventionPlugin: Plugin<Project> {
                 defaultConfigs {
                     val apiKey = gradleLocalProperties(rootDir, rootProject.providers)
                         .getProperty("API_KEY")
-                        ?: throw IllegalStateException(
-                            "Missing API_KEY property in local.properties"
-                        )
+                        ?: "missing-api-key"
                     buildConfigField(FieldSpec.Type.STRING, "API_KEY", apiKey)
                 }
             }

@@ -21,6 +21,11 @@ jobs:
             -   name: Checkout
                 uses: actions/checkout@v4
 
+            -   name: Create local.properties
+                run: |
+                    echo "sdk.dir=$ANDROID_HOME" > local.properties
+                    echo "API_KEY=ci-dummy-key" >> local.properties
+
             -   name: Set up JDK 17
                 uses: actions/setup-java@v4
                 with:
