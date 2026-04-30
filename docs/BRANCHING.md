@@ -4,18 +4,139 @@ How to name branches so the `notion-task-sync.yml` and `pr-sync-claude.yml` work
 
 ---
 
-## TL;DR
+## Quick start
+
+Every project, every time. Two patterns: simple (one PR) and nested (big feature with sub-tasks).
+
+### Pattern A — simple change, one PR to main
+
+Use when the whole Feature is one PR. Small scope, single concern.
 
 ```
-<type>/<feature-slug>--<task-slug>
+git checkout main && git pull
+git checkout -b feature/<feature-slug>--<task-slug>
+# ...work, commit, push...
+gh pr create --base main --fill
 ```
 
-- `type` ∈ `feature`, `bug`, `improve` — anything else is ignored by Notion sync
-- `feature-slug` — kebab-case, must match an existing Feature name in the Notion Features DB (after normalization)
-- `--` — literal double dash
-- `task-slug` — kebab-case, describes the change, ≤ 5 words
+### Pattern B — big feature with sub-branches
 
-**Before pushing:** the Feature must already exist in Notion. If it doesn't, `notion-task-sync` fails with `core.setFailed('Feature "<n>" not found in Notion. Create it first, then re-run.')`.
+Use for Features too big for one PR (Auth, Chat, anything multi-lecture on the course).
+
+**Structure:**
+```
+main
+ └── feature/<feature-slug>                       ← parent branch, cut from main
+      ├── feature/<feature-slug>--<task-a>       ← sub-branch, cut from parent
+      ├── feature/<feature-slug>--<task-b>       ← sub-branch, cut from parent
+      └── feature/<feature-slug>--<task-c>       ← sub-branch, cut from parent
+```
+
+**Step 1 — Feature must exist in Notion**
+
+Projects Hub → Features DB. Find or create the Feature with:
+- `Name` — human-readable (`🔐 Auth & Users`)
+- `Slug` — unique, lowercase kebab, project-prefixed (`chirp-auth-users`). **Hidden in views** but required in the DB.
+- `Projects`, `Platform`, `Priority`, `Status = Backlog`
+
+The `Full Name` formula property auto-generates the display string (`🐦 Chirp - 🔐 Auth & Users`) from `Projects + Name`. This is what you see in pickers to tell duplicates apart — you don't edit it.
+
+The `Slug` is what the workflow matches branches against. **Not `Name`, not `Full Name`.** Two Features can share a Name across projects (`🔐 Auth & Users` in Chirp and PetApp), but **Slug must be globally unique** across the whole Features DB.
+
+**Step 2 — Create the parent branch** (once per feature)
+
+```
+git checkout main && git pull
+git checkout -b feature/<feature-slug>
+git push -u origin feature/<feature-slug>
+```
+
+No `--` in the name = no Notion Task. The parent is just a git grouping.
+
+**Step 3 — Create a sub-branch from the parent**
+
+```
+git checkout feature/<feature-slug>
+git pull
+git checkout -b feature/<feature-slug>--<task-slug>
+git commit --allow-empty -m "chore: start <task-slug>"
+git push -u origin feature/<feature-slug>--<task-slug>
+```
+
+`notion-task-sync` queries the Features DB for `Slug = <feature-slug>` exact match, creates a Task linked to that Feature, Platform + Projects inherited.
+
+**Step 4 — Work, commit, push, open sub-PR into parent**
+
+```
+gh pr create --base feature/<feature-slug> --fill
+```
+
+**Note the `--base`**: the parent branch, NOT `main`. Getting this wrong is the easiest mistake to make — the sub-branch still works as code, but it lands in `main` directly and skips the parent's integration staging. If you prefer a safeguard, use the `gh-sub-pr` shell function in `docs/GIT_CHEATSHEET.md`.
+
+Task → `👀 In Review`. Claude writes the PR body. Merge on GitHub. Task → `✅ Done`.
+
+**Step 5 — Repeat Steps 3–4 for each sub-task.**
+
+**Step 6 — Ship parent to main when all sub-tasks are merged**
+
+```
+git checkout feature/<feature-slug>
+git pull
+gh pr create --base main --fill
+```
+
+Merge on GitHub. Cleanup:
+
+```
+git checkout main && git pull
+git branch -D feature/<feature-slug>
+git push origin --delete feature/<feature-slug>
+```
+
+---
+
+### Branch naming rules
+
+- **Type:** `feature` · `bug` · `improve` — NOT `fix` (not tracked)
+- **Feature slug:** must **exactly match** the `Slug` property of a Feature in Notion
+- **Task slug:** ≤ 5 words, kebab-case
+- **`--`** literal double dash between feature-slug and task-slug (sub-branches only)
+- **Parent branch:** `<type>/<feature-slug>` with no `--` and no task slug
+
+### Slug naming convention
+
+Project-prefix everything so every slug is globally unique:
+
+```
+<project-short>-<feature-kebab>
+```
+
+Examples:
+| Notion Feature Name | Project | Slug |
+|---|---|---|
+| `🔐 Auth & Users` | Chirp | `chirp-auth-users` |
+| `🔐 Auth & Users` | PetApp | `petapp-auth-users` |
+| `🔺 Architecture setup` | Chirp | `chirp-architecture-setup` |
+| `📊 Home Dashboard` | PetApp | `petapp-home-dashboard` |
+| `🏗 Infrastructure` | Infrastructure (shared) | `infrastructure` |
+
+Shared / cross-project Features (like `Infrastructure`) can skip the prefix if they're the only one with that slug. Everything else gets the project prefix.
+
+---
+
+## How Full Name and Slug play together
+
+Two properties, two jobs:
+
+| Property | Type | Visible where | Purpose |
+|---|---|---|---|
+| `Name` | Title | Page headers, rollup columns | Short human label (`🔐 Auth & Users`) |
+| `Full Name` | Formula (`Projects + " - " + Name`) | Pickers (when enabled), Tasks DB rollup | Disambiguates duplicate names across projects in pickers (`🐦 Chirp - 🔐 Auth & Users`) |
+| `Slug` | Text (hidden from views) | Used by automation only | Machine-readable identifier that branches match against |
+
+**When you're creating a Task or linking to a Feature in Notion** → look at `Full Name` in the picker (enable it via `⋯ → Show properties → Full Name` on each relation that points at Features).
+
+**When you're naming a git branch** → use the `Slug` value. Open the Feature page directly to see it, or keep the Slugs reference table in `docs/GIT_CHEATSHEET.md` up to date.
 
 ---
 
@@ -23,132 +144,13 @@ How to name branches so the `notion-task-sync.yml` and `pr-sync-claude.yml` work
 
 | Event | Workflow | Result |
 |---|---|---|
-| Push to `feature/**`, `bug/**`, `improve/**` | `notion-task-sync.yml` | Creates a Notion Task (`🔨 In Progress`), inherits Platform + Projects from Feature |
-| PR opened / reopened → `main` | `pr-sync-claude.yml` | Task → `👀 In Review`; Claude Sonnet 4.5 writes the PR body from the diff; Goal field synced (first 500 chars) |
-| PR merged → `main` | `pr-sync-claude.yml` | Task → `✅ Done` |
-| PR closed without merge → `main` | `pr-sync-claude.yml` | Task → `📦 Archived` |
-| PR opened / merged to `feature/**` | _none_ | **Not tracked.** See "Sub-branching" below. |
+| Push to `feature/**`, `bug/**`, `improve/**` with `--` in name | `notion-task-sync.yml` | Queries Features DB for `Slug = <feature-slug>` exact. Creates Task (`🔨 In Progress`), inherits Platform + Projects. Fails loudly if slug not found or slug not unique. |
+| Push to parent branch (`feature/<slug>` without `--`) | `notion-task-sync.yml` | Logs `does not follow convention`, skips (correct) |
+| PR opened / reopened — any target (main, parent branch) | `pr-sync-claude.yml` | If branch has a Notion Task: Status → `👀 In Review`. Claude writes PR body from diff. Goal field synced (first 500 chars). |
+| PR merged | `pr-sync-claude.yml` | If branch has a Task: Status → `✅ Done` |
+| PR closed without merge | `pr-sync-claude.yml` | If branch has a Task: Status → `📦 Archived` |
 
-**You don't write PR descriptions.** `pr-sync-claude.yml` generates them. Just open the PR with an empty or placeholder body.
-
-**Branch types outside the 3 tracked ones** (`fix/`, `chore/`, `docs/`, etc.) still work for code — they just don't create Notion Tasks and get labelled `Chore/infra` in the PR sync logs. Use them for things that don't need Notion tracking (fixing the automation itself, trivial cleanup).
-
----
-
-## Feature slug ↔ Notion Feature matching
-
-The workflow normalizes both sides before matching:
-
-```
-lowercased, - and _ → space, non-alphanumeric stripped,
-spaces collapsed, trimmed — then matched with === or substring either way
-```
-
-| Notion Feature | Normalized | Slug to use |
-|---|---|---|
-| `Architecture setup` | `architecture setup` | `architecture-setup` |
-| `🔐 Auth & Users` | `auth users` | `auth-users` |
-| `Infrastructure` | `infrastructure` | `infrastructure` |
-| `📊 Home Dashboard` | `home dashboard` | `home-dashboard` |
-
-If unsure which Feature your branch will match, open Notion → Tasks DB → `Branch` column: pick the slug used by existing Tasks on the same Feature.
-
----
-
-## Default workflow: flat branches to main
-
-This is what every merged PR in Chirp (#19–#23) has used. Use this unless you have a specific reason not to.
-
-### 1. Create the Feature in Notion (if new)
-
-- Projects Hub → Features DB → New row
-- `Name`, `Project`, `Platform`, `Priority`, `Status = Backlog`
-
-### 2. Cut the branch from main
-
-```bash
-git checkout main
-git pull
-git checkout -b feature/architecture-setup--version-catalog
-```
-
-### 3. Push to trigger the automation
-
-```bash
-git commit --allow-empty -m "chore: start version catalog"
-git push -u origin feature/architecture-setup--version-catalog
-```
-
-`notion-task-sync` runs → Task appears in Notion with `🔨 In Progress`, linked to the Feature, Platform + Projects inherited.
-
-### 4. Work, commit, push
-
-Normal git. Further pushes to the same branch don't re-create the Task (workflow is idempotent — it checks `Branch` field).
-
-### 5. Open the PR to main
-
-```bash
-gh pr create --base main --fill
-```
-
-Leave the body empty or minimal. `pr-sync-claude` will overwrite it with a generated `## What / ## Changes / ## Notes` description. Task flips to `👀 In Review`.
-
-### 6. Squash merge
-
-Task flips to `✅ Done`. Delete remote branch. Stale `✅ Done` tasks can be flipped to `📦 Archived` manually when the context is no longer useful.
-
----
-
-## Big features: still flat, same slug
-
-Module 6 Authentication (37 lectures) and Module 7 Chat (78 lectures) are too big for one PR. The cleanest way to handle these **with the current automation** is multiple flat branches sharing the same feature slug.
-
-```
-Feature in Notion: 🔐 Auth & Users
-
-Branches (each a separate PR to main, each its own Notion Task):
-  feature/auth-users--login-screen
-  feature/auth-users--signup-flow
-  feature/auth-users--password-reset
-  feature/auth-users--session-management
-  feature/auth-users--token-refresh
-  feature/auth-users--logout
-```
-
-All Tasks link back to the one Feature. In Notion the Feature row's `Tasks` relation grows as you ship. The Feature Status is manual — flip it to Done yourself once the last sub-task ships.
-
-### Why not integration branches?
-
-`copilot-instructions.md` says sub-branches should merge into a parent `feature/*` branch, but `pr-sync-claude.yml` only runs on PRs to `main`. So if `feature/auth-users--login-screen` PRs into `feature/auth-users` (not main), the status never transitions off `🔨 In Progress`. There's a real gap between the stated policy and the implementation.
-
-If you do want integration branches later, see "Upgrade path" at the bottom.
-
----
-
-## Keeping a long-running branch in sync with main
-
-When main advances while you're mid-feature:
-
-```bash
-git checkout feature/auth-users--login-screen
-git fetch origin
-git merge origin/main      # or: git rebase origin/main
-git push
-```
-
-Merge is what the existing history uses (see commit `3b6367e | Merge branch 'main' into feature/architecture-setup--end-to-end-test`). Rebase is fine too, just force-push with `--force-with-lease` afterwards.
-
----
-
-## Checklist before pushing
-
-- [ ] Feature exists in Notion (correct `Name`, `Project`, `Platform`)
-- [ ] Branch type is `feature`, `bug`, or `improve` (not `fix` — those aren't tracked)
-- [ ] Shape is `<type>/<feature-slug>--<task-slug>`
-- [ ] `--` (double dash) present between feature and task
-- [ ] Feature slug, after lowercasing and replacing `-` with space, matches a Feature name in Notion
-- [ ] Task slug ≤ 5 words
-- [ ] Branch cut from up-to-date `main`
+**Branch types outside the 3 tracked ones** (`fix/`, `chore/`, `docs/`, etc.) still work for code — they just don't create Notion Tasks. Use them for work that doesn't belong to a Feature (fixing the automation itself, one-off cleanup, docs).
 
 ---
 
@@ -156,75 +158,59 @@ Merge is what the existing history uses (see commit `3b6367e | Merge branch 'mai
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| Workflow fails: `Feature "<n>" not found in Notion` | Slug doesn't match any Feature (check workflow logs for the list of available Features) | Create the Feature in Notion, or rename the branch, then push again |
+| Workflow fails: `Feature with Slug "<x>" not found in Notion` | Branch's feature-slug doesn't match any Feature's Slug property (check logs for available slugs) | Add/fix the Slug on the Feature in Notion, or rename the branch |
+| Workflow fails: `Slug "<x>" is not unique in Notion` | Two or more Features share the same Slug | Open the Features DB, make slugs unique, re-push |
+| All branch pushes failing with "not found" after you didn't change anything | The `Slug` property got deleted or renamed in Notion | Restore from Notion trash (Features DB → settings → deleted properties) or re-create from the Slugs table in `docs/GIT_CHEATSHEET.md` |
 | No Notion Task appeared, no workflow run | Branch prefix isn't `feature/`, `bug/`, or `improve/` | Rename the branch |
-| No Notion Task appeared, workflow ran but logged "does not follow convention" | Missing `--` between feature and task | Rename the branch |
-| Task has wrong Platform / Project | Feature in Notion has wrong Platform / Project | Fix the Feature in Notion — the Task was snapshotted at create time and won't auto-re-sync, so either fix manually or re-create the Task |
-| `Goal` field is truncated mid-sentence | Claude's PR description was >500 chars | Expected — truncation is in the workflow (PR #22 added it to avoid Notion API errors) |
-| PR description is wrong / missing | Claude API call failed | Re-open the PR (close + reopen) to re-trigger `pr-sync-claude`; or edit the PR body manually |
+| No Notion Task appeared, workflow logged "does not follow convention" | Missing `--` between feature and task | If this is a sub-branch: rename. If parent branch: expected, no action. |
+| Task linked to wrong Project | Picker doesn't show `Full Name` → you picked a same-named Feature from the wrong Project | Enable `Full Name` in the picker: `⋯ → Show properties → Full Name`. Fix the affected Task manually or re-push its branch. |
+| Sub-PR merged but to main instead of parent | `gh pr create --base main --fill` instead of `--base feature/<slug>` | Sync parent with main: `git checkout feature/<slug> && git fetch origin && git merge origin/main && git push`. Content's in main; you just skipped the staging layer for that one sub-task. |
+| Sub-PR opened but Task stuck at `🔨 In Progress` | `pr-sync-claude.yml` trigger doesn't include the base branch pattern | Check `on: pull_request: branches:` includes `'feature/**'`, `'bug/**'`, `'improve/**'` |
+| `Goal` field truncated mid-sentence | Claude's PR description was >500 chars | Expected — truncation is in the workflow to avoid Notion API errors |
+| PR description missing, logs `authentication_error: invalid x-api-key` | `ANTHROPIC_API_KEY` secret is expired, revoked, or out of credits | Rotate the key, update the GitHub Secret, close + reopen the PR to re-trigger |
 
 ---
 
 ## Chirp course mapping
 
-The existing `settings.gradle.kts` already includes `:feature:auth:*` and `:feature:chat:*` modules, so the Notion Features mirror that:
+`settings.gradle.kts` already includes `:feature:auth:*` and `:feature:chat:*` modules. Notion Features mirror that:
 
-| Course module | Notion Feature | Branch pattern |
-|---|---|---|
-| 3 — Architecture Theory | _none_ | theory only, no branches |
-| 4 — Gradle & Multi-Module Setup | `Architecture setup` (exists) | ~6 flat branches |
-| 5 — Project-Wide Utility | create `Project-wide utility` | ~3 flat branches |
-| 6 — Authentication | `🔐 Auth & Users` (exists) | ~8 flat branches |
-| 7 — Chat | create `Chat` | ~12 flat branches |
+| Course module | Feature Name | Slug | Pattern |
+|---|---|---|---|
+| 3 — Architecture Theory | _none_ | — | theory only |
+| 4 — Gradle & Multi-Module Setup | `🔺 Architecture setup` (exists) | `chirp-architecture-setup` | **B**: parent + ~6 sub-branches |
+| 5 — Project-Wide Utility | create `Project-wide utility` | `chirp-project-wide-utility` | **B**: parent + ~3 sub-branches |
+| 6 — Authentication | `🔐 Auth & Users` (exists) | `chirp-auth-users` | **B**: parent + ~8 sub-branches |
+| 7 — Chat | create `Chat` | `chirp-chat` | **B**: parent + ~12 sub-branches |
 
 ### Module 4 suggested split
 
-Maps to the actual modules in `settings.gradle.kts` and `build-logic/`:
-
 ```
-feature/architecture-setup--version-catalog        # gradle/libs.versions.toml
-feature/architecture-setup--kmp-module-structure   # composeApp + core:* + feature:*
-feature/architecture-setup--build-logic-module     # build-logic include
-feature/architecture-setup--android-conventions    # android-application + android-application-compose plugins
-feature/architecture-setup--kmp-library-convention # kmp-library + cmp-feature plugins
-feature/architecture-setup--buildkonfig            # BuildKonfig plugin
+feature/chirp-architecture-setup                                  # parent
+ ├── feature/chirp-architecture-setup--version-catalog
+ ├── feature/chirp-architecture-setup--kmp-module-structure
+ ├── feature/chirp-architecture-setup--build-logic-module
+ ├── feature/chirp-architecture-setup--android-conventions
+ ├── feature/chirp-architecture-setup--kmp-library-convention
+ └── feature/chirp-architecture-setup--buildkonfig
 ```
 
-Rule of thumb: 1 branch ≈ 1–3 lectures, one clear deliverable, squash merge.
+Rule of thumb: 1 sub-branch ≈ 1–3 lectures, one clear deliverable, squash merge into parent.
 
 ---
 
-## Applying to new projects
+## Applying to new projects (PetApp and future)
 
 The convention is project-agnostic. For each new project:
 
 1. Create the Project row in Projects Hub
 2. Copy `.github/workflows/notion-task-sync.yml` and `.github/workflows/pr-sync-claude.yml` from Chirp
 3. Set repo secrets: `NOTION_TOKEN`, `NOTION_TASKS_DB_ID`, `NOTION_FEATURES_DB_ID`, `ANTHROPIC_API_KEY`
-4. Seed 4–6 top-level Features in Notion: `Architecture setup`, `Infrastructure`, plus 2–4 domain-specific ones
-5. First branch is always `feature/architecture-setup--project-setup`
-6. Copy this file to `docs/BRANCHING.md`
+4. Seed 4–6 top-level Features in Notion with project-prefixed slugs:
+   - `<project>-architecture-setup`
+   - `<project>-auth-users`
+   - `<project>-<domain-feature-1>`, etc.
+5. First branch is always `feature/<project>-architecture-setup--project-setup`
+6. Copy `docs/BRANCHING.md` and `docs/GIT_CHEATSHEET.md`
 
----
-
-## Upgrade path: wire up integration branches
-
-Only needed if you want `copilot-instructions.md`'s sub-branching policy (sub-branches → parent `feature/*` → main) to actually work end-to-end with Notion.
-
-Changes needed to `.github/workflows/pr-sync-claude.yml`:
-
-1. Expand the trigger:
-   ```yaml
-   on:
-     pull_request:
-       branches: [ main, 'feature/**', 'bug/**', 'improve/**' ]
-       types: [ opened, reopened, closed ]
-   ```
-
-2. Decide the semantic for sub-PR → parent merges — options:
-   - Same as main merge: Task → `✅ Done` (simplest; what individual sub-tasks deserve)
-   - New intermediate status: Task → `🧪 On Integration` (more accurate; needs the status added to the Notion DB)
-
-3. Leave the integration branch itself untracked (no `--` in name = no Task), or name it `feature/auth-users--integration` so it gets its own umbrella Task that flips Done only when the final PR merges to main.
-
-Don't do this until you actually need it for a real feature. For the course, flat branches are enough.
+The **Quick start** at the top is what you'll use day-to-day. Everything below is reference.

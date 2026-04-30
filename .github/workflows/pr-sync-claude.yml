@@ -2,7 +2,11 @@ name: PR Sync & Claude Description
 
 on:
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+      - 'feature/**'
+      - 'bug/**'
+      - 'improve/**'
     types: [ opened, reopened, closed ]
 
 jobs:
@@ -28,6 +32,7 @@ jobs:
         with:
           script: |
             const branch = context.payload.pull_request.head.ref;
+            const baseRef = context.payload.pull_request.base.ref;
             const prNumber = context.payload.pull_request.number;
             const prUrl = context.payload.pull_request.html_url;
             const isMerged = context.payload.pull_request.merged === true;
@@ -41,7 +46,7 @@ jobs:
               improve: 'Improvement',
             }[branchType] || 'Chore/infra';
 
-            console.log('Branch: ' + branch + ' | Type: ' + typeLabel);
+            console.log('Branch: ' + branch + ' | Base: ' + baseRef + ' | Type: ' + typeLabel);
 
             const headers = {
               'Authorization': 'Bearer ' + process.env.NOTION_TOKEN,
@@ -67,7 +72,7 @@ jobs:
               const queryData = await queryResponse.json();
               task = queryData.results && queryData.results[0] ? queryData.results[0] : null;
               if (!task) {
-                console.log('No Notion task found for branch ' + branch);
+                console.log('No Notion task found for branch ' + branch + ' (expected for parent/integration branches without --)');
               }
             } else {
               console.log('Skipping Notion task sync: ' + branch + ' is not a tracked type.');
@@ -100,14 +105,14 @@ jobs:
 
             if (action !== 'opened' && action !== 'reopened') return;
 
-            console.log('Generating PR description with Claude...');
+            console.log('Generating PR description with Claude (base: ' + baseRef + ')...');
 
             const { execSync } = require('child_process');
             let diffStat = '';
             let diffContent = '';
             try {
-              diffStat = execSync('git diff origin/main...HEAD --stat').toString().slice(0, 2000);
-              diffContent = execSync("git diff origin/main...HEAD -- '*.kt' '*.kts' '*.yaml' '*.yml'").toString().slice(0, 8000);
+              diffStat = execSync('git diff origin/' + baseRef + '...HEAD --stat').toString().slice(0, 2000);
+              diffContent = execSync("git diff origin/" + baseRef + "...HEAD -- '*.kt' '*.kts' '*.yaml' '*.yml'").toString().slice(0, 8000);
             } catch (e) {
               console.log('Could not get diff: ' + e.message);
             }
@@ -117,6 +122,7 @@ jobs:
               '',
               'Change type: ' + typeLabel,
               'Branch: ' + branch,
+              'Base: ' + baseRef,
               'PR: #' + prNumber,
               '',
               'Changed files:',
