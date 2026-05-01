@@ -127,6 +127,23 @@ jobs:
             var featureTitle = feature.properties.Name.title[0].plain_text;
             console.log('Found feature: ' + featureTitle + ' (slug: ' + featureSlug + ')');
 
+            // --- Auto-move Feature from Backlog to In Progress on first sub-task ---
+            var featureStatus = feature.properties.Status && feature.properties.Status.select ? feature.properties.Status.select.name : null;
+            if (featureStatus === 'Backlog') {
+              await fetch('https://api.notion.com/v1/pages/' + feature.id, {
+                method: 'PATCH',
+                headers: headers,
+                body: JSON.stringify({
+                  properties: {
+                    Status: { select: { name: '\u{1F528} In Progress' } }
+                  }
+                }),
+              });
+              console.log('Feature "' + featureTitle + '" moved from Backlog to In Progress');
+            } else {
+              console.log('Feature status is "' + featureStatus + '", no auto-transition needed');
+            }
+
             var featurePlatform = feature.properties.Platform && feature.properties.Platform.select ? feature.properties.Platform.select.name : 'Backend';
             var featureProjects = feature.properties.Projects && feature.properties.Projects.relation ? feature.properties.Projects.relation : [];
 
