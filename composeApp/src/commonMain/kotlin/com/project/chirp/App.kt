@@ -19,12 +19,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import chirp.composeapp.generated.resources.Res
 import chirp.composeapp.generated.resources.compose_multiplatform
+import com.project.core.designsystem.theme.ChirpTheme
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
 @androidx.compose.ui.tooling.preview.Preview
 fun App() {
-    MaterialTheme {
+    ChirpTheme {
         var showContent by remember { mutableStateOf(false) }
         Column(
             modifier = Modifier
