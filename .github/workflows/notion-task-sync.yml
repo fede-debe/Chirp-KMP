@@ -1,0 +1,190 @@
+name: Notion Task Sync
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - 'bug/**'
+      - 'improve/**'
+
+jobs:
+  sync:
+    name: Sync Branch to Notion Task
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create or update Notion task
+        uses: actions/github-script@v7
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_TASKS_DB_ID: ${{ secrets.NOTION_TASKS_DB_ID }}
+          NOTION_FEATURES_DB_ID: ${{ secrets.NOTION_FEATURES_DB_ID }}
+        with:
+          script: |
+            const branch = context.ref.replace('refs/heads/', '');
+
+            var match = branch.match(/^(feature|bug|improve)\/(.+)--(.+)$/);
+            if (!match) {
+              console.log('Branch ' + branch + ' does not follow <type>/<feature>--<task> convention. Skipping.');
+              return;
+            }
+
+            var typeSlug = match[1];
+            var featureSlug = match[2].toLowerCase();
+            var taskSlug = match[3].toLowerCase();
+            var taskName = taskSlug.replace(/-/g, ' ');
+
+            var typeMap = {
+              feature: 'Feature',
+              bug: 'Bug',
+              improve: 'Improvement',
+            };
+            var typeValue = typeMap[typeSlug];
+
+            var iconMap = {
+              feature: '\u{1F9E9}',
+              bug: '\u{1FAB2}',
+              improve: '\u{1F527}',
+            };
+            var taskIcon = iconMap[typeSlug];
+
+            console.log('Type: ' + typeValue + ' ' + taskIcon + ' | Feature slug: ' + featureSlug + ' | Task: ' + taskName);
+
+            var headers = {
+              'Authorization': 'Bearer ' + process.env.NOTION_TOKEN,
+              'Notion-Version': '2022-06-28',
+              'Content-Type': 'application/json',
+            };
+
+            var existingQuery = await fetch(
+              'https://api.notion.com/v1/databases/' + process.env.NOTION_TASKS_DB_ID + '/query',
+              {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({
+                  filter: {
+                    property: 'Branch',
+                    rich_text: { equals: branch }
+                  }
+                }),
+              }
+            );
+            var existingData = await existingQuery.json();
+
+            if (existingData.results && existingData.results.length > 0) {
+              console.log('Task already exists for branch ' + branch + ', skipping.');
+              return;
+            }
+
+            var featuresQuery = await fetch(
+              'https://api.notion.com/v1/databases/' + process.env.NOTION_FEATURES_DB_ID + '/query',
+              {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({
+                  filter: {
+                    property: 'Slug',
+                    rich_text: { equals: featureSlug }
+                  },
+                  page_size: 2
+                }),
+              }
+            );
+            var featuresData = await featuresQuery.json();
+            var results = featuresData.results || [];
+
+            if (results.length === 0) {
+              var allQuery = await fetch(
+                'https://api.notion.com/v1/databases/' + process.env.NOTION_FEATURES_DB_ID + '/query',
+                {
+                  method: 'POST',
+                  headers: headers,
+                  body: JSON.stringify({ page_size: 100 }),
+                }
+              );
+              var allData = await allQuery.json();
+              var slugs = (allData.results || []).map(function(p) {
+                var name = p.properties.Name && p.properties.Name.title && p.properties.Name.title[0] ? p.properties.Name.title[0].plain_text : '(unnamed)';
+                var slug = p.properties.Slug && p.properties.Slug.rich_text && p.properties.Slug.rich_text[0] ? p.properties.Slug.rich_text[0].plain_text : '(no slug)';
+                return slug + ' (' + name + ')';
+              }).join(', ');
+              console.log('No Notion Feature found with Slug = ' + featureSlug);
+              console.log('Available slugs: ' + slugs);
+              core.setFailed('Feature with Slug "' + featureSlug + '" not found in Notion. Add the slug to the Feature, or rename the branch.');
+              return;
+            }
+
+            if (results.length > 1) {
+              var names = results.map(function(p) {
+                return p.properties.Name && p.properties.Name.title && p.properties.Name.title[0] ? p.properties.Name.title[0].plain_text : '(unnamed)';
+              }).join(', ');
+              console.log('Multiple Features share Slug ' + featureSlug + ': ' + names);
+              core.setFailed('Slug "' + featureSlug + '" is not unique in Notion. Fix the duplicate before re-running.');
+              return;
+            }
+
+            var feature = results[0];
+            var featureTitle = feature.properties.Name.title[0].plain_text;
+            console.log('Found feature: ' + featureTitle + ' (slug: ' + featureSlug + ')');
+
+            // --- Auto-move Feature from Backlog to In Progress on first sub-task ---
+            var featureStatus = feature.properties.Status && feature.properties.Status.select ? feature.properties.Status.select.name : null;
+            if (featureStatus === 'Backlog') {
+              await fetch('https://api.notion.com/v1/pages/' + feature.id, {
+                method: 'PATCH',
+                headers: headers,
+                body: JSON.stringify({
+                  properties: {
+                    Status: { select: { name: '\u{1F528} In Progress' } }
+                  }
+                }),
+              });
+              console.log('Feature "' + featureTitle + '" moved from Backlog to In Progress');
+            } else {
+              console.log('Feature status is "' + featureStatus + '", no auto-transition needed');
+            }
+
+            var featurePlatform = feature.properties.Platform && feature.properties.Platform.select ? feature.properties.Platform.select.name : 'Backend';
+            var featureProjects = feature.properties.Projects && feature.properties.Projects.relation ? feature.properties.Projects.relation : [];
+
+            console.log('Inheriting Platform: ' + featurePlatform + ' | Projects: ' + featureProjects.length + ' linked');
+
+            var createResponse = await fetch('https://api.notion.com/v1/pages', {
+              method: 'POST',
+              headers: headers,
+              body: JSON.stringify({
+                parent: { database_id: process.env.NOTION_TASKS_DB_ID },
+                icon: { type: 'emoji', emoji: taskIcon },
+                properties: {
+                  Name: {
+                    title: [{ text: { content: taskName } }]
+                  },
+                  Status: {
+                    select: { name: '\u{1F528} In Progress' }
+                  },
+                  Type: {
+                    select: { name: typeValue }
+                  },
+                  Platform: {
+                    select: { name: featurePlatform }
+                  },
+                  Projects: {
+                    relation: featureProjects
+                  },
+                  Branch: {
+                    rich_text: [{ text: { content: branch } }]
+                  },
+                  Features: {
+                    relation: [{ id: feature.id }]
+                  }
+                }
+              }),
+            });
+
+            var created = await createResponse.json();
+            if (created.id) {
+              console.log('Task "' + taskName + '" [' + typeValue + ' ' + taskIcon + '] created, linked to "' + featureTitle + '" (' + featurePlatform + ')');
+            } else {
+              console.log('Failed to create task: ' + JSON.stringify(created));
+              core.setFailed('Notion task creation failed.');
+            }
