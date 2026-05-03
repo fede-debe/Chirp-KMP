@@ -28,6 +28,7 @@ jobs:
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_TASKS_DB_ID: ${{ secrets.NOTION_TASKS_DB_ID }}
+          NOTION_FEATURES_DB_ID: ${{ secrets.NOTION_FEATURES_DB_ID }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         with:
           script: |
@@ -46,7 +47,11 @@ jobs:
               improve: 'Improvement',
             }[branchType] || 'Chore/infra';
 
-            console.log('Branch: ' + branch + ' | Base: ' + baseRef + ' | Type: ' + typeLabel);
+            // Detect if this is a parent branch (no --) targeting main
+            const isParentBranch = branchType && !branch.includes('--');
+            const isParentToMain = isParentBranch && baseRef === 'main';
+
+            console.log('Branch: ' + branch + ' | Base: ' + baseRef + ' | Type: ' + typeLabel + ' | Parent branch: ' + isParentBranch);
 
             const headers = {
               'Authorization': 'Bearer ' + process.env.NOTION_TOKEN,
@@ -54,6 +59,70 @@ jobs:
               'Content-Type': 'application/json',
             };
 
+            // --- Feature-level sync (parent branch → main) ---
+            if (isParentToMain) {
+              var featureSlug = branch.replace(/^(feature|bug|improve)\//, '').toLowerCase();
+              console.log('Parent branch PR to main detected. Looking up Feature by slug: ' + featureSlug);
+
+              var featuresQuery = await fetch(
+                'https://api.notion.com/v1/databases/' + process.env.NOTION_FEATURES_DB_ID + '/query',
+                {
+                  method: 'POST',
+                  headers: headers,
+                  body: JSON.stringify({
+                    filter: {
+                      property: 'Slug',
+                      rich_text: { equals: featureSlug }
+                    },
+                    page_size: 2
+                  }),
+                }
+              );
+              var featuresData = await featuresQuery.json();
+              var featureResults = featuresData.results || [];
+
+              if (featureResults.length === 1) {
+                var feature = featureResults[0];
+                var featureTitle = feature.properties.Name.title[0].plain_text;
+                console.log('Found Feature: ' + featureTitle);
+
+                var featureUpdate = {};
+
+                if (action === 'opened' || action === 'reopened') {
+                  featureUpdate = {
+                    Status: { select: { name: '\u{1F440} In Review' } },
+                    Branch: { rich_text: [{ text: { content: branch } }] },
+                    PR: { url: prUrl }
+                  };
+                  console.log('Feature "' + featureTitle + '" → In Review | Branch: ' + branch + ' | PR: ' + prUrl);
+                } else if (action === 'closed' && isMerged) {
+                  featureUpdate = {
+                    Status: { select: { name: '\u2705 Done' } }
+                  };
+                  console.log('Feature "' + featureTitle + '" → Done');
+                } else if (action === 'closed' && !isMerged) {
+                  featureUpdate = {
+                    Status: { select: { name: '\u{1F528} In Progress' } }
+                  };
+                  console.log('Feature "' + featureTitle + '" → In Progress (PR closed without merge)');
+                }
+
+                if (Object.keys(featureUpdate).length > 0) {
+                  await fetch('https://api.notion.com/v1/pages/' + feature.id, {
+                    method: 'PATCH',
+                    headers: headers,
+                    body: JSON.stringify({ properties: featureUpdate }),
+                  });
+                  console.log('Feature page updated successfully');
+                }
+              } else if (featureResults.length === 0) {
+                console.log('No Feature found with Slug "' + featureSlug + '". Skipping Feature-level sync.');
+              } else {
+                console.log('Multiple Features share Slug "' + featureSlug + '". Skipping to avoid ambiguity.');
+              }
+            }
+
+            // --- Task-level sync (sub-branches with --) ---
             let task = null;
             if (branchType) {
               const queryResponse = await fetch(
@@ -103,6 +172,7 @@ jobs:
               }
             }
 
+            // --- Claude PR description generation (on opened/reopened only) ---
             if (action !== 'opened' && action !== 'reopened') return;
 
             console.log('Generating PR description with Claude (base: ' + baseRef + ')...');
