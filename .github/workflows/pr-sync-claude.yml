@@ -7,7 +7,7 @@ on:
       - 'feature/**'
       - 'bug/**'
       - 'improve/**'
-    types: [ opened, reopened, closed ]
+    types: [ opened, reopened, synchronize, closed ]
 
 jobs:
   sync:
@@ -51,7 +51,7 @@ jobs:
             const isParentBranch = branchType && !branch.includes('--');
             const isParentToMain = isParentBranch && baseRef === 'main';
 
-            console.log('Branch: ' + branch + ' | Base: ' + baseRef + ' | Type: ' + typeLabel + ' | Parent branch: ' + isParentBranch);
+            console.log('Branch: ' + branch + ' | Base: ' + baseRef + ' | Type: ' + typeLabel + ' | Action: ' + action + ' | Parent branch: ' + isParentBranch);
 
             const headers = {
               'Authorization': 'Bearer ' + process.env.NOTION_TOKEN,
@@ -106,6 +106,7 @@ jobs:
                   };
                   console.log('Feature "' + featureTitle + '" → In Progress (PR closed without merge)');
                 }
+                // synchronize — no Feature status change needed, description update handled below
 
                 if (Object.keys(featureUpdate).length > 0) {
                   await fetch('https://api.notion.com/v1/pages/' + feature.id, {
@@ -156,6 +157,7 @@ jobs:
               } else if (action === 'closed' && !isMerged) {
                 newStatus = '\u{1F4E6} Archived';
               }
+              // synchronize — no status change, task stays in current state
 
               if (newStatus) {
                 await fetch('https://api.notion.com/v1/pages/' + task.id, {
@@ -172,10 +174,10 @@ jobs:
               }
             }
 
-            // --- Claude PR description generation (on opened/reopened only) ---
-            if (action !== 'opened' && action !== 'reopened') return;
+            // --- Claude PR description generation (on opened/reopened/synchronize) ---
+            if (action !== 'opened' && action !== 'reopened' && action !== 'synchronize') return;
 
-            console.log('Generating PR description with Claude (base: ' + baseRef + ')...');
+            console.log('Generating PR description with Claude (base: ' + baseRef + ', trigger: ' + action + ')...');
 
             const { execSync } = require('child_process');
             let diffStat = '';
@@ -238,7 +240,7 @@ jobs:
               body: description,
             });
 
-            console.log('PR description updated with Claude output');
+            console.log('PR description updated with Claude output (trigger: ' + action + ')');
 
             if (task) {
               await fetch('https://api.notion.com/v1/pages/' + task.id, {
