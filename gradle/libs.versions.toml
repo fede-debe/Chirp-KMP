@@ -34,7 +34,7 @@ kotlinx-datetime = "0.7.1" # work with timestamps, datetime ( we can't use Java 
 
 # Third party
 koin = "4.2.0" # DI
-ktor = "3.4.1" # HTTP client
+ktor = "3.4.3" # HTTP client
 room = "2.8.4" # Database
 sqlite = "2.6.2" # SQLite in combination with Room to create a SQLite database
 datastore = "1.2.1" # Local preferences storage
