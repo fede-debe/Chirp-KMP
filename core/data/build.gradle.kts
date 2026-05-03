@@ -15,9 +15,9 @@ kotlin {
                 implementation(libs.kotlin.stdlib)
 
                 implementation(projects.core.domain)
-//
-//                implementation(libs.bundles.ktor.common)
-// //                implementation(libs.touchlab.kermit)
+
+                implementation(libs.bundles.ktor.common)
+                implementation(libs.touchlab.kermit)
 //                implementation(libs.koin.core)
 //
 //                implementation(libs.datastore)
@@ -30,14 +30,14 @@ kotlin {
 
         androidMain {
             dependencies {
-//                implementation(libs.ktor.client.okhttp)
+                implementation(libs.ktor.client.okhttp)
 //                implementation(libs.koin.android)
             }
         }
 
         iosMain {
             dependencies {
-//                implementation(libs.ktor.client.darwin)
+                implementation(libs.ktor.client.darwin)
             }
         }
     }
