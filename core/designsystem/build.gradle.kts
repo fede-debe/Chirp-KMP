@@ -8,6 +8,7 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.stdlib)
                 // Add KMP dependencies here
+                implementation(projects.core.presentation)
 
                 implementation(libs.components.resources)
                 implementation(libs.ui.tooling.preview)
