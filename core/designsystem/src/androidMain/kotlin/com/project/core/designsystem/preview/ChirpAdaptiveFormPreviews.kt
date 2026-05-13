@@ -9,7 +9,6 @@ import com.project.core.designsystem.components.brand.ChirpBrandLogo
 import com.project.core.designsystem.components.layouts.ChirpAdaptiveFormLayout
 import com.project.core.designsystem.theme.ChirpTheme
 
-
 @Composable
 @PreviewLightDark
 @PreviewScreenSizes
@@ -23,14 +22,14 @@ fun ChirpAdaptiveFormLayoutLightPreview() {
                 Text(
                     text = "Sample form title",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
                     text = "Sample form title 2",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
-            }
+            },
         )
     }
 }

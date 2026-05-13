@@ -22,9 +22,9 @@ fun ChirpAdaptiveResultLayoutPreview() {
                 Text(
                     text = "Registration successful!",
                     style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
-            }
+            },
         )
     }
 }

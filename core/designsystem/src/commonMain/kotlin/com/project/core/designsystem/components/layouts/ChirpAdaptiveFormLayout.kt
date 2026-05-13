@@ -72,7 +72,7 @@ fun ChirpAdaptiveFormLayout(
     errorText: String? = null,
     logo: @Composable () -> Unit,
     formContent: @Composable ColumnScope.() -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val configuration = currentDeviceConfiguration()
     val headerColor = if (configuration == DeviceConfiguration.MOBILE_LANDSCAPE) {
@@ -89,7 +89,7 @@ fun ChirpAdaptiveFormLayout(
                 errorText = errorText,
                 logo = logo,
                 formContent = formContent,
-                modifier = modifier
+                modifier = modifier,
             )
         }
 
@@ -100,20 +100,21 @@ fun ChirpAdaptiveFormLayout(
                 errorText = errorText,
                 logo = logo,
                 formContent = formContent,
-                modifier = modifier
+                modifier = modifier,
             )
         }
 
         DeviceConfiguration.TABLET_PORTRAIT,
         DeviceConfiguration.TABLET_LANDSCAPE,
-        DeviceConfiguration.DESKTOP -> {
+        DeviceConfiguration.DESKTOP,
+        -> {
             TabletDesktopConfigSurface(
                 headerText = headerText,
                 headerColor = headerColor,
                 errorText = errorText,
                 logo = logo,
                 formContent = formContent,
-                modifier = modifier
+                modifier = modifier,
             )
         }
     }
@@ -126,7 +127,7 @@ private fun MobilePortraitConfigSurface(
     errorText: String?,
     logo: @Composable () -> Unit,
     formContent: @Composable ColumnScope.() -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     ChirpSurface(
         modifier = modifier
@@ -136,13 +137,13 @@ private fun MobilePortraitConfigSurface(
             Spacer(modifier = Modifier.height(32.dp))
             logo()
             Spacer(modifier = Modifier.height(32.dp))
-        }
+        },
     ) {
         Spacer(modifier = Modifier.height(24.dp))
         AuthHeaderSection(
             headerText = headerText,
             headerColor = headerColor,
-            errorText = errorText
+            errorText = errorText,
         )
         Spacer(modifier = Modifier.height(24.dp))
         formContent()
@@ -156,28 +157,28 @@ private fun MobileLandscapeConfigSurface(
     errorText: String?,
     logo: @Composable () -> Unit,
     formContent: @Composable ColumnScope.() -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
             .fillMaxSize()
-            .consumeWindowInsets(WindowInsets.displayCutout)
+            .consumeWindowInsets(WindowInsets.displayCutout),
     ) {
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             Spacer(modifier = Modifier.height(16.dp))
             logo()
             AuthHeaderSection(
                 headerText = headerText,
                 headerColor = headerColor,
-                errorText = errorText
+                errorText = errorText,
             )
         }
         ChirpSurface(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         ) {
             formContent()
         }
@@ -191,7 +192,7 @@ private fun TabletDesktopConfigSurface(
     errorText: String?,
     logo: @Composable () -> Unit,
     formContent: @Composable ColumnScope.() -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier
@@ -199,7 +200,7 @@ private fun TabletDesktopConfigSurface(
             .background(MaterialTheme.colorScheme.background)
             .padding(top = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(32.dp)
+        verticalArrangement = Arrangement.spacedBy(32.dp),
     ) {
         logo()
         Column(
@@ -210,12 +211,12 @@ private fun TabletDesktopConfigSurface(
                 .background(MaterialTheme.colorScheme.surface)
                 .padding(horizontal = 24.dp, vertical = 32.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             AuthHeaderSection(
                 headerText = headerText,
                 headerColor = headerColor,
-                errorText = errorText
+                errorText = errorText,
             )
             formContent()
         }
@@ -233,10 +234,10 @@ fun ColumnScope.AuthHeaderSection(
         style = MaterialTheme.typography.titleLarge,
         color = headerColor,
         textAlign = TextAlign.Center,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     )
     AnimatedVisibility(
-        visible = errorText != null
+        visible = errorText != null,
     ) {
         if (errorText != null) {
             Text(
@@ -244,7 +245,7 @@ fun ColumnScope.AuthHeaderSection(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
         }
     }
@@ -257,7 +258,7 @@ class ThemePreviewParameterProvider : PreviewParameterProvider<Boolean> {
 @Composable
 @Preview
 fun ChirpAdaptiveFormLayoutPreview(
-    @PreviewParameter(ThemePreviewParameterProvider::class) isDarkTheme: Boolean
+    @PreviewParameter(ThemePreviewParameterProvider::class) isDarkTheme: Boolean,
 ) {
     ChirpTheme(darkTheme = isDarkTheme) {
         ChirpAdaptiveFormLayout(
@@ -268,14 +269,14 @@ fun ChirpAdaptiveFormLayoutPreview(
                 Text(
                     text = "Sample form title",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
                     text = "Sample form title 2",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
-            }
+            },
         )
     }
 }

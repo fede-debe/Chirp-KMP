@@ -59,12 +59,12 @@ import com.project.core.presentation.util.currentDeviceConfiguration
 @Composable
 fun ChirpAdaptiveResultLayout(
     modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     val configuration = currentDeviceConfiguration()
 
     Scaffold(
-        modifier = modifier
+        modifier = modifier,
     ) { innerPadding ->
         if (configuration == DeviceConfiguration.MOBILE_PORTRAIT) {
             ChirpSurface(
@@ -75,7 +75,7 @@ fun ChirpAdaptiveResultLayout(
                     ChirpBrandLogo()
                     Spacer(modifier = Modifier.height(32.dp))
                 },
-                content = content
+                content = content,
             )
         } else {
             Column(
@@ -85,7 +85,7 @@ fun ChirpAdaptiveResultLayout(
                     .background(MaterialTheme.colorScheme.background)
                     .padding(top = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(32.dp)
+                verticalArrangement = Arrangement.spacedBy(32.dp),
             ) {
                 if (configuration != DeviceConfiguration.MOBILE_LANDSCAPE) {
                     ChirpBrandLogo()
@@ -99,7 +99,7 @@ fun ChirpAdaptiveResultLayout(
                         .padding(horizontal = 24.dp)
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     content()
                 }
@@ -119,9 +119,9 @@ fun ChirpAdaptiveResultLayoutPreview() {
                 Text(
                     text = "Registration successful!",
                     style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
-            }
+            },
         )
     }
 }

@@ -74,16 +74,16 @@ import org.jetbrains.compose.resources.vectorResource
 fun ChirpSurface(
     modifier: Modifier = Modifier,
     header: @Composable ColumnScope.() -> Unit = {},
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     Surface(
         color = MaterialTheme.colorScheme.background,
-        modifier = modifier
+        modifier = modifier,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxSize(),
         ) {
             header()
             Surface(
@@ -93,12 +93,12 @@ fun ChirpSurface(
                     .fillMaxWidth(),
                 shape = RoundedCornerShape(
                     topStart = 20.dp,
-                    topEnd = 20.dp
-                )
+                    topEnd = 20.dp,
+                ),
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxSize(),
                 ) {
                     content()
                 }
@@ -120,7 +120,7 @@ fun ChirpSurfacePreview() {
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
-                        .padding(vertical = 32.dp)
+                        .padding(vertical = 32.dp),
                 )
             },
             content = {
@@ -129,9 +129,9 @@ fun ChirpSurfacePreview() {
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier
                         .padding(vertical = 40.dp)
-                        .align(Alignment.CenterHorizontally)
+                        .align(Alignment.CenterHorizontally),
                 )
-            }
+            },
         )
     }
 }
