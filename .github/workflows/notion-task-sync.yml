@@ -19,6 +19,7 @@ jobs:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_TASKS_DB_ID: ${{ secrets.NOTION_TASKS_DB_ID }}
           NOTION_FEATURES_DB_ID: ${{ secrets.NOTION_FEATURES_DB_ID }}
+          NOTION_BRANCHES_DB_ID: ${{ secrets.NOTION_BRANCHES_DB_ID }}
         with:
           script: |
             const branch = context.ref.replace('refs/heads/', '');
@@ -184,6 +185,49 @@ jobs:
             var created = await createResponse.json();
             if (created.id) {
               console.log('Task "' + taskName + '" [' + typeValue + ' ' + taskIcon + '] created, linked to "' + featureTitle + '" (' + featurePlatform + ')');
+
+              // --- Link Task to its Branch row in the Branches DB ---
+              var branchQuery = await fetch(
+                'https://api.notion.com/v1/databases/' + process.env.NOTION_BRANCHES_DB_ID + '/query',
+                {
+                  method: 'POST',
+                  headers: headers,
+                  body: JSON.stringify({
+                    filter: {
+                      property: 'Branch',
+                      formula: { string: { equals: branch } }
+                    }
+                  }),
+                }
+              );
+              var branchData = await branchQuery.json();
+
+              if (branchData.results && branchData.results.length > 0) {
+                var branchPageId = branchData.results[0].id;
+
+                // Read existing Tasks relation so we append, not overwrite
+                var existingTasks = branchData.results[0].properties.Tasks;
+                var taskIds = [];
+                if (existingTasks && existingTasks.relation) {
+                  for (var i = 0; i < existingTasks.relation.length; i++) {
+                    taskIds.push({ id: existingTasks.relation[i].id });
+                  }
+                }
+                taskIds.push({ id: created.id });
+
+                await fetch('https://api.notion.com/v1/pages/' + branchPageId, {
+                  method: 'PATCH',
+                  headers: headers,
+                  body: JSON.stringify({
+                    properties: {
+                      'Tasks': { relation: taskIds }
+                    }
+                  }),
+                });
+                console.log('Linked task to Branch row: ' + branchPageId);
+              } else {
+                console.log('No Branch row found matching: ' + branch + '. Tasks relation not updated.');
+              }
             } else {
               console.log('Failed to create task: ' + JSON.stringify(created));
               core.setFailed('Notion task creation failed.');
