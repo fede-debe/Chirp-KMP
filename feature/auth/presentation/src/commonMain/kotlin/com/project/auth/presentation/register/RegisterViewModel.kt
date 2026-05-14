@@ -48,13 +48,7 @@ class RegisterViewModel : ViewModel() {
 
     fun onAction(action: RegisterAction) {
         when (action) {
-            is RegisterAction.OnButtonAClick -> {
-                // TODO: Handle action
-            }
-
-            is RegisterAction.OnTypeInTextFieldB -> {
-                // TODO: Handle text input
-            }
+            else -> Unit
         }
     }
 }

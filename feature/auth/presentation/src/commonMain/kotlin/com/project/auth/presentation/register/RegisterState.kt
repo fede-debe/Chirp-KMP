@@ -1,5 +1,8 @@
 package com.project.auth.presentation.register
 
+import androidx.compose.foundation.text.input.TextFieldState
+import com.project.core.presentation.util.UiText
+
 /**
  * Bundles all state variables for the Register Screen.
  *
@@ -13,7 +16,23 @@ package com.project.auth.presentation.register
  * ## Technical Details
  * - Serves as an immutable state holder that is collected by the presentation layer.
  */
+// data class RegisterState(
+//    val isLoading: Boolean = false,
+//    // TODO: Add your screen-specific state variables here
+// )
+
 data class RegisterState(
-    val isLoading: Boolean = false,
-    // TODO: Add your screen-specific state variables here
+    val emailTextState: TextFieldState = TextFieldState(),
+    val isEmailValid: Boolean = false,
+    val emailError: UiText? = null,
+    val passwordTextState: TextFieldState = TextFieldState(),
+    val isPasswordValid: Boolean = false,
+    val passwordError: UiText? = null,
+    val usernameTextState: TextFieldState = TextFieldState(),
+    val isUsernameValid: Boolean = false,
+    val usernameError: UiText? = null,
+    val registrationError: UiText? = null,
+    val isRegistering: Boolean = false,
+    val canRegister: Boolean = false,
+    val isPasswordVisible: Boolean = false,
 )

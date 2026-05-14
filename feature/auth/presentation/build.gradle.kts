@@ -14,6 +14,7 @@ kotlin {
                 implementation(projects.core.presentation)
                 // Add KMP dependencies here
                 implementation(libs.ui.tooling.preview)
+                implementation(libs.components.resources)
             }
         }
 
