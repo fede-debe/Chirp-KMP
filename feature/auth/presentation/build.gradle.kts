@@ -13,6 +13,7 @@ kotlin {
                 implementation(projects.core.designsystem)
                 implementation(projects.core.presentation)
                 // Add KMP dependencies here
+                implementation(libs.ui.tooling.preview)
             }
         }
 
