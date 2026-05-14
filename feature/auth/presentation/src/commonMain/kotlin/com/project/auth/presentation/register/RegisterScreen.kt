@@ -29,7 +29,7 @@ import com.project.core.designsystem.theme.ChirpTheme
 @Composable
 fun RegisterRoot(
     modifier: Modifier = Modifier,
-    viewModel: RegisterViewModel = viewModel(), // Swap with koinViewModel() or hiltViewModel() if needed
+    viewModel: RegisterViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -46,13 +46,11 @@ fun RegisterScreen(
     onAction: (RegisterAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // TODO: Build your screen UI here
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun RegisterScreenPreview() {
-    // Note: You may need to manually import your project's specific Theme here
     ChirpTheme {
         RegisterScreen(
             state = RegisterState(),
