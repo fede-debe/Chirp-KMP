@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:filename", "filename")
+
 package com.project.chirp.di
 
 import com.project.auth.presentation.di.authPresentationModule
