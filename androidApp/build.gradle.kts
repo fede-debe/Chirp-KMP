@@ -6,4 +6,5 @@ plugins {
 dependencies {
     implementation(project(":composeApp"))
     implementation(libs.androidx.activity.compose)
+    implementation(libs.koin.android)
 }
