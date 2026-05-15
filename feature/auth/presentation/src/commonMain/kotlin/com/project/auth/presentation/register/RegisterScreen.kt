@@ -33,6 +33,7 @@ import com.project.core.designsystem.components.textfields.ChirpTextField
 import com.project.core.designsystem.theme.ChirpTheme
 import com.project.core.presentation.util.ObserveAsEvents
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Renders the Registration UI by composing design system components and wires them to the ViewModel and State.
@@ -54,7 +55,7 @@ import org.jetbrains.compose.resources.stringResource
  */
 @Composable
 fun RegisterRoot(
-    viewModel: RegisterViewModel = viewModel(),
+    viewModel: RegisterViewModel = koinViewModel(),
     onRegisterSuccess: (String) -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()

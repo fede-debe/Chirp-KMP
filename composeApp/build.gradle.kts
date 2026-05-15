@@ -12,6 +12,8 @@ kotlin {
             implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
+            implementation(libs.koin.core)
+
             // wire everything together - Overview of the app
             implementation(projects.core.data)
             implementation(projects.core.domain)
