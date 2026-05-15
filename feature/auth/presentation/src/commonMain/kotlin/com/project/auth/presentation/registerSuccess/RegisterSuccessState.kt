@@ -1,4 +1,4 @@
-package com.project.auth.presentation.register_success
+package com.project.auth.presentation.registerSuccess
 
 data class RegisterSuccessState(
     val registeredEmail: String = "",

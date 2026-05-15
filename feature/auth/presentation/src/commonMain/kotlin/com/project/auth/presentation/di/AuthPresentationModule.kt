@@ -1,7 +1,7 @@
 package com.project.auth.presentation.di
 
 import com.project.auth.presentation.register.RegisterViewModel
-import com.project.auth.presentation.register_success.RegisterSuccessViewModel
+import com.project.auth.presentation.registerSuccess.RegisterSuccessViewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 

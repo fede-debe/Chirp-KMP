@@ -1,4 +1,4 @@
-package com.project.auth.presentation.register_success
+package com.project.auth.presentation.registerSuccess
 
 sealed interface RegisterSuccessAction {
     data object OnLoginClick : RegisterSuccessAction
