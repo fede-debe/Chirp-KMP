@@ -10,7 +10,7 @@ androidDesugarJdkLibs = "2.1.5"
 androidTools = "32.1.0"
 
 # Compose
-compose-hot-reload = "1.0.0"
+compose-hot-reload = "1.1.1"
 compose-multiplatform = "1.10.3"
 # Maintain compose multiplatform version aligned with navigation, cache error could happen
 compose-lifecycle = "2.10.0"
