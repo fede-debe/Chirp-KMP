@@ -36,10 +36,11 @@ import com.project.core.designsystem.components.layouts.ChirpSimpleResultLayout
 import com.project.core.designsystem.theme.ChirpTheme
 import com.project.core.designsystem.theme.extended
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun EmailVerificationRoot(
-    viewModel: EmailVerificationViewModel = viewModel(),
+    viewModel: EmailVerificationViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 

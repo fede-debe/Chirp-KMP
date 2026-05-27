@@ -1,8 +1,8 @@
 package com.project.chirp.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.rememberNavController
 import com.project.auth.presentation.navigation.AuthGraphRoutes
 import com.project.auth.presentation.navigation.authGraph
 
@@ -20,8 +20,7 @@ import com.project.auth.presentation.navigation.authGraph
  * 4. (Pending) Will implement the `onLoginSuccess` callback to pop the auth graph and transition to the chat graph.
  */
 @Composable
-fun NavigationRoot() {
-    val navController = rememberNavController()
+fun NavigationRoot(navController: NavHostController) {
     NavHost(
         navController = navController,
         startDestination = AuthGraphRoutes.Graph,
