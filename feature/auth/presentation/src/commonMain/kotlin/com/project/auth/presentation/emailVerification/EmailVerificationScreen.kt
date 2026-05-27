@@ -1,4 +1,4 @@
-package com.project.auth.presentation.email_verification
+package com.project.auth.presentation.emailVerification
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
