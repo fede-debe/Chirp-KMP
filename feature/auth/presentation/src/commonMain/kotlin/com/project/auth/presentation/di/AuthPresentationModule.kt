@@ -1,5 +1,6 @@
 package com.project.auth.presentation.di
 
+import com.project.auth.presentation.emailVerification.EmailVerificationViewModel
 import com.project.auth.presentation.register.RegisterViewModel
 import com.project.auth.presentation.registerSuccess.RegisterSuccessViewModel
 import org.koin.core.module.dsl.viewModelOf
@@ -21,4 +22,5 @@ import org.koin.dsl.module
 val authPresentationModule = module {
     viewModelOf(::RegisterViewModel)
     viewModelOf(::RegisterSuccessViewModel)
+    viewModelOf(::EmailVerificationViewModel)
 }
