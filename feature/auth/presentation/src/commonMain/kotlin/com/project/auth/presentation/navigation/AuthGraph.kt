@@ -3,7 +3,9 @@ package com.project.auth.presentation.navigation
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
+import com.project.auth.presentation.emailVerification.EmailVerificationRoot
 import com.project.auth.presentation.register.RegisterRoot
 import com.project.auth.presentation.registerSuccess.RegisterSuccessRoot
 
@@ -29,6 +31,26 @@ import com.project.auth.presentation.registerSuccess.RegisterSuccessRoot
  * @param navController Used to perform internal transitions between auth screens.
  * @param onLoginSuccess Lambda triggered to bubble up the inter-feature navigation event to the App module once authentication is finalized.
  */
+
+/**
+ * Defines the navigation graph and routes incoming deep link URIs to specific composable screens.
+ *
+ * ## Strategy / Decisions
+ * Deep links are integrated directly into the Compose Navigation framework using `navDeepLink`.
+ * This ensures that when a URI is triggered, the navigation controller automatically parses the path and arguments without requiring manual string manipulation.
+ *
+ * ## How It Works
+ * 1. The `EmailVerificationScreenRoute` is assigned a list of `navDeepLink` configurations.
+ * 2. Both `https` and `chirp` schemes are registered matching the exact API path (`/api/auth/verify`).
+ * 3. The `{token}` parameter is appended to the URI pattern.
+ * 4. When a URL matches, the navigation framework extracts the string in place of `{token}` and injects it into the `SavedStateHandle` for the `VerificationViewModel`.
+ *
+ * ## Alternatives / Why Not
+ * A manual deep link parsing mechanism at the root `App.kt` level was avoided because Compose Navigation natively supports argument extraction and deep link routing, keeping state management clean.
+ *
+ * ## Technical Details
+ * - The placeholder `{token}` in the deep link URI MUST exactly match the key defined as a navigation argument for retrieval in the ViewModel.
+ */
 fun NavGraphBuilder.authGraph(
     navController: NavController,
     onLoginSuccess: () -> Unit,
@@ -45,6 +67,19 @@ fun NavGraphBuilder.authGraph(
         }
         composable<AuthGraphRoutes.RegisterSuccess> {
             RegisterSuccessRoot()
+        }
+
+        composable<AuthGraphRoutes.EmailVerification>(
+            deepLinks = listOf(
+                navDeepLink {
+                    this.uriPattern = "https://chirp.adamapp.dev/api/auth/verify?token={token}"
+                },
+                navDeepLink {
+                    this.uriPattern = "chirp://chirp.adamapp.dev/api/auth/verify?token={token}"
+                },
+            ),
+        ) {
+            EmailVerificationRoot()
         }
     }
 }
