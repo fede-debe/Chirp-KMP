@@ -1,4 +1,4 @@
-package com.project.auth.presentation.registerSuccess
+package com.project.auth.presentation.ui.registerSuccess
 
 import com.project.core.presentation.util.UiText
 

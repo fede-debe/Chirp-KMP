@@ -1,4 +1,4 @@
-package com.project.auth.presentation.register
+package com.project.auth.presentation.ui.register
 
 /**
  * Bundles all distinct actions or events that a user can trigger on the Register Screen.

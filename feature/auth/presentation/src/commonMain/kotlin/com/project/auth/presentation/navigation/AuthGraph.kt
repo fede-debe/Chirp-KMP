@@ -5,9 +5,10 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
-import com.project.auth.presentation.emailVerification.EmailVerificationRoot
-import com.project.auth.presentation.register.RegisterRoot
-import com.project.auth.presentation.registerSuccess.RegisterSuccessRoot
+import com.project.auth.presentation.ui.emailVerification.EmailVerificationRoot
+import com.project.auth.presentation.ui.login.LoginRoot
+import com.project.auth.presentation.ui.register.RegisterRoot
+import com.project.auth.presentation.ui.registerSuccess.RegisterSuccessRoot
 
 /**
  * Extension function on `NavGraphBuilder` that constructs the nested navigation graph for the Authentication feature.
@@ -56,12 +57,42 @@ fun NavGraphBuilder.authGraph(
     onLoginSuccess: () -> Unit,
 ) {
     navigation<AuthGraphRoutes.Graph>(
-        startDestination = AuthGraphRoutes.Register,
+        startDestination = AuthGraphRoutes.Login,
     ) {
+        composable<AuthGraphRoutes.Login> {
+            LoginRoot(
+                onLoginSuccess = onLoginSuccess,
+                onForgotPasswordClick = {
+                    navController.navigate(AuthGraphRoutes.ForgotPassword)
+                },
+                onCreateAccountClick = {
+                    navController.navigate(AuthGraphRoutes.Register) {
+                        restoreState = true
+                        launchSingleTop = true
+                    }
+                },
+            )
+        }
         composable<AuthGraphRoutes.Register> {
             RegisterRoot(
                 onRegisterSuccess = {
                     navController.navigate(AuthGraphRoutes.RegisterSuccess(it))
+                },
+                onLoginClick = {
+                    navController.navigate(AuthGraphRoutes.Login) {
+                        /**
+                         * State Preservation: Uses saveState = true and restoreState = true to reuse existing screens in the history.
+                         * This prevents duplicate instances and keeps user inputs (like partially typed emails) intact.
+                         *
+                         * Stack Cleanup: Rejects the default Maps() behavior. Instead, it relies on launchSingleTop = true to ensure only one instance of a screen sits at the top,
+                         * and uses popUpTo() to trim the back stack and maintain a clean navigation hierarchy.*/
+                        popUpTo(AuthGraphRoutes.Register) {
+                            inclusive = true
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 },
             )
         }

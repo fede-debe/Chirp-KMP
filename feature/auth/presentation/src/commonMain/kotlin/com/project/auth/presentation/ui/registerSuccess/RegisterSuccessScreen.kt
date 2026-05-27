@@ -1,4 +1,4 @@
-package com.project.auth.presentation.registerSuccess
+package com.project.auth.presentation.ui.registerSuccess
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.SnackbarHostState

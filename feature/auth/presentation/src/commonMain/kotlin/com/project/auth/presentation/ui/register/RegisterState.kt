@@ -1,4 +1,4 @@
-package com.project.auth.presentation.register
+package com.project.auth.presentation.ui.register
 
 import androidx.compose.foundation.text.input.TextFieldState
 import com.project.core.presentation.util.UiText
