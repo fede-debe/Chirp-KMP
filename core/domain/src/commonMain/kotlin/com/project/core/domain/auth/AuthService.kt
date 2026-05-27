@@ -2,6 +2,7 @@ package com.project.core.domain.auth
 
 import com.project.core.domain.util.DataError
 import com.project.core.domain.util.EmptyResult
+import com.project.core.domain.util.Result
 
 /**
  * Defines the core authentication operations required by the application, such as account registration.
@@ -21,6 +22,11 @@ import com.project.core.domain.util.EmptyResult
  * @see KtorAuthService
  */
 interface AuthService {
+
+    suspend fun login(
+        email: String,
+        password: String,
+    ): Result<AuthInfo, DataError.Remote>
     suspend fun register(
         email: String,
         username: String,

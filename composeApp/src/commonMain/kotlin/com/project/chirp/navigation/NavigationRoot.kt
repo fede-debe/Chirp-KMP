@@ -3,8 +3,11 @@ package com.project.chirp.navigation
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import com.project.auth.presentation.navigation.AuthGraphRoutes
 import com.project.auth.presentation.navigation.authGraph
+import com.project.chat.presentation.chatList.ChatListRoute
+import com.project.chat.presentation.chatList.ChatListScreenRoot
 
 /**
  * The root composable that hosts the application's primary `NavHost` and wires independent feature modules together.
@@ -28,7 +31,15 @@ fun NavigationRoot(navController: NavHostController) {
         authGraph(
             navController = navController,
             onLoginSuccess = {
+                navController.navigate(ChatListRoute) {
+                    popUpTo(AuthGraphRoutes.Graph) {
+                        inclusive = true
+                    }
+                }
             },
         )
+        composable<ChatListRoute> {
+            ChatListScreenRoot()
+        }
     }
 }

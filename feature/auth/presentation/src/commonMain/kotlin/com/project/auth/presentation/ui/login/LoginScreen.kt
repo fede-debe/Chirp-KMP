@@ -30,6 +30,7 @@ import com.project.core.designsystem.components.layouts.ChirpAdaptiveFormLayout
 import com.project.core.designsystem.components.textfields.ChirpPasswordTextField
 import com.project.core.designsystem.components.textfields.ChirpTextField
 import com.project.core.designsystem.theme.ChirpTheme
+import com.project.core.presentation.util.ObserveAsEvents
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -42,9 +43,16 @@ fun LoginRoot(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    ObserveAsEvents(viewModel.events) { event ->
+        when (event) {
+            LoginEvent.Success -> onLoginSuccess()
+        }
+    }
+
     LoginScreen(
         state = state,
         onAction = { action ->
+            println("[LoginDebug] UI is holding EmailTextFieldState instance: ${state.emailTextFieldState.hashCode()}")
             when (action) {
                 LoginAction.OnForgotPasswordClick -> onForgotPasswordClick()
                 LoginAction.OnSignUpClick -> onCreateAccountClick()

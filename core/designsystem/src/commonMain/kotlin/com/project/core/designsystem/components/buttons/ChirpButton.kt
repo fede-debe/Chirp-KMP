@@ -133,9 +133,9 @@ fun ChirpButton(
         border = border,
     ) {
         Box(
+            contentAlignment = Alignment.Center,
             modifier = Modifier
                 .padding(6.dp),
-            contentAlignment = Alignment.Center,
         ) {
             CircularProgressIndicator(
                 modifier = Modifier

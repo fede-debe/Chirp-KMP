@@ -18,7 +18,7 @@ import com.project.core.designsystem.components.brand.ChirpSuccessIcon
 import com.project.core.designsystem.components.buttons.ChirpButton
 import com.project.core.designsystem.components.buttons.ChirpButtonStyle
 import com.project.core.designsystem.components.layouts.ChirpAdaptiveResultLayout
-import com.project.core.designsystem.components.layouts.ChirpSimpleSuccessLayout
+import com.project.core.designsystem.components.layouts.ChirpSimpleResultLayout
 import com.project.core.designsystem.components.layouts.ChirpSnackbarScaffold
 import com.project.core.designsystem.theme.ChirpTheme
 import com.project.core.presentation.util.ObserveAsEvents
@@ -55,6 +55,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun RegisterSuccessRoot(
     viewModel: RegisterSuccessViewModel = koinViewModel(),
+    onLoginClick: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -74,7 +75,13 @@ fun RegisterSuccessRoot(
 
     RegisterSuccessScreen(
         state = state,
-        onAction = viewModel::onAction,
+        onAction = { action ->
+            when (action) {
+                is RegisterSuccessAction.OnLoginClick -> onLoginClick()
+                else -> Unit
+            }
+            viewModel.onAction(action)
+        },
         snackbarHostState = snackbarHostState,
     )
 }
@@ -89,7 +96,7 @@ fun RegisterSuccessScreen(
         snackbarHostState = snackbarHostState,
     ) {
         ChirpAdaptiveResultLayout {
-            ChirpSimpleSuccessLayout(
+            ChirpSimpleResultLayout(
                 title = stringResource(Res.string.account_successfully_created),
                 description = stringResource(
                     Res.string.verification_email_sent_to_x,
