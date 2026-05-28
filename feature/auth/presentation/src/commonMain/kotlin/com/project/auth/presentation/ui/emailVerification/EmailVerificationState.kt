@@ -1,4 +1,4 @@
-package com.project.auth.presentation.emailVerification
+package com.project.auth.presentation.ui.emailVerification
 
 data class EmailVerificationState(
     val isVerifying: Boolean = false,
