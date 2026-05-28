@@ -11,6 +11,9 @@ kotlin {
                 implementation(projects.feature.chat.domain)
                 implementation(projects.core.designsystem)
                 // Add KMP dependencies here
+
+                implementation(libs.ui.tooling.preview)
+                implementation(libs.components.resources)
             }
         }
 

@@ -1,4 +1,4 @@
-package com.project.auth.presentation.registerSuccess
+package com.project.auth.presentation.ui.registerSuccess
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel

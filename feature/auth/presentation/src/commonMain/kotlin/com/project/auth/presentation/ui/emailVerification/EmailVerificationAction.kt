@@ -1,4 +1,4 @@
-package com.project.auth.presentation.emailVerification
+package com.project.auth.presentation.ui.emailVerification
 
 sealed interface EmailVerificationAction {
     data object OnLoginClick : EmailVerificationAction

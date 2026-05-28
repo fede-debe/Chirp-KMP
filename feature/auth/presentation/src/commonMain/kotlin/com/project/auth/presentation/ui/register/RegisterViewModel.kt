@@ -1,4 +1,4 @@
-package com.project.auth.presentation.register
+package com.project.auth.presentation.ui.register
 
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
