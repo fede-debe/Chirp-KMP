@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:filename")
+
 package com.project.core.data.auth
 
 import androidx.datastore.core.DataStore
