@@ -1,4 +1,4 @@
-package com.project.chirp
+package com.project.chirp.main
 
 /**
  * Represents the global authentication state during application launch.
