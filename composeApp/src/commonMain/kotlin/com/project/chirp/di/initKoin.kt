@@ -28,6 +28,7 @@ fun initKoin(config: KoinAppDeclaration? = null) {
         modules(
             coreDataModule,
             authPresentationModule,
+            appModule,
         )
     }
 }

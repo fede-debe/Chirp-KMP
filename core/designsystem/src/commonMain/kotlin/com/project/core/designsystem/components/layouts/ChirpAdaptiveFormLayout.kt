@@ -137,7 +137,7 @@ private fun MobilePortraitConfigSurface(
             .consumeWindowInsets(WindowInsets.navigationBars)
             .consumeWindowInsets(WindowInsets.displayCutout),
         header = {
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(64.dp))
             logo()
             Spacer(modifier = Modifier.height(32.dp))
         },
