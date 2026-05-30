@@ -6,5 +6,6 @@ plugins {
 dependencies {
     implementation(project(":composeApp"))
     implementation(libs.androidx.activity.compose)
+    implementation(libs.core.splashscreen)
     implementation(libs.koin.android)
 }
