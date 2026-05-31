@@ -1,6 +1,7 @@
 package com.project.auth.presentation.di
 
 import com.project.auth.presentation.ui.emailVerification.EmailVerificationViewModel
+import com.project.auth.presentation.ui.forgotPassword.ForgotPasswordViewModel
 import com.project.auth.presentation.ui.login.LoginViewModel
 import com.project.auth.presentation.ui.register.RegisterViewModel
 import com.project.auth.presentation.ui.registerSuccess.RegisterSuccessViewModel
@@ -25,4 +26,5 @@ val authPresentationModule = module {
     viewModelOf(::RegisterSuccessViewModel)
     viewModelOf(::EmailVerificationViewModel)
     viewModelOf(::LoginViewModel)
+    viewModelOf(::ForgotPasswordViewModel)
 }
