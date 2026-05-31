@@ -19,6 +19,7 @@
     <string name="submit">Submit</string>
     <string name="username">Username</string>
     <string name="forgot_password">Forgot password?</string>
+    <string name="set_new_password">Set a new password</string>
     <string name="create_account">Create account</string>
     <string name="password">Password</string>
     <string name="email">Email</string>
@@ -36,5 +37,8 @@
     <string name="error_email_not_verified">Unable to login because your email isn't verified</string>
     <string name="forgot_password_email_sent_successfully">
         We've successfully sent you an email with a link to reset your password
+    </string>
+    <string name="reset_password_successfully">
+        Your password has successfully been changed. You can now log in with your new password.
     </string>
 </resources>
