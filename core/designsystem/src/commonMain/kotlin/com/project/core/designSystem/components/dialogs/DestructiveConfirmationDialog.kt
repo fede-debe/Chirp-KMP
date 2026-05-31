@@ -111,7 +111,7 @@ fun DestructiveConfirmationDialog(
 @Composable
 @Preview
 fun DestructiveConfirmationDialogPreview() {
-    ChirpTheme(darkTheme = true) {
+    ChirpTheme {
         DestructiveConfirmationDialog(
             title = "Delete profile picture?",
             description = "This will permanently delete your profile picture. This cannot be undone.",
