@@ -6,9 +6,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
 import com.project.auth.presentation.ui.emailVerification.EmailVerificationRoot
+import com.project.auth.presentation.ui.forgotPassword.ForgotPasswordRoot
 import com.project.auth.presentation.ui.login.LoginRoot
 import com.project.auth.presentation.ui.register.RegisterRoot
 import com.project.auth.presentation.ui.registerSuccess.RegisterSuccessRoot
+import com.project.auth.presentation.ui.resetPassword.ResetPasswordRoot
 
 /**
  * Extension function on `NavGraphBuilder` that constructs the nested navigation graph for the Authentication feature.
@@ -134,6 +136,21 @@ fun NavGraphBuilder.authGraph(
                     }
                 },
             )
+        }
+        composable<AuthGraphRoutes.ForgotPassword> {
+            ForgotPasswordRoot()
+        }
+        composable<AuthGraphRoutes.ResetPassword>(
+            deepLinks = listOf(
+                navDeepLink {
+                    this.uriPattern = "https://chirp.adamapp.dev/api/auth/reset-password?token={token}"
+                },
+                navDeepLink {
+                    this.uriPattern = "chirp://chirp.adamapp.dev/api/auth/reset-password?token={token}"
+                },
+            ),
+        ) {
+            ResetPasswordRoot()
         }
     }
 }

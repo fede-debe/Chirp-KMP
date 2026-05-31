@@ -8,13 +8,13 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        android:theme="@style/Theme.App.Starting">
         <activity
             android:name=".MainActivity"
-            android:windowSoftInputMode="adjustResize"
-            android:exported="true">
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -26,9 +26,11 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="https"
-                    android:host="chirp.adamapp.dev"
-                    android:pathPrefix="/api/auth/verify" />
+                <data android:scheme="https" />
+                <data android:host="chirp.adamapp.dev" />
+
+                <data android:pathPrefix="/api/auth/verify" />
+                <data android:pathPrefix="/api/auth/reset-password" />
             </intent-filter>
 
             <intent-filter>
@@ -36,9 +38,11 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="chirp"
-                    android:host="chirp.adamapp.dev"
-                    android:pathPrefix="/api/auth/verify" />
+                <data android:scheme="chirp" />
+                <data android:host="chirp.adamapp.dev" />
+
+                <data android:pathPrefix="/api/auth/verify" />
+                <data android:pathPrefix="/api/auth/reset-password" />
             </intent-filter>
         </activity>
     </application>

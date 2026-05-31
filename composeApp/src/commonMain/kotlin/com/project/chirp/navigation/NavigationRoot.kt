@@ -23,10 +23,13 @@ import com.project.chat.presentation.chatList.ChatListScreenRoot
  * 4. (Pending) Will implement the `onLoginSuccess` callback to pop the auth graph and transition to the chat graph.
  */
 @Composable
-fun NavigationRoot(navController: NavHostController) {
+fun NavigationRoot(
+    navController: NavHostController,
+    startDestination: Any,
+) {
     NavHost(
         navController = navController,
-        startDestination = AuthGraphRoutes.Graph,
+        startDestination = startDestination,
     ) {
         authGraph(
             navController = navController,

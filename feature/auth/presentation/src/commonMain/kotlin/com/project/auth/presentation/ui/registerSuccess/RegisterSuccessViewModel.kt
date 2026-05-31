@@ -49,7 +49,7 @@ class RegisterSuccessViewModel(
     fun onAction(action: RegisterSuccessAction) {
         when (action) {
             is RegisterSuccessAction.OnResendVerificationEmailClick -> resendVerification()
-            else -> Unit
+            else -> {}
         }
     }
 

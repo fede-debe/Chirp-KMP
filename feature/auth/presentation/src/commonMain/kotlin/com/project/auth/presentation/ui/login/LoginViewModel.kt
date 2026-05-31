@@ -8,6 +8,7 @@ import chirp.feature.auth.presentation.generated.resources.error_email_not_verif
 import chirp.feature.auth.presentation.generated.resources.error_invalid_credentials
 import com.project.auth.domain.EmailValidator
 import com.project.core.domain.auth.AuthService
+import com.project.core.domain.auth.SessionStorage
 import com.project.core.domain.util.DataError
 import com.project.core.domain.util.onFailure
 import com.project.core.domain.util.onSuccess
@@ -28,6 +29,7 @@ import kotlinx.coroutines.launch
 
 class LoginViewModel(
     private val authService: AuthService,
+    private val sessionStorage: SessionStorage,
 ) : ViewModel() {
 
     private var hasLoadedInitialData = false
@@ -35,29 +37,17 @@ class LoginViewModel(
     private val eventChannel = Channel<LoginEvent>()
     val events = eventChannel.receiveAsFlow()
 
-//    private val isEmailValidFlow = snapshotFlow { state.value.emailTextFieldState.text.toString() }
-//        .map { email -> EmailValidator.validate(email) }
-//        .distinctUntilChanged()
-//
-//    private val isPasswordNotBlankFlow = snapshotFlow { state.value.passwordTextFieldState.text.toString() }
-//        .map { it.isNotBlank() }
-//        .distinctUntilChanged()
-
     private val isEmailValidFlow = snapshotFlow { state.value.emailTextFieldState.text.toString() }
         .map { email ->
-            val isValid = EmailValidator.validate(email)
-            println("[LoginDebug] Email text: '$email' -> isValid: $isValid")
-            isValid
+            val cleanEmail = email.trim()
+            EmailValidator.validate(cleanEmail)
         }
         .distinctUntilChanged()
 
-    private val isPasswordNotBlankFlow = snapshotFlow { state.value.passwordTextFieldState.text.toString() }
-        .map { text ->
-            val isNotBlank = text.isNotBlank()
-            println("[LoginDebug] Password text length: ${text.length} -> isNotBlank: $isNotBlank")
-            isNotBlank
-        }
-        .distinctUntilChanged()
+    private val isPasswordNotBlankFlow =
+        snapshotFlow { state.value.passwordTextFieldState.text.toString() }
+            .map { it.isNotBlank() }
+            .distinctUntilChanged()
 
     private val _state = MutableStateFlow(LoginState())
     val state = _state
@@ -87,21 +77,10 @@ class LoginViewModel(
                     )
                 }
             }
+
             else -> Unit
         }
     }
-
-//    private fun observeTextStates() {
-//        combine(
-//            isEmailValidFlow,
-//            isPasswordNotBlankFlow,
-//            isRegisteringFlow
-//        ) { isEmailValid, isPasswordNotBlank, isRegistering ->
-//            _state.update { it.copy(
-//                canLogin = !isRegistering && isEmailValid && isPasswordNotBlank
-//            ) }
-//        }.launchIn(viewModelScope)
-//    }
 
     private fun observeTextStates() {
         combine(
@@ -109,8 +88,6 @@ class LoginViewModel(
             isPasswordNotBlankFlow,
             isRegisteringFlow,
         ) { isEmailValid, isPasswordNotBlank, isRegistering ->
-            println("[LoginDebug] Combine fired! Email: $isEmailValid | Password: $isPasswordNotBlank | Registering: $isRegistering")
-
             _state.update {
                 it.copy(
                     canLogin = !isRegistering && isEmailValid && isPasswordNotBlank,
@@ -119,15 +96,8 @@ class LoginViewModel(
         }.launchIn(viewModelScope)
     }
 
-//    private fun login() {
-//        if(!state.value.canLogin) {
-//            return
-//        }
     private fun login() {
-        println("[LoginDebug] ViewModel is holding EmailTextFieldState instance: ${_state.value.emailTextFieldState.hashCode()}")
-
         if (!state.value.canLogin) {
-            println("[LoginDebug] Login blocked. canLogin is false.")
             return
         }
 
@@ -138,7 +108,7 @@ class LoginViewModel(
                 )
             }
 
-            val email = state.value.emailTextFieldState.text.toString()
+            val email = state.value.emailTextFieldState.text.toString().trim()
             val password = state.value.passwordTextFieldState.text.toString()
 
             authService
@@ -147,6 +117,8 @@ class LoginViewModel(
                     password = password,
                 )
                 .onSuccess { authInfo ->
+                    sessionStorage.set(authInfo)
+
                     _state.update {
                         it.copy(
                             isLoggingIn = false,
