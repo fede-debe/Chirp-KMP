@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:filename", "filename")
+
 package com.project.core.presentation.util
 
 import androidx.compose.foundation.gestures.detectTapGestures
