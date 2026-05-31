@@ -36,6 +36,7 @@ import com.project.core.designsystem.components.brand.ChirpBrandLogo
 import com.project.core.designsystem.theme.ChirpTheme
 import com.project.core.designsystem.theme.extended
 import com.project.core.presentation.util.DeviceConfiguration
+import com.project.core.presentation.util.clearFocusOnTap
 import com.project.core.presentation.util.currentDeviceConfiguration
 
 /**
@@ -134,10 +135,11 @@ private fun MobilePortraitConfigSurface(
 ) {
     ChirpSurface(
         modifier = modifier
+            .clearFocusOnTap()
             .consumeWindowInsets(WindowInsets.navigationBars)
             .consumeWindowInsets(WindowInsets.displayCutout),
         header = {
-            Spacer(modifier = Modifier.height(64.dp))
+            Spacer(modifier = Modifier.height(32.dp))
             logo()
             Spacer(modifier = Modifier.height(32.dp))
         },
