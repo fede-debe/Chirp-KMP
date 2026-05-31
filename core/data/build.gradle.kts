@@ -18,10 +18,10 @@ kotlin {
 
                 implementation(libs.bundles.ktor.common)
                 implementation(libs.touchlab.kermit)
-//                implementation(libs.koin.core)
-//
-//                implementation(libs.datastore)
-//                implementation(libs.datastore.preferences)
+                implementation(libs.koin.core)
+
+                implementation(libs.datastore)
+                implementation(libs.datastore.preferences)
 //
 //                implementation(libs.androidx.room.runtime)
 //                implementation(libs.sqlite.bundled)
@@ -31,7 +31,7 @@ kotlin {
         androidMain {
             dependencies {
                 implementation(libs.ktor.client.okhttp)
-//                implementation(libs.koin.android)
+                implementation(libs.koin.android)
             }
         }
 

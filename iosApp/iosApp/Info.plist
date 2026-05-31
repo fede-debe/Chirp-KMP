@@ -4,5 +4,17 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>chirp.adamapp.dev</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>chirp</string>
+				<string>https</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

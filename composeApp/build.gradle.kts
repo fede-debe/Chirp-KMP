@@ -10,8 +10,11 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.koin.android)
         }
         commonMain.dependencies {
+            implementation(libs.koin.core)
+
             // wire everything together - Overview of the app
             implementation(projects.core.data)
             implementation(projects.core.domain)
@@ -25,6 +28,9 @@ kotlin {
             implementation(projects.feature.chat.domain)
             implementation(projects.feature.chat.presentation)
             implementation(projects.feature.chat.database)
+
+            implementation(libs.jetbrains.compose.navigation)
+            implementation(libs.bundles.koin.common)
 
             implementation(compose.runtime)
             implementation(compose.foundation)
