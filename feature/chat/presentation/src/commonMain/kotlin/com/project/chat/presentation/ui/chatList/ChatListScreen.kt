@@ -1,4 +1,4 @@
-package com.project.chat.presentation.chatList
+package com.project.chat.presentation.ui.chatList
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize

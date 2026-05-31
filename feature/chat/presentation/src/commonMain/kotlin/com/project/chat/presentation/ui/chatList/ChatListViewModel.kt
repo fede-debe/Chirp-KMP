@@ -1,4 +1,4 @@
-package com.project.chat.presentation.chatList
+package com.project.chat.presentation.ui.chatList
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

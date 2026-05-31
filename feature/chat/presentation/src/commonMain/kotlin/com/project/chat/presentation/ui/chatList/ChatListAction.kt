@@ -1,4 +1,4 @@
-package com.project.chat.presentation.chatList
+package com.project.chat.presentation.ui.chatList
 
 sealed interface ChatListAction {
     data object OnButtonAClick : ChatListAction
