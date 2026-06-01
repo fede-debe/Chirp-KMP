@@ -1,7 +1,9 @@
 package com.project.chat.data.di
 
 import com.project.chat.data.chat.KtorChatParticipantService
+import com.project.chat.data.chat.KtorChatService
 import com.project.chat.domain.chat.ChatParticipantService
+import com.project.chat.domain.chat.ChatService
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
@@ -18,4 +20,5 @@ import org.koin.dsl.module
  */
 val chatDataModule = module {
     singleOf(::KtorChatParticipantService) bind ChatParticipantService::class
+    singleOf(::KtorChatService) bind ChatService::class
 }

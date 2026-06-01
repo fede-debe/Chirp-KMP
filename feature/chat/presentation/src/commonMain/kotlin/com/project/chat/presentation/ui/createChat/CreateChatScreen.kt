@@ -22,6 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import chirp.feature.chat.presentation.generated.resources.Res
 import chirp.feature.chat.presentation.generated.resources.cancel
 import chirp.feature.chat.presentation.generated.resources.create_chat
+import com.project.chat.domain.models.Chat
 import com.project.chat.presentation.components.ChatParticipantSearchTextSection
 import com.project.chat.presentation.components.ChatParticipantsSelectionSection
 import com.project.chat.presentation.components.ManageChatButtonSection
@@ -32,6 +33,7 @@ import com.project.core.designSystem.components.buttons.ChirpButtonStyle
 import com.project.core.designSystem.components.dialogs.ChirpAdaptiveDialogSheetLayout
 import com.project.core.designSystem.theme.ChirpTheme
 import com.project.core.presentation.util.DeviceConfiguration
+import com.project.core.presentation.util.ObserveAsEvents
 import com.project.core.presentation.util.clearFocusOnTap
 import com.project.core.presentation.util.currentDeviceConfiguration
 import org.jetbrains.compose.resources.stringResource
@@ -39,18 +41,30 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun CreateChatRoot(
+    onDismiss: () -> Unit,
+    onChatCreated: (Chat) -> Unit,
     viewModel: CreateChatViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    ObserveAsEvents(viewModel.events) { event ->
+        when (event) {
+            is CreateChatEvent.OnChatCreated -> onChatCreated(event.chat)
+        }
+    }
+
     ChirpAdaptiveDialogSheetLayout(
-        onDismiss = {
-            viewModel.onAction(CreateChatAction.OnDismissDialog)
-        },
+        onDismiss = onDismiss,
     ) {
         CreateChatScreen(
             state = state,
-            onAction = viewModel::onAction,
+            onAction = { action ->
+                when (action) {
+                    CreateChatAction.OnDismissDialog -> onDismiss()
+                    else -> Unit
+                }
+                viewModel.onAction(action)
+            },
         )
     }
 }
@@ -133,6 +147,7 @@ fun CreateChatScreen(
                     style = ChirpButtonStyle.SECONDARY,
                 )
             },
+            error = state.createChatError?.asString(),
             modifier = Modifier.fillMaxWidth(),
         )
     }
