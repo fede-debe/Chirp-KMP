@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.project.chat.domain.models.ChatMessageDeliveryStatus
-import com.project.chat.presentation.models.MessageUiTemp
+import com.project.chat.presentation.models.ChatMessageUi
 import com.project.core.designSystem.components.avatar.ChatParticipantUi
 import com.project.core.designSystem.theme.ChirpTheme
 import com.project.core.designSystem.theme.extended
@@ -22,7 +22,7 @@ import com.project.core.presentation.util.UiText
 
 @Composable
 fun MessageListItemUi(
-    messageUiTemp: MessageUiTemp,
+    chatMessageUi: ChatMessageUi,
     onMessageLongClick: () -> Unit,
     onDismissMessageMenu: () -> Unit,
     onDeleteClick: () -> Unit,
@@ -32,25 +32,25 @@ fun MessageListItemUi(
     Box(
         modifier = modifier,
     ) {
-        when (messageUiTemp) {
-            is MessageUiTemp.DateSeparator -> {
+        when (chatMessageUi) {
+            is ChatMessageUi.DateSeparator -> {
                 DateSeparatorUi(
-                    date = messageUiTemp.date.asString(),
+                    date = chatMessageUi.date.asString(),
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
-            is MessageUiTemp.LocalUserMessageTemp -> {
+            is ChatMessageUi.LocalUserMessage -> {
                 LocalUserMessage(
-                    message = messageUiTemp,
+                    message = chatMessageUi,
                     onMessageLongClick = onMessageLongClick,
                     onDismissMessageMenu = onDismissMessageMenu,
                     onDeleteClick = onDeleteClick,
                     onRetryClick = onRetryClick,
                 )
             }
-            is MessageUiTemp.OtherUserMessageTemp -> {
+            is ChatMessageUi.OtherUserMessage -> {
                 OtherUserMessage(
-                    message = messageUiTemp,
+                    message = chatMessageUi,
                 )
             }
         }
@@ -84,7 +84,7 @@ private fun DateSeparatorUi(
 fun MessageListItemLocalMessageUiPreview() {
     ChirpTheme {
         MessageListItemUi(
-            messageUiTemp = MessageUiTemp.LocalUserMessageTemp(
+            chatMessageUi = ChatMessageUi.LocalUserMessage(
                 id = "1",
                 content = "Hello world, this is a preview message that spans multiple lines",
                 deliveryStatus = ChatMessageDeliveryStatus.SENT,
@@ -107,7 +107,7 @@ fun MessageListItemLocalMessageUiPreview() {
 fun MessageListItemLocalMessageRetryUiPreview() {
     ChirpTheme {
         MessageListItemUi(
-            messageUiTemp = MessageUiTemp.LocalUserMessageTemp(
+            chatMessageUi = ChatMessageUi.LocalUserMessage(
                 id = "1",
                 content = "Hello world, this is a preview message that spans multiple lines",
                 deliveryStatus = ChatMessageDeliveryStatus.FAILED,
@@ -129,7 +129,7 @@ fun MessageListItemLocalMessageRetryUiPreview() {
 fun MessageListItemOtherMessageUiPreview() {
     ChirpTheme {
         MessageListItemUi(
-            messageUiTemp = MessageUiTemp.OtherUserMessageTemp(
+            chatMessageUi = ChatMessageUi.OtherUserMessage(
                 id = "1",
                 content = "Hello world, this is a preview message that spans multiple lines",
                 formattedSentTime = UiText.DynamicString("Friday 2:20pm"),

@@ -4,24 +4,24 @@ import com.project.chat.domain.models.ChatMessageDeliveryStatus
 import com.project.core.designSystem.components.avatar.ChatParticipantUi
 import com.project.core.presentation.util.UiText
 
-sealed interface MessageUiTemp {
-    data class LocalUserMessageTemp(
+sealed interface ChatMessageUi {
+    data class LocalUserMessage(
         val id: String,
         val content: String,
         val deliveryStatus: ChatMessageDeliveryStatus,
         val isMenuOpen: Boolean,
         val formattedSentTime: UiText,
-    ) : MessageUiTemp
+    ) : ChatMessageUi
 
-    data class OtherUserMessageTemp(
+    data class OtherUserMessage(
         val id: String,
         val content: String,
         val formattedSentTime: UiText,
         val sender: ChatParticipantUi,
-    ) : MessageUiTemp
+    ) : ChatMessageUi
 
     data class DateSeparator(
         val id: String,
         val date: UiText,
-    ) : MessageUiTemp
+    ) : ChatMessageUi
 }
