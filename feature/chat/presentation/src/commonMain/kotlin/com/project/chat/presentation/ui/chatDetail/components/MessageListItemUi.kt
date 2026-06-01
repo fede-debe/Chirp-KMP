@@ -22,35 +22,35 @@ import com.project.core.presentation.util.UiText
 
 @Composable
 fun MessageListItemUi(
-    chatMessageUi: ChatMessageUi,
-    onMessageLongClick: () -> Unit,
+    ChatMessageUi: ChatMessageUi,
+    onMessageLongClick: (ChatMessageUi.LocalUserMessage) -> Unit,
     onDismissMessageMenu: () -> Unit,
-    onDeleteClick: () -> Unit,
-    onRetryClick: () -> Unit,
+    onDeleteClick: (ChatMessageUi.LocalUserMessage) -> Unit,
+    onRetryClick: (ChatMessageUi.LocalUserMessage) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier,
     ) {
-        when (chatMessageUi) {
+        when (ChatMessageUi) {
             is ChatMessageUi.DateSeparator -> {
                 DateSeparatorUi(
-                    date = chatMessageUi.date.asString(),
+                    date = ChatMessageUi.date.asString(),
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
             is ChatMessageUi.LocalUserMessage -> {
                 LocalUserMessage(
-                    message = chatMessageUi,
-                    onMessageLongClick = onMessageLongClick,
+                    message = ChatMessageUi,
+                    onMessageLongClick = { onMessageLongClick(ChatMessageUi) },
                     onDismissMessageMenu = onDismissMessageMenu,
-                    onDeleteClick = onDeleteClick,
-                    onRetryClick = onRetryClick,
+                    onDeleteClick = { onDeleteClick(ChatMessageUi) },
+                    onRetryClick = { onRetryClick(ChatMessageUi) },
                 )
             }
             is ChatMessageUi.OtherUserMessage -> {
                 OtherUserMessage(
-                    message = chatMessageUi,
+                    message = ChatMessageUi,
                 )
             }
         }
@@ -81,10 +81,10 @@ private fun DateSeparatorUi(
 
 @Composable
 @Preview
-fun MessageListItemLocalMessageUiPreview() {
+fun MessageListItemLocalChatMessageUiPreview() {
     ChirpTheme {
         MessageListItemUi(
-            chatMessageUi = ChatMessageUi.LocalUserMessage(
+            ChatMessageUi = ChatMessageUi.LocalUserMessage(
                 id = "1",
                 content = "Hello world, this is a preview message that spans multiple lines",
                 deliveryStatus = ChatMessageDeliveryStatus.SENT,
@@ -107,7 +107,7 @@ fun MessageListItemLocalMessageUiPreview() {
 fun MessageListItemLocalMessageRetryUiPreview() {
     ChirpTheme {
         MessageListItemUi(
-            chatMessageUi = ChatMessageUi.LocalUserMessage(
+            ChatMessageUi = ChatMessageUi.LocalUserMessage(
                 id = "1",
                 content = "Hello world, this is a preview message that spans multiple lines",
                 deliveryStatus = ChatMessageDeliveryStatus.FAILED,
@@ -126,10 +126,10 @@ fun MessageListItemLocalMessageRetryUiPreview() {
 
 @Composable
 @Preview
-fun MessageListItemOtherMessageUiPreview() {
+fun MessageListItemOtherChatMessageUiPreview() {
     ChirpTheme {
         MessageListItemUi(
-            chatMessageUi = ChatMessageUi.OtherUserMessage(
+            ChatMessageUi = ChatMessageUi.OtherUserMessage(
                 id = "1",
                 content = "Hello world, this is a preview message that spans multiple lines",
                 formattedSentTime = UiText.DynamicString("Friday 2:20pm"),
