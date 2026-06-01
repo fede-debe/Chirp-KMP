@@ -7,14 +7,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.project.chat.presentation.models.MessageUi
+import com.project.chat.presentation.models.MessageUiTemp
 import com.project.core.designSystem.components.avatar.ChirpAvatarPhoto
 import com.project.core.designSystem.components.chat.ChirpChatBubble
 import com.project.core.designSystem.components.chat.TrianglePosition
 
 @Composable
 fun OtherUserMessage(
-    message: MessageUi.OtherUserMessage,
+    message: MessageUiTemp.OtherUserMessageTemp,
     modifier: Modifier = Modifier,
 ) {
     Row(

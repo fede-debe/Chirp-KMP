@@ -23,7 +23,7 @@ import chirp.feature.chat.presentation.generated.resources.reload_icon
 import chirp.feature.chat.presentation.generated.resources.retry
 import chirp.feature.chat.presentation.generated.resources.you
 import com.project.chat.domain.models.ChatMessageDeliveryStatus
-import com.project.chat.presentation.models.MessageUi
+import com.project.chat.presentation.models.MessageUiTemp
 import com.project.core.designSystem.components.chat.ChirpChatBubble
 import com.project.core.designSystem.components.chat.TrianglePosition
 import com.project.core.designSystem.theme.extended
@@ -32,7 +32,7 @@ import org.jetbrains.compose.resources.vectorResource
 
 @Composable
 fun LocalUserMessage(
-    message: MessageUi.LocalUserMessage,
+    message: MessageUiTemp.LocalUserMessageTemp,
     onMessageLongClick: () -> Unit,
     onDismissMessageMenu: () -> Unit,
     onDeleteClick: () -> Unit,
