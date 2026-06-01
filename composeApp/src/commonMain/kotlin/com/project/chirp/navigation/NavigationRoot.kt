@@ -5,8 +5,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.project.auth.presentation.navigation.AuthGraphRoutes
 import com.project.auth.presentation.navigation.authGraph
+import com.project.chat.presentation.navigation.ChatGraphRoutes
 import com.project.chat.presentation.navigation.chatGraph
-import com.project.chat.presentation.ui.chatList.ChatListRoute
 
 /**
  * The root composable that hosts the application's primary `NavHost` and wires independent feature modules together.
@@ -33,7 +33,7 @@ fun NavigationRoot(
         authGraph(
             navController = navController,
             onLoginSuccess = {
-                navController.navigate(ChatListRoute) {
+                navController.navigate(ChatGraphRoutes.Graph) {
                     popUpTo(AuthGraphRoutes.Graph) {
                         inclusive = true
                     }

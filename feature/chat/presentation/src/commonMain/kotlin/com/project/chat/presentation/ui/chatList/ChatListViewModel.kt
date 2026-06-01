@@ -15,8 +15,7 @@ class ChatListViewModel : ViewModel() {
     val state = _state
         .onStart {
             if (!hasLoadedInitialData) {
-                // TODO: Load initial data here
-
+                /** Load initial data here **/
                 hasLoadedInitialData = true
             }
         }
@@ -28,13 +27,7 @@ class ChatListViewModel : ViewModel() {
 
     fun onAction(action: ChatListAction) {
         when (action) {
-            is ChatListAction.OnButtonAClick -> {
-                // TODO: Handle action
-            }
-
-            is ChatListAction.OnTypeInTextFieldB -> {
-                // TODO: Handle text input
-            }
+            else -> Unit
         }
     }
 }
