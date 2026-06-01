@@ -9,11 +9,13 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.stdlib)
 
+                implementation(projects.core.data)
                 implementation(projects.core.domain)
                 implementation(projects.feature.chat.domain)
                 implementation(projects.feature.chat.database) // reusable module for other projects
 
-                // Add KMP dependencies here
+                implementation(libs.bundles.ktor.common)
+                implementation(libs.koin.core)
             }
         }
 
