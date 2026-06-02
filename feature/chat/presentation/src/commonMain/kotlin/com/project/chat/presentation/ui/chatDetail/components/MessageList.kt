@@ -53,7 +53,7 @@ fun MessageList(
                 key = { it.id },
             ) { message ->
                 MessageListItemUi(
-                    ChatMessageUi = message,
+                    chatMessageUi = message,
                     onMessageLongClick = onMessageLongClick,
                     onDismissMessageMenu = onDismissMessageMenu,
                     onDeleteClick = onDeleteMessageClick,
