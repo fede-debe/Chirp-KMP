@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.project.chat.presentation.models.ChatMessageUi
 import com.project.core.designSystem.components.avatar.ChirpAvatarPhoto
@@ -15,6 +16,7 @@ import com.project.core.designSystem.components.chat.TrianglePosition
 @Composable
 fun OtherUserMessage(
     message: ChatMessageUi.OtherUserMessage,
+    color: Color,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -31,6 +33,7 @@ fun OtherUserMessage(
             messageContent = message.content,
             sender = message.sender.username,
             trianglePosition = TrianglePosition.LEFT,
+            color = color,
             formattedDateTime = message.formattedSentTime.asString(),
         )
     }
