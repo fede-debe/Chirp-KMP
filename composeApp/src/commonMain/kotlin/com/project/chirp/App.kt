@@ -7,12 +7,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.project.auth.presentation.navigation.AuthGraphRoutes
-import com.project.chat.presentation.chatList.ChatListRoute
+import com.project.chat.presentation.navigation.ChatGraphRoutes
 import com.project.chirp.main.MainEvent
 import com.project.chirp.main.MainViewModel
 import com.project.chirp.navigation.DeepLinkListener
 import com.project.chirp.navigation.NavigationRoot
-import com.project.core.designsystem.theme.ChirpTheme
+import com.project.core.designSystem.theme.ChirpTheme
 import com.project.core.presentation.util.ObserveAsEvents
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -63,7 +63,7 @@ fun App(
             NavigationRoot(
                 navController = navController,
                 startDestination = if (state.isLoggedIn) {
-                    ChatListRoute
+                    ChatGraphRoutes.Graph
                 } else {
                     AuthGraphRoutes.Graph
                 },

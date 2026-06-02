@@ -10,6 +10,7 @@ kotlin {
                 implementation(projects.core.domain)
                 // Add KMP dependencies here
                 implementation(libs.material3.adaptive)
+                implementation(libs.bundles.koin.common)
                 implementation(libs.components.resources)
             }
         }
