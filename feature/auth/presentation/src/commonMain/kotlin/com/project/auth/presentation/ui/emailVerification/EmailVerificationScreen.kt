@@ -26,15 +26,15 @@ import chirp.feature.auth.presentation.generated.resources.email_verified_succes
 import chirp.feature.auth.presentation.generated.resources.email_verified_successfully_desc
 import chirp.feature.auth.presentation.generated.resources.login
 import chirp.feature.auth.presentation.generated.resources.verifying_account
-import com.project.core.designsystem.components.brand.ChirpFailureIcon
-import com.project.core.designsystem.components.brand.ChirpSuccessIcon
-import com.project.core.designsystem.components.buttons.ChirpButton
-import com.project.core.designsystem.components.buttons.ChirpButtonStyle
-import com.project.core.designsystem.components.layouts.ChirpAdaptiveResultLayout
-import com.project.core.designsystem.components.layouts.ChirpSimpleResultLayout
-import com.project.core.designsystem.components.layouts.ChirpSnackbarScaffold
-import com.project.core.designsystem.theme.ChirpTheme
-import com.project.core.designsystem.theme.extended
+import com.project.core.designSystem.components.brand.ChirpFailureIcon
+import com.project.core.designSystem.components.brand.ChirpSuccessIcon
+import com.project.core.designSystem.components.buttons.ChirpButton
+import com.project.core.designSystem.components.buttons.ChirpButtonStyle
+import com.project.core.designSystem.components.layouts.ChirpAdaptiveResultLayout
+import com.project.core.designSystem.components.layouts.ChirpSimpleResultLayout
+import com.project.core.designSystem.components.layouts.ChirpSnackbarScaffold
+import com.project.core.designSystem.theme.ChirpTheme
+import com.project.core.designSystem.theme.extended
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
