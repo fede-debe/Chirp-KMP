@@ -3,6 +3,7 @@ package com.project.chat.database.entities
 import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
+import com.project.chat.database.view.LastMessageView
 
 /**
  * Room relationship class that bundles a Chat with a list of its Participants.
@@ -35,6 +36,36 @@ data class ChatWithParticipants(
         associateBy = Junction(ChatParticipantCrossRef::class),
     )
     val participants: List<ChatParticipantEntity>,
+    /**
+     * A relation class representing a chat along with its participants and its dynamically resolved most recent message.
+     *
+     * ## Strategy / Decisions
+     * Embeds the `LastMessageView` into the chat fetching logic using Room's `@Relation`. This allows the application
+     * to immediately access the latest message when querying chats, abstracting away the complex underlying SQL joins
+     * from the DAO and repository layers.
+     *
+     * ## How It Works
+     * 1. Links the parent `ChatEntity` to the `LastMessageView` using `chatId` for both `parentColumn` and `entityColumn`.
+     * 2. The `lastMessage` field is marked as nullable (`?`) to gracefully accommodate newly created chats that do not
+     * yet have any messages.
+     * 3. The legacy `lastMessage` property is completely removed from the base `ChatEntity` since this relation
+     * projects the data directly from the view.
+     *
+     * ## Alternatives / Why Not
+     * Keeping the `lastMessage` directly inside the `ChatEntity` was rejected as it creates redundant data that must
+     * be manually synchronized, breaking a single source of truth.
+     *
+     * Technical Details:
+     * - Uses `@Relation` with `entity = LastMessageView::class` to map the specific Room View.
+     * - When fetched via a DAO method (e.g., `getChatsWithParticipants`), Room returns a list where each
+     * element automatically resolves and assigns its respective `lastMessage`.
+     */
+    @Relation(
+        parentColumn = "chatId",
+        entityColumn = "chatId",
+        entity = LastMessageView::class,
+    )
+    val lastMessage: LastMessageView?,
 )
 
 /**

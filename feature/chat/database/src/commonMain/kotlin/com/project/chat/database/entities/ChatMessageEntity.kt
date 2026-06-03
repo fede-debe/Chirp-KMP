@@ -2,6 +2,7 @@ package com.project.chat.database.entities
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /**
@@ -32,6 +33,16 @@ import androidx.room.PrimaryKey
  * - Cascade Constraints: `onDelete = ForeignKey.CASCADE`.
  * - Timestamps: Stored as `Long` for easy SQLite compatibility.
  */
+
+/**
+ * Database entity representing an individual chat message.
+ * * ## Strategy / Decisions
+ * Applies explicit indexing to non-primary keys that are frequently queried or sorted against
+ * to speed up database reads.
+ * * Technical Details:
+ * - Added indices for `chatId` (commonly queried foreign key).
+ * - Added indices for `timestamp` (commonly used for ordering results).
+ */
 @Entity(
     foreignKeys = [
         ForeignKey(
@@ -40,6 +51,10 @@ import androidx.room.PrimaryKey
             childColumns = ["chatId"],
             onDelete = ForeignKey.CASCADE,
         ),
+    ],
+    indices = [
+        Index("chatId"),
+        Index("timestamp"),
     ],
 )
 data class ChatMessageEntity(

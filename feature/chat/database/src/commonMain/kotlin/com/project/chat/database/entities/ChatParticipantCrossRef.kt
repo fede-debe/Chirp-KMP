@@ -2,6 +2,7 @@ package com.project.chat.database.entities
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 
 /**
  * Junction table mapping the many-to-many relationship between Chats and Participants.
@@ -29,6 +30,16 @@ import androidx.room.ForeignKey
  * - Composite Keys: `["chatId", "userId"]`.
  * - Cascade Constraints: `onDelete = ForeignKey.CASCADE` applied to both `ChatEntity` and `ChatParticipantEntity`.
  */
+
+/**
+ * Junction table entity for mapping chats to participants.
+ * * ## Strategy / Decisions
+ * Since `chatId` and `userId` act as foreign keys but aren't strictly primary keys, they
+ * are explicitly indexed. This optimizes query speeds when resolving relationships and removes
+ * Room compile-time warnings regarding unindexed foreign keys.
+ * * Technical Details:
+ * - Uses the `indices = [Index(value = ["chatId", "userId"])]` parameter inside the `@Entity` annotation.
+ */
 @Entity(
     primaryKeys = ["chatId", "userId"],
     foreignKeys = [
@@ -44,6 +55,10 @@ import androidx.room.ForeignKey
             childColumns = ["userId"],
             onDelete = ForeignKey.CASCADE,
         ),
+    ],
+    indices = [
+        Index(value = ["chatId"]),
+        Index(value = ["userId"]),
     ],
 )
 data class ChatParticipantCrossRef(
