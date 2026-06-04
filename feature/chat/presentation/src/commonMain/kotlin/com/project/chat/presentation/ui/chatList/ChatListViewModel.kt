@@ -29,7 +29,7 @@ import kotlinx.coroutines.launch
  */
 class ChatListViewModel(
     private val repository: ChatRepository,
-    sessionStorage: SessionStorage,
+    private val sessionStorage: SessionStorage,
 ) : ViewModel() {
 
     private var hasLoadedInitialData = false
