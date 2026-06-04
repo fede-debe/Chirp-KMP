@@ -27,6 +27,7 @@ import chirp.feature.chat.presentation.generated.resources.leave_chat
 import chirp.feature.chat.presentation.generated.resources.open_chat_options_menu
 import chirp.feature.chat.presentation.generated.resources.users_icon
 import com.project.chat.domain.models.ChatMessage
+import com.project.chat.domain.models.ChatMessageDeliveryStatus
 import com.project.chat.presentation.components.ChatHeader
 import com.project.chat.presentation.components.ChatItemHeaderRow
 import com.project.chat.presentation.models.ChatUi
@@ -162,6 +163,7 @@ fun ChatDetailHeaderPreview() {
                                 "and goes over multiple lines to showcase the ellipsis",
                             createdAt = Clock.System.now(),
                             senderId = "1",
+                            deliveryStatus = ChatMessageDeliveryStatus.SENT,
                         ),
                         lastMessageSenderUsername = "Philipp",
                     ),
