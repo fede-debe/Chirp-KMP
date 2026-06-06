@@ -32,11 +32,11 @@ class ChatDetailViewModel(
     private val eventChannel = Channel<ChatDetailEvent>()
     val events = eventChannel.receiveAsFlow()
 
-    private val _chatId = MutableStateFlow<String?>(null)
+    private val chatId = MutableStateFlow<String?>(null)
 
     private var hasLoadedInitialData = false
 
-    private val chatInfoFlow = _chatId
+    private val chatInfoFlow = chatId
         .flatMapLatest { chatId ->
             if (chatId != null) {
                 chatRepository.getChatInfoById(chatId)
@@ -61,7 +61,7 @@ class ChatDetailViewModel(
         )
     }
 
-    val state = _chatId
+    val state = chatId
         .flatMapLatest { chatId ->
             if (chatId != null) {
                 stateWithMessages
@@ -100,7 +100,7 @@ class ChatDetailViewModel(
     }
 
     private fun onLeaveChatClick() {
-        val chatId = _chatId.value ?: return
+        val id = chatId.value ?: return
 
         _state.update {
             it.copy(
@@ -110,11 +110,11 @@ class ChatDetailViewModel(
 
         viewModelScope.launch {
             chatRepository
-                .leaveChat(chatId)
+                .leaveChat(id)
                 .onSuccess {
                     _state.value.messageTextFieldState.clearText()
 
-                    _chatId.update { null }
+                    chatId.update { null }
                     _state.update {
                         it.copy(
                             chatUi = null,
@@ -149,11 +149,11 @@ class ChatDetailViewModel(
         }
     }
 
-    private fun switchChat(chatId: String?) {
-        _chatId.update { chatId }
+    private fun switchChat(id: String?) {
+        chatId.update { id }
         viewModelScope.launch {
-            chatId?.let {
-                chatRepository.fetchChatById(chatId)
+            id?.let {
+                chatRepository.fetchChatById(id)
             }
         }
     }
