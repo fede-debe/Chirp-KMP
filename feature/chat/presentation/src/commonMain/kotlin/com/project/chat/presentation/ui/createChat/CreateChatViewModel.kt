@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import chirp.feature.chat.presentation.generated.resources.Res
 import chirp.feature.chat.presentation.generated.resources.error_participant_not_found
 import com.project.chat.domain.chat.ChatParticipantService
-import com.project.chat.domain.chat.ChatService
+import com.project.chat.domain.chat.ChatRepository
 import com.project.chat.presentation.mappers.toUi
 import com.project.core.domain.util.DataError
 import com.project.core.domain.util.onFailure
@@ -57,7 +57,7 @@ import kotlin.time.Duration.Companion.seconds
 @OptIn(FlowPreview::class)
 class CreateChatViewModel(
     private val chatParticipantService: ChatParticipantService,
-    private val chatService: ChatService,
+    private val chatRepository: ChatRepository,
 ) : ViewModel() {
 
     private var hasLoadedInitialData = false
@@ -108,7 +108,7 @@ class CreateChatViewModel(
                 )
             }
 
-            chatService
+            chatRepository
                 .createChat(userIds)
                 .onSuccess { chat ->
                     _state.update {
