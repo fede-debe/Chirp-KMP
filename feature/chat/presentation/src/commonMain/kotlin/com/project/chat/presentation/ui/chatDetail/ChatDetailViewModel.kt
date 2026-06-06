@@ -1,18 +1,74 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.project.chat.presentation.ui.chatDetail
 
+import androidx.compose.foundation.text.input.clearText
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.project.chat.domain.chat.ChatRepository
+import com.project.chat.presentation.mappers.toUi
+import com.project.core.domain.auth.SessionStorage
+import com.project.core.domain.util.onFailure
+import com.project.core.domain.util.onSuccess
+import com.project.core.presentation.util.toUiText
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-class ChatDetailViewModel : ViewModel() {
+class ChatDetailViewModel(
+    private val chatRepository: ChatRepository,
+    private val sessionStorage: SessionStorage,
+) : ViewModel() {
+
+    private val eventChannel = Channel<ChatDetailEvent>()
+    val events = eventChannel.receiveAsFlow()
+
+    private val chatId = MutableStateFlow<String?>(null)
 
     private var hasLoadedInitialData = false
 
+    private val chatInfoFlow = chatId
+        .flatMapLatest { chatId ->
+            if (chatId != null) {
+                chatRepository.getChatInfoById(chatId)
+            } else {
+                emptyFlow()
+            }
+        }
+
     private val _state = MutableStateFlow(ChatDetailState())
-    val state = _state
+
+    private val stateWithMessages = combine(
+        _state,
+        chatInfoFlow,
+        sessionStorage.observeAuthInfo(),
+    ) { currentState, chatInfo, authInfo ->
+        if (authInfo == null) {
+            return@combine ChatDetailState()
+        }
+
+        currentState.copy(
+            chatUi = chatInfo.chat.toUi(authInfo.user.id),
+        )
+    }
+
+    val state = chatId
+        .flatMapLatest { chatId ->
+            if (chatId != null) {
+                stateWithMessages
+            } else {
+                _state
+            }
+        }
         .onStart {
             if (!hasLoadedInitialData) {
                 /** Load initial data here **/
@@ -27,7 +83,78 @@ class ChatDetailViewModel : ViewModel() {
 
     fun onAction(action: ChatDetailAction) {
         when (action) {
-            else -> TODO("Handle actions")
+            is ChatDetailAction.OnSelectChat -> switchChat(action.chatId)
+            ChatDetailAction.OnBackClick -> {}
+            ChatDetailAction.OnChatMembersClick -> {}
+            ChatDetailAction.OnChatOptionsClick -> onChatOptionsClick()
+            is ChatDetailAction.OnDeleteMessageClick -> {}
+            ChatDetailAction.OnDismissChatOptions -> onDismissChatOptions()
+            ChatDetailAction.OnDismissMessageMenu -> {}
+            ChatDetailAction.OnLeaveChatClick -> onLeaveChatClick()
+            is ChatDetailAction.OnMessageLongClick -> {}
+            is ChatDetailAction.OnRetryClick -> {}
+            ChatDetailAction.OnScrollToTop -> {}
+            ChatDetailAction.OnSendMessageClick -> {}
+            else -> Unit
+        }
+    }
+
+    private fun onLeaveChatClick() {
+        val id = chatId.value ?: return
+
+        _state.update {
+            it.copy(
+                isChatOptionsOpen = false,
+            )
+        }
+
+        viewModelScope.launch {
+            chatRepository
+                .leaveChat(id)
+                .onSuccess {
+                    _state.value.messageTextFieldState.clearText()
+
+                    chatId.update { null }
+                    _state.update {
+                        it.copy(
+                            chatUi = null,
+                            messages = emptyList(),
+                            bannerState = BannerState(),
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    eventChannel.send(
+                        ChatDetailEvent.OnError(
+                            error.toUiText(),
+                        ),
+                    )
+                }
+        }
+    }
+
+    private fun onDismissChatOptions() {
+        _state.update {
+            it.copy(
+                isChatOptionsOpen = false,
+            )
+        }
+    }
+
+    private fun onChatOptionsClick() {
+        _state.update {
+            it.copy(
+                isChatOptionsOpen = true,
+            )
+        }
+    }
+
+    private fun switchChat(id: String?) {
+        chatId.update { id }
+        viewModelScope.launch {
+            id?.let {
+                chatRepository.fetchChatById(id)
+            }
         }
     }
 }

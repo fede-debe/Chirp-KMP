@@ -21,6 +21,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.project.chat.presentation.ui.chatDetail.ChatDetailRoot
 import com.project.chat.presentation.ui.chatList.ChatListRoot
 import com.project.chat.presentation.ui.createChat.CreateChatRoot
+import com.project.chat.presentation.ui.manageChat.ManageChatRoot
 import com.project.core.designSystem.theme.extended
 import com.project.core.presentation.util.DialogSheetScopedViewModel
 import kotlinx.coroutines.launch
@@ -83,6 +84,9 @@ fun ChatListDetailAdaptiveLayout(
                 ChatDetailRoot(
                     chatId = sharedState.selectedChatId,
                     isDetailPresent = detailPane == PaneAdaptedValue.Expanded && listPane == PaneAdaptedValue.Expanded,
+                    onChatMembersClick = {
+                        chatListDetailViewModel.onAction(ChatListDetailAction.OnManageChatClick)
+                    },
                     onBack = {
                         scope.launch {
                             if (scaffoldNavigator.canNavigateBack()) {
@@ -105,6 +109,20 @@ fun ChatListDetailAdaptiveLayout(
                 scope.launch {
                     scaffoldNavigator.navigateTo(ListDetailPaneScaffoldRole.Detail)
                 }
+            },
+            onDismiss = {
+                chatListDetailViewModel.onAction(ChatListDetailAction.OnDismissCurrentDialog)
+            },
+        )
+    }
+
+    DialogSheetScopedViewModel(
+        visible = sharedState.dialogState is DialogState.ManageChat,
+    ) {
+        ManageChatRoot(
+            chatId = sharedState.selectedChatId,
+            onMembersAdded = {
+                chatListDetailViewModel.onAction(ChatListDetailAction.OnDismissCurrentDialog)
             },
             onDismiss = {
                 chatListDetailViewModel.onAction(ChatListDetailAction.OnDismissCurrentDialog)

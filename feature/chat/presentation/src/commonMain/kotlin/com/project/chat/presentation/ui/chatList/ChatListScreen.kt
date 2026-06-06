@@ -26,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import chirp.feature.chat.presentation.generated.resources.Res
 import chirp.feature.chat.presentation.generated.resources.cancel
 import chirp.feature.chat.presentation.generated.resources.create_chat
@@ -35,7 +34,7 @@ import chirp.feature.chat.presentation.generated.resources.do_you_want_to_logout
 import chirp.feature.chat.presentation.generated.resources.logout
 import chirp.feature.chat.presentation.generated.resources.no_chats
 import chirp.feature.chat.presentation.generated.resources.no_chats_subtitle
-import com.project.chat.presentation.components.EmptyListSection
+import com.project.chat.presentation.components.EmptySection
 import com.project.chat.presentation.models.ChatUi
 import com.project.chat.presentation.ui.chatList.components.ChatListHeader
 import com.project.chat.presentation.ui.chatList.components.ChatListItemUi
@@ -130,7 +129,7 @@ fun ChatListScreen(
                     )
                 }
                 state.chats.isEmpty() -> {
-                    EmptyListSection(
+                    EmptySection(
                         title = stringResource(Res.string.no_chats),
                         description = stringResource(Res.string.no_chats_subtitle),
                         modifier = Modifier
