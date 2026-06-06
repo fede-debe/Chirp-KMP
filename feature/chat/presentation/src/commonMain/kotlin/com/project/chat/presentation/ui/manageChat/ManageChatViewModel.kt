@@ -41,7 +41,7 @@ class ManageChatViewModel(
     private val chatParticipantService: ChatParticipantService,
 ) : ViewModel() {
 
-    private val _chatId = MutableStateFlow<String?>(null)
+    private val flowChatId = MutableStateFlow<String?>(null)
 
     private val eventChannel = Channel<ManageChatEvent>()
     val events = eventChannel.receiveAsFlow()
@@ -49,7 +49,7 @@ class ManageChatViewModel(
     private var hasLoadedInitialData = false
 
     private val _state = MutableStateFlow(ManageChatState())
-    val state = _chatId
+    val state = flowChatId
         .flatMapLatest { chatId ->
             if (chatId != null) {
                 chatRepository.getActiveParticipantsByChatId(chatId)
@@ -85,7 +85,7 @@ class ManageChatViewModel(
             ManageChatAction.OnAddClick -> addParticipant()
             ManageChatAction.OnPrimaryActionClick -> addParticipantsToChat()
             is ManageChatAction.ChatParticipants.OnSelectChat -> {
-                _chatId.update { action.chatId }
+                flowChatId.update { action.chatId }
             }
             else -> Unit
         }
@@ -121,7 +121,7 @@ class ManageChatViewModel(
             return
         }
 
-        val chatId = _chatId.value ?: return
+        val chatId = flowChatId.value ?: return
 
         val selectedParticipants = state.value.selectedChatParticipants
         val selectedUserIds = selectedParticipants.map { it.id }
