@@ -47,4 +47,5 @@ data class LastMessageView(
     val senderId: String,
     val content: String,
     val timestamp: Long,
+    val deliveryStatus: String,
 )

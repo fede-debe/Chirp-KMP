@@ -24,6 +24,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.project.chat.domain.models.ChatMessage
+import com.project.chat.domain.models.ChatMessageDeliveryStatus
 import com.project.chat.presentation.components.ChatItemHeaderRow
 import com.project.chat.presentation.models.ChatUi
 import com.project.core.designSystem.components.avatar.ChatParticipantUi
@@ -71,7 +72,7 @@ fun ChatListItemUi(
                             color = MaterialTheme.colorScheme.extended.textSecondary,
                         ),
                     ) {
-                        append(chat.lastMessageSenderUsername + ":")
+                        append(chat.lastMessageSenderUsername + ": ")
                     }
                     append(chat.lastMessage.content)
                 }
@@ -128,6 +129,7 @@ fun ChatListItemUiPreview() {
                         "and goes over multiple lines to showcase the ellipsis",
                     createdAt = Clock.System.now(),
                     senderId = "1",
+                    deliveryStatus = ChatMessageDeliveryStatus.SENT,
                 ),
                 lastMessageSenderUsername = "Philipp",
             ),
