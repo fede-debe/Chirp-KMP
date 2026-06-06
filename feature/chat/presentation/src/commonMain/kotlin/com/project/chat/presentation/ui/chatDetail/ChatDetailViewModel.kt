@@ -23,14 +23,14 @@ class ChatDetailViewModel(
     private val sessionStorage: SessionStorage,
 ) : ViewModel() {
 
-    private val _chatId = MutableStateFlow<String?>(null)
+    private val chatId = MutableStateFlow<String?>(null)
 
     private var hasLoadedInitialData = false
 
-    private val chatInfoFlow = _chatId
-        .flatMapLatest { chatId ->
-            if (chatId != null) {
-                chatRepository.getChatInfoById(chatId)
+    private val chatInfoFlow = chatId
+        .flatMapLatest { id ->
+            if (id != null) {
+                chatRepository.getChatInfoById(id)
             } else {
                 emptyFlow()
             }
@@ -52,9 +52,9 @@ class ChatDetailViewModel(
         )
     }
 
-    val state = _chatId
-        .flatMapLatest { chatId ->
-            if (chatId != null) {
+    val state = chatId
+        .flatMapLatest { id ->
+            if (id != null) {
                 stateWithMessages
             } else {
                 _state
@@ -79,11 +79,11 @@ class ChatDetailViewModel(
         }
     }
 
-    private fun switchChat(chatId: String?) {
-        _chatId.update { chatId }
+    private fun switchChat(id: String?) {
+        chatId.update { id }
         viewModelScope.launch {
-            chatId?.let {
-                chatRepository.fetchChatById(chatId)
+            id?.let {
+                chatRepository.fetchChatById(id)
             }
         }
     }
