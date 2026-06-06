@@ -2,6 +2,7 @@ package com.project.chat.data.chat
 
 import com.project.chat.data.dto.ChatDto
 import com.project.chat.data.dto.request.CreateChatRequest
+import com.project.chat.data.dto.request.ParticipantsRequest
 import com.project.chat.data.mappers.toDomain
 import com.project.chat.domain.chat.ChatService
 import com.project.chat.domain.models.Chat
@@ -14,6 +15,7 @@ import com.project.core.domain.util.Result
 import com.project.core.domain.util.asEmptyResult
 import com.project.core.domain.util.map
 import io.ktor.client.HttpClient
+import io.ktor.client.request.post
 
 /**
  * Handles all remote API communication to fetch chat data for the logged-in user.
@@ -48,14 +50,14 @@ class KtorChatService(
             body = CreateChatRequest(
                 otherUserIds = otherUserIds,
             ),
-        ).map { dto -> dto.toDomain() }
+        ).map { it.toDomain() }
     }
 
     override suspend fun getChats(): Result<List<Chat>, DataError.Remote> {
         return httpClient.get<List<ChatDto>>(
             route = "/chat",
-        ).map { chatDtoList ->
-            chatDtoList.map { it.toDomain() }
+        ).map { chatDtos ->
+            chatDtos.map { it.toDomain() }
         }
     }
 
@@ -69,5 +71,17 @@ class KtorChatService(
         return httpClient.delete<Unit>(
             route = "/chat/$chatId/leave",
         ).asEmptyResult()
+    }
+
+    override suspend fun addParticipantsToChat(
+        chatId: String,
+        userIds: List<String>,
+    ): Result<Chat, DataError.Remote> {
+        return httpClient.post<ParticipantsRequest, ChatDto>(
+            route = "/chat/$chatId/add",
+            body = ParticipantsRequest(
+                userIds = userIds,
+            ),
+        ).map { it.toDomain() }
     }
 }

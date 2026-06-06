@@ -1,6 +1,7 @@
 package com.project.chat.presentation.ui.manageChat
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import chirp.feature.chat.presentation.generated.resources.Res
@@ -15,11 +16,16 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ManageChatRoot(
+    chatId: String?,
     onDismiss: () -> Unit,
     onMembersAdded: () -> Unit,
     viewModel: ManageChatViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(chatId) {
+        viewModel.onAction(ManageChatAction.ChatParticipants.OnSelectChat(chatId))
+    }
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
