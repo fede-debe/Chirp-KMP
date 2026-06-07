@@ -6,22 +6,15 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import chirp.feature.chat.presentation.generated.resources.Res
-import chirp.feature.chat.presentation.generated.resources.today
 import com.project.chat.domain.chat.ChatConnectionClient
 import com.project.chat.domain.chat.ChatRepository
 import com.project.chat.domain.message.MessageRepository
-import com.project.chat.domain.models.ChatMessage
 import com.project.chat.domain.models.ConnectionState
 import com.project.chat.domain.models.OutgoingNewMessage
 import com.project.chat.presentation.mappers.toUi
-import com.project.chat.presentation.models.ChatMessageUi
 import com.project.core.domain.auth.SessionStorage
-import com.project.core.domain.util.DataErrorException
-import com.project.core.domain.util.Paginator
 import com.project.core.domain.util.onFailure
 import com.project.core.domain.util.onSuccess
-import com.project.core.presentation.util.UiText
 import com.project.core.presentation.util.toUiText
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -56,17 +49,7 @@ class ChatDetailViewModel(
 
     private var hasLoadedInitialData = false
 
-    private var currentPaginator: Paginator<String?, ChatMessage>? = null
-
     private val chatInfoFlow = _chatId
-        .onEach { chatId ->
-            if (chatId != null) {
-                setupPaginatorForChat(chatId)
-                loadNextItems()
-            } else {
-                currentPaginator = null
-            }
-        }
         .flatMapLatest { chatId ->
             if (chatId != null) {
                 chatRepository.getChatInfoById(chatId)
@@ -94,7 +77,6 @@ class ChatDetailViewModel(
 
         currentState.copy(
             chatUi = chatInfo.chat.toUi(authInfo.user.id),
-            messages = chatInfo.messages.toUiList(authInfo.user.id),
         )
     }
 
@@ -123,124 +105,18 @@ class ChatDetailViewModel(
     fun onAction(action: ChatDetailAction) {
         when (action) {
             is ChatDetailAction.OnSelectChat -> switchChat(action.chatId)
+            ChatDetailAction.OnBackClick -> {}
+            ChatDetailAction.OnChatMembersClick -> {}
             ChatDetailAction.OnChatOptionsClick -> onChatOptionsClick()
-            is ChatDetailAction.OnDeleteMessageClick -> deleteMessage(action.message)
+            is ChatDetailAction.OnDeleteMessageClick -> {}
             ChatDetailAction.OnDismissChatOptions -> onDismissChatOptions()
-            ChatDetailAction.OnDismissMessageMenu -> onDismissMessageMenu()
+            ChatDetailAction.OnDismissMessageMenu -> {}
             ChatDetailAction.OnLeaveChatClick -> onLeaveChatClick()
-            is ChatDetailAction.OnMessageLongClick -> onMessageLongClick(action.message)
-            is ChatDetailAction.OnRetryClick -> retryMessage(action.message)
-            ChatDetailAction.OnScrollToTop -> onScrollToTop()
+            is ChatDetailAction.OnMessageLongClick -> {}
+            is ChatDetailAction.OnRetryClick -> {}
+            ChatDetailAction.OnScrollToTop -> {}
             ChatDetailAction.OnSendMessageClick -> sendMessage()
-            ChatDetailAction.OnRetryPaginationClick -> retryPagination()
-            ChatDetailAction.OnHideBanner -> hideBanner()
-            is ChatDetailAction.OnTopVisibleIndexChanged -> updateBanner(action.topVisibleIndex)
-            is ChatDetailAction.OnFirstVisibleIndexChanged -> updateNearBottom(action.index)
             else -> Unit
-        }
-    }
-
-    private fun updateNearBottom(firstVisibleIndex: Int) {
-        _state.update {
-            it.copy(
-                isNearBottom = firstVisibleIndex <= 3,
-            )
-        }
-    }
-
-    private fun updateBanner(topVisibleIndex: Int) {
-        val visibleDate = calculateBannerDateFromIndex(
-            messages = state.value.messages,
-            index = topVisibleIndex,
-        )
-
-        _state.update {
-            it.copy(
-                bannerState = BannerState(
-                    formattedDate = visibleDate,
-                    isVisible = visibleDate != null,
-                ),
-            )
-        }
-    }
-
-    private fun calculateBannerDateFromIndex(
-        messages: List<ChatMessageUi>,
-        index: Int,
-    ): UiText? {
-        if (messages.isEmpty() || index < 0 || index >= messages.size) {
-            return null
-        }
-
-        val nearestDateSeparator = (index until messages.size)
-            .asSequence()
-            .mapNotNull { index ->
-                val item = messages.getOrNull(index)
-                if (item is ChatMessageUi.DateSeparator) item.date else null
-            }
-            .firstOrNull()
-
-        return when (nearestDateSeparator) {
-            is UiText.Resource -> {
-                if (nearestDateSeparator.id == Res.string.today) null else nearestDateSeparator
-            }
-            else -> nearestDateSeparator
-        }
-    }
-
-    private fun hideBanner() {
-        _state.update {
-            it.copy(
-                bannerState = it.bannerState.copy(
-                    isVisible = false,
-                ),
-            )
-        }
-    }
-
-    private fun retryPagination() = loadNextItems()
-
-    private fun onScrollToTop() = loadNextItems()
-
-    private fun loadNextItems() {
-        viewModelScope.launch {
-            currentPaginator?.loadNextItems()
-        }
-    }
-
-    private fun onDismissMessageMenu() {
-        _state.update {
-            it.copy(
-                messageWithOpenMenu = null,
-            )
-        }
-    }
-
-    private fun onMessageLongClick(message: ChatMessageUi.LocalUserMessage) {
-        _state.update {
-            it.copy(
-                messageWithOpenMenu = message,
-            )
-        }
-    }
-
-    private fun deleteMessage(message: ChatMessageUi.LocalUserMessage) {
-        viewModelScope.launch {
-            messageRepository
-                .deleteMessage(message.id)
-                .onFailure { error ->
-                    eventChannel.send(ChatDetailEvent.OnError(error.toUiText()))
-                }
-        }
-    }
-
-    private fun retryMessage(message: ChatMessageUi.LocalUserMessage) {
-        viewModelScope.launch {
-            messageRepository
-                .retryMessage(message.id)
-                .onFailure { error ->
-                    eventChannel.send(ChatDetailEvent.OnError(error.toUiText()))
-                }
         }
     }
 
@@ -292,6 +168,17 @@ class ChatDetailViewModel(
                 emptyFlow()
             }
         }
+            .combine(sessionStorage.observeAuthInfo()) { messages, authInfo ->
+                if (authInfo == null) {
+                    return@combine messages
+                }
+                _state.update {
+                    it.copy(
+                        messages = messages.map { it.toUi(authInfo.user.id) },
+                    )
+                }
+                messages
+            }
 
         val isNearBottom = state.map { it.isNearBottom }.distinctUntilChanged()
 
@@ -300,14 +187,10 @@ class ChatDetailViewModel(
             newMessages,
             isNearBottom,
         ) { currentMessages, newMessages, isNearBottom ->
-            val newestMessageId = newMessages.firstOrNull()?.message?.id
-            val currentNewestId = currentMessages
-                .asSequence()
-                .filterNot { it is ChatMessageUi.DateSeparator }
-                .firstOrNull()
-                ?.id
+            val lastNewId = newMessages.lastOrNull()?.message?.id
+            val lastCurrentId = currentMessages.lastOrNull()?.id
 
-            if (newestMessageId != null && newestMessageId != currentNewestId && isNearBottom) {
+            if (lastNewId != lastCurrentId && isNearBottom) {
                 eventChannel.send(ChatDetailEvent.OnNewMessage)
             }
         }.launchIn(viewModelScope)
@@ -318,7 +201,9 @@ class ChatDetailViewModel(
             .connectionState
             .onEach { connectionState ->
                 if (connectionState == ConnectionState.CONNECTED) {
-                    currentPaginator?.loadNextItems()
+                    _chatId.value?.let {
+                        messageRepository.fetchMessages(it, before = null)
+                    }
                 }
 
                 _state.update {
@@ -328,45 +213,6 @@ class ChatDetailViewModel(
                 }
             }
             .launchIn(viewModelScope)
-    }
-
-    private fun setupPaginatorForChat(chatId: String) {
-        currentPaginator = Paginator(
-            initialKey = null,
-            onLoadUpdated = { isLoading ->
-                _state.update { it.copy(isPaginationLoading = isLoading) }
-            },
-            onRequest = { beforeTimestamp ->
-                messageRepository.fetchMessages(chatId, beforeTimestamp)
-            },
-            getNextKey = { messages ->
-                messages.minOfOrNull { it.createdAt }?.toString()
-            },
-            onError = { throwable ->
-                if (throwable is DataErrorException) {
-                    _state.update {
-                        it.copy(
-                            paginationError = throwable.error.toUiText(),
-                        )
-                    }
-                }
-            },
-            onSuccess = { messages, _ ->
-                _state.update {
-                    it.copy(
-                        endReached = messages.isEmpty(),
-                        paginationError = null,
-                    )
-                }
-            },
-        )
-
-        _state.update {
-            it.copy(
-                endReached = false,
-                isPaginationLoading = false,
-            )
-        }
     }
 
     private fun onLeaveChatClick() {
@@ -392,10 +238,6 @@ class ChatDetailViewModel(
                             bannerState = BannerState(),
                         )
                     }
-
-                    eventChannel.send(
-                        ChatDetailEvent.OnChatLeft,
-                    )
                 }
                 .onFailure { error ->
                     eventChannel.send(
