@@ -1,6 +1,8 @@
 package com.project.chat.data.di
 
+import com.project.chat.data.lifecycle.AppLifecycleObserver
 import com.project.chat.database.DatabaseFactory
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 /**
@@ -11,4 +13,5 @@ import org.koin.dsl.module
  */
 actual val platformChatDataModule = module {
     single { DatabaseFactory() }
+    singleOf(::AppLifecycleObserver)
 }
