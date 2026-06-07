@@ -4,11 +4,11 @@ package com.project.chat.data.network
 
 import com.project.chat.data.dto.websocket.WebSocketMessageDto
 import com.project.chat.data.lifecycle.AppLifecycleObserver
-import com.project.chat.domain.error.ConnectionError
 import com.project.chat.domain.models.ConnectionState
 import com.project.core.data.networking.UrlConstants
 import com.project.core.domain.auth.SessionStorage
 import com.project.core.domain.logging.ChirpLogger
+import com.project.core.domain.util.DataError
 import com.project.core.domain.util.EmptyResult
 import com.project.core.domain.util.Result
 import com.project.feature.chat.data.BuildKonfig
@@ -25,6 +25,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -42,7 +43,6 @@ import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration.Companion.seconds
 
 class KtorWebSocketConnector(
@@ -213,20 +213,20 @@ class KtorWebSocketConnector(
         }
     }
 
-    suspend fun sendMessage(message: String): EmptyResult<ConnectionError> {
+    suspend fun sendMessage(message: String): EmptyResult<DataError.Connection> {
         val connectionState = connectionState.value
 
         if (currentSession == null || connectionState != ConnectionState.CONNECTED) {
-            return Result.Failure(ConnectionError.NOT_CONNECTED)
+            return Result.Failure(DataError.Connection.NOT_CONNECTED)
         }
 
         return try {
             currentSession?.send(message)
             Result.Success(Unit)
         } catch (e: Exception) {
-            coroutineContext.ensureActive()
+            currentCoroutineContext().ensureActive()
             logger.error("Unable to send WebSocket message", e)
-            Result.Failure(ConnectionError.MESSAGE_SEND_FAILED)
+            Result.Failure(DataError.Connection.MESSAGE_SEND_FAILED)
         }
     }
 }

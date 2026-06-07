@@ -16,6 +16,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -35,7 +42,7 @@ import org.jetbrains.compose.resources.vectorResource
 @Composable
 fun MessageBox(
     messageTextFieldState: TextFieldState,
-    isTextInputEnabled: Boolean,
+    isSendButtonEnabled: Boolean,
     connectionState: ConnectionState,
     onSendClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -43,9 +50,21 @@ fun MessageBox(
     val isConnected = connectionState == ConnectionState.CONNECTED
     ChirpMultiLineTextField(
         state = messageTextFieldState,
-        modifier = modifier,
+        modifier = modifier
+            .onPreviewKeyEvent { keyEvent ->
+                val isModifierKeyPressed = keyEvent.isMetaPressed || keyEvent.isCtrlPressed
+                val isSendShortcutPressed = isModifierKeyPressed &&
+                    keyEvent.key == Key.Enter &&
+                    keyEvent.type == KeyEventType.KeyDown
+
+                if (isSendShortcutPressed) {
+                    onSendClick()
+                    true
+                } else {
+                    false
+                }
+            },
         placeholder = stringResource(Res.string.send_a_message),
-        enabled = isTextInputEnabled,
         keyboardOptions = KeyboardOptions(
             imeAction = ImeAction.Send,
         ),
@@ -73,7 +92,7 @@ fun MessageBox(
             ChirpButton(
                 text = stringResource(Res.string.send),
                 onClick = onSendClick,
-                enabled = isConnected && isTextInputEnabled,
+                enabled = isConnected && isSendButtonEnabled,
             )
         },
     )
@@ -91,7 +110,7 @@ fun MessageBoxPreview() {
         ) {
             MessageBox(
                 messageTextFieldState = rememberTextFieldState(),
-                isTextInputEnabled = true,
+                isSendButtonEnabled = true,
                 connectionState = ConnectionState.CONNECTED,
                 onSendClick = {},
                 modifier = Modifier

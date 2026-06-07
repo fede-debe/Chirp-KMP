@@ -16,6 +16,7 @@ data class ChatDetailState(
     val isPaginationLoading: Boolean = false,
     val paginationError: UiText? = null,
     val endReached: Boolean = false,
+    val messageWithOpenMenu: ChatMessageUi.LocalUserMessage? = null,
     val bannerState: BannerState = BannerState(),
     val isChatOptionsOpen: Boolean = false,
     val isNearBottom: Boolean = false,

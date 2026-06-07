@@ -1,9 +1,7 @@
 package com.project.chat.domain.chat
 
-import com.project.chat.domain.error.ConnectionError
 import com.project.chat.domain.models.ChatMessage
 import com.project.chat.domain.models.ConnectionState
-import com.project.core.domain.util.EmptyResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -21,5 +19,4 @@ import kotlinx.coroutines.flow.StateFlow
 interface ChatConnectionClient {
     val chatMessages: Flow<ChatMessage>
     val connectionState: StateFlow<ConnectionState>
-    suspend fun sendChatMessage(message: ChatMessage): EmptyResult<ConnectionError>
 }
