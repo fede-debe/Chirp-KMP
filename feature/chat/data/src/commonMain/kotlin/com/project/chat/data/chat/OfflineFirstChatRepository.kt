@@ -1,9 +1,9 @@
 package com.project.chat.data.chat
 
-import com.project.chat.data.lifecycle.AppLifecycleObserver
 import com.project.chat.data.mappers.toDomain
 import com.project.chat.data.mappers.toEntity
 import com.project.chat.data.mappers.toLastMessageView
+import com.project.chat.data.network.ConnectivityObserver
 import com.project.chat.database.ChirpChatDatabase
 import com.project.chat.database.entities.ChatInfoEntity
 import com.project.chat.database.entities.ChatParticipantEntity
@@ -99,12 +99,12 @@ import kotlinx.coroutines.supervisorScope
 class OfflineFirstChatRepository(
     private val chatService: ChatService,
     private val db: ChirpChatDatabase,
-    private val observer: AppLifecycleObserver,
+    private val observer: ConnectivityObserver,
 ) : ChatRepository {
 
     init {
-        observer.isInForeground.onEach { isInForeground ->
-            println("Is app in foreground: $isInForeground")
+        observer.isConnected.onEach { isConnected ->
+            println("Is app connected: $isConnected")
         }.launchIn(GlobalScope)
     }
 
