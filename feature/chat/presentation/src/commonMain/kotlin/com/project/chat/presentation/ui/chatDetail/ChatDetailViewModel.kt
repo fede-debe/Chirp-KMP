@@ -5,7 +5,10 @@ package com.project.chat.presentation.ui.chatDetail
 import androidx.compose.foundation.text.input.clearText
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.project.chat.domain.chat.ChatConnectionClient
 import com.project.chat.domain.chat.ChatRepository
+import com.project.chat.domain.message.MessageRepository
+import com.project.chat.domain.models.ConnectionState
 import com.project.chat.presentation.mappers.toUi
 import com.project.core.domain.auth.SessionStorage
 import com.project.core.domain.util.onFailure
@@ -16,8 +19,12 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -27,16 +34,18 @@ import kotlinx.coroutines.launch
 class ChatDetailViewModel(
     private val chatRepository: ChatRepository,
     private val sessionStorage: SessionStorage,
+    private val messageRepository: MessageRepository,
+    private val connectionClient: ChatConnectionClient,
 ) : ViewModel() {
 
     private val eventChannel = Channel<ChatDetailEvent>()
     val events = eventChannel.receiveAsFlow()
 
-    private val chatId = MutableStateFlow<String?>(null)
+    private val chatIdFlow = MutableStateFlow<String?>(null)
 
     private var hasLoadedInitialData = false
 
-    private val chatInfoFlow = chatId
+    private val chatInfoFlow = chatIdFlow
         .flatMapLatest { chatId ->
             if (chatId != null) {
                 chatRepository.getChatInfoById(chatId)
@@ -61,7 +70,7 @@ class ChatDetailViewModel(
         )
     }
 
-    val state = chatId
+    val state = chatIdFlow
         .flatMapLatest { chatId ->
             if (chatId != null) {
                 stateWithMessages
@@ -71,7 +80,8 @@ class ChatDetailViewModel(
         }
         .onStart {
             if (!hasLoadedInitialData) {
-                /** Load initial data here **/
+                observeConnectionState()
+                observeChatMessages()
                 hasLoadedInitialData = true
             }
         }
@@ -99,8 +109,67 @@ class ChatDetailViewModel(
         }
     }
 
+    private fun observeChatMessages() {
+        val currentMessages = state
+            .map { it.messages }
+            .distinctUntilChanged()
+
+        val newMessages = chatIdFlow.flatMapLatest { chatId ->
+            if (chatId != null) {
+                messageRepository.getMessagesForChat(chatId)
+            } else {
+                emptyFlow()
+            }
+        }
+            .combine(sessionStorage.observeAuthInfo()) { messages, authInfo ->
+                if (authInfo == null) {
+                    return@combine messages
+                }
+                _state.update {
+                    it.copy(
+                        messages = messages.map { msg -> msg.toUi(authInfo.user.id) },
+                    )
+                }
+                messages
+            }
+
+        val isNearBottom = state.map { it.isNearBottom }.distinctUntilChanged()
+
+        combine(
+            currentMessages,
+            newMessages,
+            isNearBottom,
+        ) { currentMessages, newMessages, isNearBottom ->
+            val lastNewId = newMessages.lastOrNull()?.message?.id
+            val lastCurrentId = currentMessages.lastOrNull()?.id
+
+            if (lastNewId != lastCurrentId && isNearBottom) {
+                eventChannel.send(ChatDetailEvent.OnNewMessage)
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun observeConnectionState() {
+        connectionClient
+            .connectionState
+            .onEach { connectionState ->
+                if (connectionState == ConnectionState.CONNECTED) {
+                    chatIdFlow.value?.let {
+                        messageRepository.fetchMessages(it, before = null)
+                    }
+                }
+
+                _state.update {
+                    it.copy(
+                        connectionState = connectionState,
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
     private fun onLeaveChatClick() {
-        val id = chatId.value ?: return
+        val chatId = chatIdFlow.value ?: return
 
         _state.update {
             it.copy(
@@ -110,11 +179,11 @@ class ChatDetailViewModel(
 
         viewModelScope.launch {
             chatRepository
-                .leaveChat(id)
+                .leaveChat(chatId)
                 .onSuccess {
                     _state.value.messageTextFieldState.clearText()
 
-                    chatId.update { null }
+                    chatIdFlow.update { null }
                     _state.update {
                         it.copy(
                             chatUi = null,
@@ -149,11 +218,11 @@ class ChatDetailViewModel(
         }
     }
 
-    private fun switchChat(id: String?) {
-        chatId.update { id }
+    private fun switchChat(chatId: String?) {
+        chatIdFlow.update { chatId }
         viewModelScope.launch {
-            id?.let {
-                chatRepository.fetchChatById(id)
+            chatId?.let {
+                chatRepository.fetchChatById(chatId)
             }
         }
     }

@@ -3,7 +3,6 @@ package com.project.chat.data.chat
 import com.project.chat.data.mappers.toDomain
 import com.project.chat.data.mappers.toEntity
 import com.project.chat.data.mappers.toLastMessageView
-import com.project.chat.data.network.ConnectivityObserver
 import com.project.chat.database.ChirpChatDatabase
 import com.project.chat.database.entities.ChatInfoEntity
 import com.project.chat.database.entities.ChatParticipantEntity
@@ -18,16 +17,12 @@ import com.project.core.domain.util.EmptyResult
 import com.project.core.domain.util.Result
 import com.project.core.domain.util.asEmptyResult
 import com.project.core.domain.util.onSuccess
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.supervisorScope
 
 /**
@@ -95,18 +90,10 @@ import kotlinx.coroutines.supervisorScope
  * - Relies on SQLite Foreign Key `CASCADE` for cleanup.
  * - Flow operators: `map`, `first()` (to get a one-off result from the active participant query).
  */
-@OptIn(DelicateCoroutinesApi::class)
 class OfflineFirstChatRepository(
     private val chatService: ChatService,
     private val db: ChirpChatDatabase,
-    private val observer: ConnectivityObserver,
 ) : ChatRepository {
-
-    init {
-        observer.isConnected.onEach { isConnected ->
-            println("Is app connected: $isConnected")
-        }.launchIn(GlobalScope)
-    }
 
     override fun getChats(): Flow<List<Chat>> {
         return db.chatDao.getChatsWithParticipants()

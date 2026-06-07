@@ -1,8 +1,12 @@
 package com.project.chat.domain.message
 
+import com.project.chat.domain.models.ChatMessage
 import com.project.chat.domain.models.ChatMessageDeliveryStatus
+import com.project.chat.domain.models.MessageWithSender
 import com.project.core.domain.util.DataError
 import com.project.core.domain.util.EmptyResult
+import com.project.core.domain.util.Result
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Repository interface defining local data operations specific to individual chat messages.
@@ -19,4 +23,11 @@ interface MessageRepository {
         messageId: String,
         status: ChatMessageDeliveryStatus,
     ): EmptyResult<DataError.Local>
+
+    suspend fun fetchMessages(
+        chatId: String,
+        before: String? = null,
+    ): Result<List<ChatMessage>, DataError>
+
+    fun getMessagesForChat(chatId: String): Flow<List<MessageWithSender>>
 }

@@ -50,17 +50,15 @@ fun MessageList(
         ) {
             items(
                 items = messages,
-                key = { it.id },
             ) { message ->
                 MessageListItemUi(
-                    chatMessageUi = message,
+                    messageUi = message,
                     onMessageLongClick = onMessageLongClick,
                     onDismissMessageMenu = onDismissMessageMenu,
                     onDeleteClick = onDeleteMessageClick,
                     onRetryClick = onMessageRetryClick,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .animateItem(),
+                        .fillMaxWidth(),
                 )
             }
         }

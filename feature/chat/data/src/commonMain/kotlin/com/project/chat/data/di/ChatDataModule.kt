@@ -5,13 +5,16 @@ import com.project.chat.data.chat.KtorChatParticipantService
 import com.project.chat.data.chat.KtorChatService
 import com.project.chat.data.chat.OfflineFirstChatRepository
 import com.project.chat.data.chat.WebSocketChatConnectionClient
+import com.project.chat.data.message.KtorChatMessageService
 import com.project.chat.data.message.OfflineFirstMessageRepository
+import com.project.chat.data.network.ConnectionRetryHandler
 import com.project.chat.data.network.KtorWebSocketConnector
 import com.project.chat.database.DatabaseFactory
 import com.project.chat.domain.chat.ChatConnectionClient
 import com.project.chat.domain.chat.ChatParticipantService
 import com.project.chat.domain.chat.ChatRepository
 import com.project.chat.domain.chat.ChatService
+import com.project.chat.domain.message.ChatMessageService
 import com.project.chat.domain.message.MessageRepository
 import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
@@ -52,7 +55,9 @@ val chatDataModule = module {
     singleOf(::OfflineFirstChatRepository) bind ChatRepository::class
     singleOf(::OfflineFirstMessageRepository) bind MessageRepository::class
     singleOf(::WebSocketChatConnectionClient) bind ChatConnectionClient::class
+    singleOf(::ConnectionRetryHandler)
     singleOf(::KtorWebSocketConnector)
+    singleOf(::KtorChatMessageService) bind ChatMessageService::class
     single {
         Json {
             ignoreUnknownKeys = true
