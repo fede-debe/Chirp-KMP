@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:filename", "filename")
+
 @file:OptIn(ExperimentalForeignApi::class)
 
 package com.project.chat.presentation.ui.profile.mediapicker
