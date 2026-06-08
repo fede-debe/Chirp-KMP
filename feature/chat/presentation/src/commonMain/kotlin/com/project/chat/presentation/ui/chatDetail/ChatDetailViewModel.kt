@@ -9,11 +9,14 @@ import androidx.lifecycle.viewModelScope
 import com.project.chat.domain.chat.ChatConnectionClient
 import com.project.chat.domain.chat.ChatRepository
 import com.project.chat.domain.message.MessageRepository
+import com.project.chat.domain.models.ChatMessage
 import com.project.chat.domain.models.ConnectionState
 import com.project.chat.domain.models.OutgoingNewMessage
 import com.project.chat.presentation.mappers.toUi
 import com.project.chat.presentation.models.MessageUi
 import com.project.core.domain.auth.SessionStorage
+import com.project.core.domain.util.DataErrorException
+import com.project.core.domain.util.Paginator
 import com.project.core.domain.util.onFailure
 import com.project.core.domain.util.onSuccess
 import com.project.core.presentation.util.toUiText
@@ -50,7 +53,41 @@ class ChatDetailViewModel(
 
     private var hasLoadedInitialData = false
 
+    /**
+     * Sets up and manages the pagination state for a specific chat instance, triggering network fetches and updating the UI state accordingly.
+     *
+     * ## Strategy / Decisions
+     * - **Database as Single Source of Truth:** The pagination `onRequest` block does not manually append messages to a local list. It delegates fetching to the `messageRepository`, which inserts them into the local database. The UI automatically observes the DB, so we get UI updates "for free" once the DB synchronizes.
+     * - **State Management Constraints:** Because the View Model outlives the detail screen (living as long as the list + detail screens combined), pagination state (`endReached`) would persist across different chats. It must be explicitly reset when setting up a new chat to avoid locking up pagination.
+     *
+     * ## How It Works
+     * 1. **Chat Switch Trigger:** A flow (`chatIdFlow`) listens for chat selection. If a valid ID is received, `setupPaginationForChat()` is called. If the chat is unselected (or navigated back), `currentPagination` is cleared (`null`).
+     * 2. **Initialization:** A `Pagination` instance is instantiated with `initialKey = null` (signaling the first page).
+     * 3. **Callback Flow:**
+     * - `onLoadUpdated`: Updates the UI state's `isPaginationLoading` flag.
+     * - `onRequest`: Invokes `messageRepository.fetchMessages()` using the `beforeTimestamp` key.
+     * - `getNextKey`: Finds the oldest message in the fetched chunk using `minOfOrNull` on the `createdAt` date, converting that Instant to a String to act as the next cursor.
+     * - `onError`: Checks if the throwable is a `DataErrorException`, extracts the UI text, and sends a `DetailEvent.OnError` to trigger a snackbar.
+     * - `onSuccess`: Checks if the fetched messages list is empty; if so, flips the state's `endReached` to true.
+     * 4. **Cleanup & Launch:** Resets `endReached` and `isPaginationLoading` to false, then immediately triggers `loadNextItems()` in the `viewModelScope` to fetch the first chunk.
+     *
+     * ## Alternatives / Why Not
+     * - *Why not use the new key in onSuccess?* The new key passed to `onSuccess` is ignored because determining if the end of pagination is reached relies solely on whether the API returned an empty list. It's not worth trying to find a timestamp in an empty list.
+     *
+     * ## Technical Details
+     * - **Types:** Key is `String?` (timestamp), Item is `ChatMessage`.
+     * - **Dependencies:** Relies on `messageRepository` for fetching and an event channel for error UI events.
+     */
+    private var currentPaginator: Paginator<String?, ChatMessage>? = null
+
     private val chatInfoFlow = chatIdFlow
+        .onEach { chatId ->
+            if (chatId != null) {
+                setupPaginatorForChat(chatId)
+            } else {
+                currentPaginator = null
+            }
+        }
         .flatMapLatest { chatId ->
             if (chatId != null) {
                 chatRepository.getChatInfoById(chatId)
@@ -241,6 +278,46 @@ class ChatDetailViewModel(
                 }
             }
             .launchIn(viewModelScope)
+    }
+
+    private fun setupPaginatorForChat(chatId: String) {
+        currentPaginator = Paginator(
+            initialKey = null,
+            onLoadUpdated = { isLoading ->
+                _state.update { it.copy(isPaginationLoading = isLoading) }
+            },
+            onRequest = { beforeTimestamp ->
+                messageRepository.fetchMessages(chatId, beforeTimestamp)
+            },
+            getNextKey = { messages ->
+                messages.minOfOrNull { it.createdAt }?.toString()
+            },
+            onError = { throwable ->
+                if (throwable is DataErrorException) {
+                    eventChannel.send(
+                        ChatDetailEvent.OnError(throwable.error.toUiText()),
+                    )
+                }
+            },
+            onSuccess = { messages, _ ->
+                _state.update {
+                    it.copy(
+                        endReached = messages.isEmpty(),
+                    )
+                }
+            },
+        )
+
+        _state.update {
+            it.copy(
+                endReached = false,
+                isPaginationLoading = false,
+            )
+        }
+
+        viewModelScope.launch {
+            currentPaginator?.loadNextItems()
+        }
     }
 
     private fun onLeaveChatClick() {
