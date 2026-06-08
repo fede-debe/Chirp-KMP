@@ -20,3 +20,5 @@ sealed interface ChatDetailAction {
     data class OnFirstVisibleIndexChanged(val index: Int) : ChatDetailAction
     data class OnTopVisibleIndexChanged(val topVisibleIndex: Int) : ChatDetailAction
 }
+
+data class OnTopVisibleIndexChanged(val topVisibleIndex: Int) : ChatDetailAction
