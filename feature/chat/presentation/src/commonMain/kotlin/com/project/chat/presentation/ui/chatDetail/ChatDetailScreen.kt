@@ -46,6 +46,7 @@ import com.project.chat.presentation.models.MessageUi
 import com.project.chat.presentation.ui.chatDetail.components.ChatDetailHeader
 import com.project.chat.presentation.ui.chatDetail.components.MessageBox
 import com.project.chat.presentation.ui.chatDetail.components.MessageList
+import com.project.chat.presentation.ui.chatDetail.components.PaginationScrollListener
 import com.project.core.designSystem.components.avatar.ChatParticipantUi
 import com.project.core.designSystem.theme.ChirpTheme
 import com.project.core.designSystem.theme.extended
@@ -78,6 +79,7 @@ fun ChatDetailRoot(
             ChatDetailEvent.OnNewMessage -> {
                 // TODO: Auto scroll to bottom
             }
+
             is ChatDetailEvent.OnError -> {
                 snackbarState.showSnackbar(event.error.asStringAsync())
             }
@@ -124,6 +126,23 @@ fun ChatDetailScreen(
 ) {
     val configuration = currentDeviceConfiguration()
     val messageListState = rememberLazyListState()
+
+    val realMessageItemCount = remember(state.messages) {
+        state
+            .messages
+            .filter { it is MessageUi.LocalUserMessage || it is MessageUi.OtherUserMessage }
+            .size
+    }
+
+    PaginationScrollListener(
+        lazyListState = messageListState,
+        itemCount = realMessageItemCount,
+        isPaginationLoading = state.isPaginationLoading,
+        isEndReached = state.endReached,
+        onNearTop = {
+            onAction(ChatDetailAction.OnScrollToTop)
+        },
+    )
 
     Scaffold(
         modifier = Modifier
@@ -193,6 +212,8 @@ fun ChatDetailScreen(
                             messages = state.messages,
                             messageWithOpenMenu = state.messageWithOpenMenu,
                             listState = messageListState,
+                            isPaginationLoading = state.isPaginationLoading,
+                            paginationError = state.paginationError?.asString(),
                             onMessageLongClick = { message ->
                                 onAction(ChatDetailAction.OnMessageLongClick(message))
                             },
@@ -204,6 +225,9 @@ fun ChatDetailScreen(
                             },
                             onDeleteMessageClick = { message ->
                                 onAction(ChatDetailAction.OnDeleteMessageClick(message))
+                            },
+                            onRetryPaginationClick = {
+                                onAction(ChatDetailAction.OnRetryPaginationClick)
                             },
                             modifier = Modifier
                                 .fillMaxWidth()

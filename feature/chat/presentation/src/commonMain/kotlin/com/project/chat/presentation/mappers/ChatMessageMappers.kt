@@ -4,6 +4,12 @@ import com.project.chat.domain.models.MessageWithSender
 import com.project.chat.presentation.models.MessageUi
 import com.project.chat.presentation.util.DateUtils
 
+fun List<MessageWithSender>.toUiList(localUserId: String): List<MessageUi> {
+    return this
+        .sortedByDescending { it.message.createdAt }
+        .map { it.toUi(localUserId) }
+}
+
 fun MessageWithSender.toUi(
     localUserId: String,
 ): MessageUi {

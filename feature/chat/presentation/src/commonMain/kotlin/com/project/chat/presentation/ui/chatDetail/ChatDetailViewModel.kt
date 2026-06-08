@@ -13,6 +13,7 @@ import com.project.chat.domain.models.ChatMessage
 import com.project.chat.domain.models.ConnectionState
 import com.project.chat.domain.models.OutgoingNewMessage
 import com.project.chat.presentation.mappers.toUi
+import com.project.chat.presentation.mappers.toUiList
 import com.project.chat.presentation.models.MessageUi
 import com.project.core.domain.auth.SessionStorage
 import com.project.core.domain.util.DataErrorException
@@ -115,7 +116,7 @@ class ChatDetailViewModel(
 
         currentState.copy(
             chatUi = chatInfo.chat.toUi(authInfo.user.id),
-            messages = chatInfo.messages.map { it.toUi(authInfo.user.id) },
+            messages = chatInfo.messages.toUiList(authInfo.user.id),
         )
     }
 
@@ -153,9 +154,20 @@ class ChatDetailViewModel(
             ChatDetailAction.OnLeaveChatClick -> onLeaveChatClick()
             is ChatDetailAction.OnMessageLongClick -> onMessageLongClick(action.message)
             is ChatDetailAction.OnRetryClick -> retryMessage(action.message)
-            ChatDetailAction.OnScrollToTop -> {}
+            ChatDetailAction.OnScrollToTop -> onScrollToTop()
             ChatDetailAction.OnSendMessageClick -> sendMessage()
+            ChatDetailAction.OnRetryPaginationClick -> retryPagination()
             else -> Unit
+        }
+    }
+
+    private fun retryPagination() = loadNextItems()
+
+    private fun onScrollToTop() = loadNextItems()
+
+    private fun loadNextItems() {
+        viewModelScope.launch {
+            currentPaginator?.loadNextItems()
         }
     }
 
@@ -209,7 +221,6 @@ class ChatDetailViewModel(
                 messageId = Uuid.random().toString(),
                 content = content,
             )
-            println("Message ID sent: ${message.messageId}")
 
             messageRepository
                 .sendMessage(message)
@@ -266,9 +277,7 @@ class ChatDetailViewModel(
             .connectionState
             .onEach { connectionState ->
                 if (connectionState == ConnectionState.CONNECTED) {
-                    chatIdFlow.value?.let {
-                        messageRepository.fetchMessages(it, before = null)
-                    }
+                    currentPaginator?.loadNextItems()
                 }
 
                 _state.update {
@@ -294,15 +303,18 @@ class ChatDetailViewModel(
             },
             onError = { throwable ->
                 if (throwable is DataErrorException) {
-                    eventChannel.send(
-                        ChatDetailEvent.OnError(throwable.error.toUiText()),
-                    )
+                    _state.update {
+                        it.copy(
+                            paginationError = throwable.error.toUiText(),
+                        )
+                    }
                 }
             },
             onSuccess = { messages, _ ->
                 _state.update {
                     it.copy(
                         endReached = messages.isEmpty(),
+                        paginationError = null,
                     )
                 }
             },
@@ -313,10 +325,6 @@ class ChatDetailViewModel(
                 endReached = false,
                 isPaginationLoading = false,
             )
-        }
-
-        viewModelScope.launch {
-            currentPaginator?.loadNextItems()
         }
     }
 
