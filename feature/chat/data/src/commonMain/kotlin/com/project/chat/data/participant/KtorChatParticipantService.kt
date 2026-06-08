@@ -1,9 +1,9 @@
-package com.project.chat.data.chat
+package com.project.chat.data.participant
 
 import com.project.chat.data.dto.ChatParticipantDto
 import com.project.chat.data.mappers.toDomain
-import com.project.chat.domain.chat.ChatParticipantService
 import com.project.chat.domain.models.ChatParticipant
+import com.project.chat.domain.participant.ChatParticipantService
 import com.project.core.data.networking.get
 import com.project.core.domain.util.DataError
 import com.project.core.domain.util.Result
@@ -34,5 +34,11 @@ class KtorChatParticipantService(
                 "query" to query,
             ),
         ).map { dto -> dto.toDomain() }
+    }
+
+    override suspend fun getLocalParticipant(): Result<ChatParticipant, DataError.Remote> {
+        return httpClient.get<ChatParticipantDto>(
+            route = "/participants",
+        ).map { it.toDomain() }
     }
 }

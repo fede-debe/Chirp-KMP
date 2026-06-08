@@ -1,4 +1,4 @@
-package com.project.chat.domain.chat
+package com.project.chat.domain.participant
 
 import com.project.chat.domain.models.ChatParticipant
 import com.project.core.domain.util.DataError
@@ -21,4 +21,6 @@ interface ChatParticipantService {
     suspend fun searchParticipant(
         query: String,
     ): Result<ChatParticipant, DataError.Remote>
+
+    suspend fun getLocalParticipant(): Result<ChatParticipant, DataError.Remote>
 }
