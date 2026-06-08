@@ -46,11 +46,11 @@ class ChatDetailViewModel(
     private val eventChannel = Channel<ChatDetailEvent>()
     val events = eventChannel.receiveAsFlow()
 
-    private val _chatId = MutableStateFlow<String?>(null)
+    private val chatIdFlow = MutableStateFlow<String?>(null)
 
     private var hasLoadedInitialData = false
 
-    private val chatInfoFlow = _chatId
+    private val chatInfoFlow = chatIdFlow
         .flatMapLatest { chatId ->
             if (chatId != null) {
                 chatRepository.getChatInfoById(chatId)
@@ -82,7 +82,7 @@ class ChatDetailViewModel(
         )
     }
 
-    val state = _chatId
+    val state = chatIdFlow
         .flatMapLatest { chatId ->
             if (chatId != null) {
                 stateWithMessages
@@ -160,7 +160,7 @@ class ChatDetailViewModel(
 
     @OptIn(ExperimentalUuidApi::class)
     private fun sendMessage() {
-        val currentChatId = _chatId.value
+        val currentChatId = chatIdFlow.value
         val content = state.value.messageTextFieldState.text.toString().trim()
         if (content.isBlank() || currentChatId == null) {
             return
@@ -200,7 +200,7 @@ class ChatDetailViewModel(
             .map { it.messages }
             .distinctUntilChanged()
 
-        val newMessages = _chatId.flatMapLatest { chatId ->
+        val newMessages = chatIdFlow.flatMapLatest { chatId ->
             if (chatId != null) {
                 messageRepository.getMessagesForChat(chatId)
             } else {
@@ -229,7 +229,7 @@ class ChatDetailViewModel(
             .connectionState
             .onEach { connectionState ->
                 if (connectionState == ConnectionState.CONNECTED) {
-                    _chatId.value?.let {
+                    chatIdFlow.value?.let {
                         messageRepository.fetchMessages(it, before = null)
                     }
                 }
@@ -244,7 +244,7 @@ class ChatDetailViewModel(
     }
 
     private fun onLeaveChatClick() {
-        val chatId = _chatId.value ?: return
+        val chatId = chatIdFlow.value ?: return
 
         _state.update {
             it.copy(
@@ -258,7 +258,7 @@ class ChatDetailViewModel(
                 .onSuccess {
                     _state.value.messageTextFieldState.clearText()
 
-                    _chatId.update { null }
+                    chatIdFlow.update { null }
                     _state.update {
                         it.copy(
                             chatUi = null,
@@ -294,7 +294,7 @@ class ChatDetailViewModel(
     }
 
     private fun switchChat(chatId: String?) {
-        _chatId.update { chatId }
+        chatIdFlow.update { chatId }
         viewModelScope.launch {
             chatId?.let {
                 chatRepository.fetchChatById(chatId)
