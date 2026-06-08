@@ -140,7 +140,8 @@ class OfflineFirstMessageRepository(
                         chatId = chatId,
                         serverMessages = messages.map { it.toEntity() },
                         pageSize = ChatMessageConstants.PAGE_SIZE,
-                        shouldSync = before == null, // Only sync for most recent page
+                        // Only sync for most recent page
+                        shouldSync = before == null,
                     )
                     messages
                 }
