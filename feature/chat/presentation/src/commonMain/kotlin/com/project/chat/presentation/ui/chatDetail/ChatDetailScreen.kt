@@ -24,7 +24,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -42,8 +41,8 @@ import com.project.chat.domain.models.ChatMessage
 import com.project.chat.domain.models.ChatMessageDeliveryStatus
 import com.project.chat.presentation.components.ChatHeader
 import com.project.chat.presentation.components.EmptySection
-import com.project.chat.presentation.models.ChatMessageUi
 import com.project.chat.presentation.models.ChatUi
+import com.project.chat.presentation.models.MessageUi
 import com.project.chat.presentation.ui.chatDetail.components.ChatDetailHeader
 import com.project.chat.presentation.ui.chatDetail.components.MessageBox
 import com.project.chat.presentation.ui.chatDetail.components.MessageList
@@ -192,6 +191,7 @@ fun ChatDetailScreen(
                         }
                         MessageList(
                             messages = state.messages,
+                            messageWithOpenMenu = state.messageWithOpenMenu,
                             listState = messageListState,
                             onMessageLongClick = { message ->
                                 onAction(ChatDetailAction.OnMessageLongClick(message))
@@ -336,15 +336,14 @@ private fun ChatDetailMessagesPreview() {
                 ),
                 messages = (1..20).map {
                     if (it % 2 == 0) {
-                        ChatMessageUi.LocalUserMessage(
+                        MessageUi.LocalUserMessage(
                             id = Uuid.random().toString(),
                             content = "Hello world!",
                             deliveryStatus = ChatMessageDeliveryStatus.SENT,
-                            isMenuOpen = false,
                             formattedSentTime = UiText.DynamicString("Friday, Aug 20"),
                         )
                     } else {
-                        ChatMessageUi.OtherUserMessage(
+                        MessageUi.OtherUserMessage(
                             id = Uuid.random().toString(),
                             content = "Hello world!",
                             sender = ChatParticipantUi(

@@ -1,15 +1,15 @@
 package com.project.chat.presentation.ui.chatDetail
 
-import com.project.chat.presentation.models.ChatMessageUi
+import com.project.chat.presentation.models.MessageUi
 
 sealed interface ChatDetailAction {
     data object OnSendMessageClick : ChatDetailAction
     data object OnScrollToTop : ChatDetailAction
     data class OnSelectChat(val chatId: String?) : ChatDetailAction
-    data class OnDeleteMessageClick(val message: ChatMessageUi.LocalUserMessage) : ChatDetailAction
-    data class OnMessageLongClick(val message: ChatMessageUi.LocalUserMessage) : ChatDetailAction
+    data class OnDeleteMessageClick(val message: MessageUi.LocalUserMessage) : ChatDetailAction
+    data class OnMessageLongClick(val message: MessageUi.LocalUserMessage) : ChatDetailAction
     data object OnDismissMessageMenu : ChatDetailAction
-    data class OnRetryClick(val message: ChatMessageUi.LocalUserMessage) : ChatDetailAction
+    data class OnRetryClick(val message: MessageUi.LocalUserMessage) : ChatDetailAction
     data object OnBackClick : ChatDetailAction
     data object OnChatOptionsClick : ChatDetailAction
     data object OnChatMembersClick : ChatDetailAction

@@ -6,14 +6,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
-import com.project.chat.presentation.models.ChatMessageUi
+import com.project.chat.presentation.models.MessageUi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun MessageBannerListener(
     lazyListState: LazyListState,
-    messages: List<ChatMessageUi>,
+    messages: List<MessageUi>,
     isBannerVisible: Boolean,
     onShowBanner: (topVisibleItemIndex: Int) -> Unit,
     onHide: () -> Unit,

@@ -12,7 +12,7 @@ import com.project.chat.domain.message.MessageRepository
 import com.project.chat.domain.models.ConnectionState
 import com.project.chat.domain.models.OutgoingNewMessage
 import com.project.chat.presentation.mappers.toUi
-import com.project.chat.presentation.models.ChatMessageUi
+import com.project.chat.presentation.models.MessageUi
 import com.project.core.domain.auth.SessionStorage
 import com.project.core.domain.util.onFailure
 import com.project.core.domain.util.onSuccess
@@ -110,11 +110,11 @@ class ChatDetailViewModel(
             ChatDetailAction.OnBackClick -> {}
             ChatDetailAction.OnChatMembersClick -> {}
             ChatDetailAction.OnChatOptionsClick -> onChatOptionsClick()
-            is ChatDetailAction.OnDeleteMessageClick -> {}
+            is ChatDetailAction.OnDeleteMessageClick -> deleteMessage(action.message)
             ChatDetailAction.OnDismissChatOptions -> onDismissChatOptions()
-            ChatDetailAction.OnDismissMessageMenu -> {}
+            ChatDetailAction.OnDismissMessageMenu -> onDismissMessageMenu()
             ChatDetailAction.OnLeaveChatClick -> onLeaveChatClick()
-            is ChatDetailAction.OnMessageLongClick -> {}
+            is ChatDetailAction.OnMessageLongClick -> onMessageLongClick(action.message)
             is ChatDetailAction.OnRetryClick -> retryMessage(action.message)
             ChatDetailAction.OnScrollToTop -> {}
             ChatDetailAction.OnSendMessageClick -> sendMessage()
@@ -122,7 +122,33 @@ class ChatDetailViewModel(
         }
     }
 
-    private fun retryMessage(message: ChatMessageUi.LocalUserMessage) {
+    private fun onDismissMessageMenu() {
+        _state.update {
+            it.copy(
+                messageWithOpenMenu = null,
+            )
+        }
+    }
+
+    private fun onMessageLongClick(message: MessageUi.LocalUserMessage) {
+        _state.update {
+            it.copy(
+                messageWithOpenMenu = message,
+            )
+        }
+    }
+
+    private fun deleteMessage(message: MessageUi.LocalUserMessage) {
+        viewModelScope.launch {
+            messageRepository
+                .deleteMessage(message.id)
+                .onFailure { error ->
+                    eventChannel.send(ChatDetailEvent.OnError(error.toUiText()))
+                }
+        }
+    }
+
+    private fun retryMessage(message: MessageUi.LocalUserMessage) {
         viewModelScope.launch {
             messageRepository
                 .retryMessage(message.id)

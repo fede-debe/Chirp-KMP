@@ -16,17 +16,18 @@ import chirp.feature.chat.presentation.generated.resources.Res
 import chirp.feature.chat.presentation.generated.resources.no_messages
 import chirp.feature.chat.presentation.generated.resources.no_messages_subtitle
 import com.project.chat.presentation.components.EmptySection
-import com.project.chat.presentation.models.ChatMessageUi
+import com.project.chat.presentation.models.MessageUi
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun MessageList(
-    messages: List<ChatMessageUi>,
+    messages: List<MessageUi>,
+    messageWithOpenMenu: MessageUi.LocalUserMessage?,
     listState: LazyListState,
-    onMessageLongClick: (ChatMessageUi.LocalUserMessage) -> Unit,
-    onMessageRetryClick: (ChatMessageUi.LocalUserMessage) -> Unit,
+    onMessageLongClick: (MessageUi.LocalUserMessage) -> Unit,
+    onMessageRetryClick: (MessageUi.LocalUserMessage) -> Unit,
     onDismissMessageMenu: () -> Unit,
-    onDeleteMessageClick: (ChatMessageUi.LocalUserMessage) -> Unit,
+    onDeleteMessageClick: (MessageUi.LocalUserMessage) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (messages.isEmpty()) {
@@ -50,15 +51,18 @@ fun MessageList(
         ) {
             items(
                 items = messages,
+                key = { it.id },
             ) { message ->
                 MessageListItemUi(
                     messageUi = message,
+                    messageWithOpenMenu = messageWithOpenMenu,
                     onMessageLongClick = onMessageLongClick,
                     onDismissMessageMenu = onDismissMessageMenu,
                     onDeleteClick = onDeleteMessageClick,
                     onRetryClick = onMessageRetryClick,
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .animateItem(),
                 )
             }
         }
