@@ -12,6 +12,7 @@ import com.project.chat.domain.message.MessageRepository
 import com.project.chat.domain.models.ConnectionState
 import com.project.chat.domain.models.OutgoingNewMessage
 import com.project.chat.presentation.mappers.toUi
+import com.project.chat.presentation.models.ChatMessageUi
 import com.project.core.domain.auth.SessionStorage
 import com.project.core.domain.util.onFailure
 import com.project.core.domain.util.onSuccess
@@ -77,6 +78,7 @@ class ChatDetailViewModel(
 
         currentState.copy(
             chatUi = chatInfo.chat.toUi(authInfo.user.id),
+            messages = chatInfo.messages.map { it.toUi(authInfo.user.id) },
         )
     }
 
@@ -113,10 +115,20 @@ class ChatDetailViewModel(
             ChatDetailAction.OnDismissMessageMenu -> {}
             ChatDetailAction.OnLeaveChatClick -> onLeaveChatClick()
             is ChatDetailAction.OnMessageLongClick -> {}
-            is ChatDetailAction.OnRetryClick -> {}
+            is ChatDetailAction.OnRetryClick -> retryMessage(action.message)
             ChatDetailAction.OnScrollToTop -> {}
             ChatDetailAction.OnSendMessageClick -> sendMessage()
             else -> Unit
+        }
+    }
+
+    private fun retryMessage(message: ChatMessageUi.LocalUserMessage) {
+        viewModelScope.launch {
+            messageRepository
+                .retryMessage(message.id)
+                .onFailure { error ->
+                    eventChannel.send(ChatDetailEvent.OnError(error.toUiText()))
+                }
         }
     }
 
@@ -134,6 +146,7 @@ class ChatDetailViewModel(
                 messageId = Uuid.random().toString(),
                 content = content,
             )
+            println("Message ID sent: ${message.messageId}")
 
             messageRepository
                 .sendMessage(message)
@@ -168,17 +181,6 @@ class ChatDetailViewModel(
                 emptyFlow()
             }
         }
-            .combine(sessionStorage.observeAuthInfo()) { messages, authInfo ->
-                if (authInfo == null) {
-                    return@combine messages
-                }
-                _state.update {
-                    it.copy(
-                        messages = messages.map { it.toUi(authInfo.user.id) },
-                    )
-                }
-                messages
-            }
 
         val isNearBottom = state.map { it.isNearBottom }.distinctUntilChanged()
 
