@@ -3,7 +3,10 @@
 package com.project.chirp.di
 
 import com.project.auth.presentation.di.authPresentationModule
+import com.project.chat.data.di.chatDataModule
+import com.project.chat.presentation.di.chatPresentationModule
 import com.project.core.data.di.coreDataModule
+import com.project.core.presentation.di.corePresentationModule
 import org.koin.core.context.startKoin
 import org.koin.dsl.KoinAppDeclaration
 
@@ -29,6 +32,9 @@ fun initKoin(config: KoinAppDeclaration? = null) {
             coreDataModule,
             authPresentationModule,
             appModule,
+            corePresentationModule,
+            chatPresentationModule,
+            chatDataModule,
         )
     }
 }

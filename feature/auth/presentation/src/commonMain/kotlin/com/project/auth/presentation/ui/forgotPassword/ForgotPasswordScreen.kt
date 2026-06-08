@@ -13,19 +13,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import chirp.feature.auth.presentation.generated.resources.Res
 import chirp.feature.auth.presentation.generated.resources.email
 import chirp.feature.auth.presentation.generated.resources.email_placeholder
 import chirp.feature.auth.presentation.generated.resources.forgot_password
 import chirp.feature.auth.presentation.generated.resources.forgot_password_email_sent_successfully
 import chirp.feature.auth.presentation.generated.resources.submit
-import com.project.core.designsystem.components.brand.ChirpBrandLogo
-import com.project.core.designsystem.components.buttons.ChirpButton
-import com.project.core.designsystem.components.layouts.ChirpAdaptiveFormLayout
-import com.project.core.designsystem.components.textfields.ChirpTextField
-import com.project.core.designsystem.theme.ChirpTheme
-import com.project.core.designsystem.theme.extended
+import com.project.core.designSystem.components.brand.ChirpBrandLogo
+import com.project.core.designSystem.components.buttons.ChirpButton
+import com.project.core.designSystem.components.layouts.ChirpAdaptiveFormLayout
+import com.project.core.designSystem.components.textFields.ChirpTextField
+import com.project.core.designSystem.theme.ChirpTheme
+import com.project.core.designSystem.theme.extended
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
