@@ -83,19 +83,25 @@ actual class ConnectionErrorHandler {
         }
     }
 
+//    private fun extractNsError(cause: Throwable): NSError? {
+//        val throwableCause = cause.cause
+//        if (throwableCause is NSError) {
+//            return throwableCause
+//        }
+//
+//        if (cause is NSError) {
+//            return cause
+//        }
+//
+//        val exceptionNsError = cause.toNSError()
+//        val causeNsError = cause.cause?.toNSError()
+//
+//        return exceptionNsError ?: causeNsError
+//    }
+
     private fun extractNsError(cause: Throwable): NSError? {
-        val throwableCause = cause.cause
-        if (throwableCause is NSError) {
-            return throwableCause
-        }
-
-        if (cause is NSError) {
-            return cause
-        }
-
         val exceptionNsError = cause.toNSError()
         val causeNsError = cause.cause?.toNSError()
-
         return exceptionNsError ?: causeNsError
     }
 
