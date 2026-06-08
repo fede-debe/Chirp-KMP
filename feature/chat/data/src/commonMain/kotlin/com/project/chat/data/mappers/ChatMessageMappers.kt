@@ -1,10 +1,14 @@
 package com.project.chat.data.mappers
 
 import com.project.chat.data.dto.ChatMessageDto
+import com.project.chat.data.dto.websocket.IncomingWebSocketDto
+import com.project.chat.data.dto.websocket.OutgoingWebSocketDto
 import com.project.chat.database.entities.ChatMessageEntity
 import com.project.chat.database.view.LastMessageView
 import com.project.chat.domain.models.ChatMessage
 import com.project.chat.domain.models.ChatMessageDeliveryStatus
+import com.project.chat.domain.models.OutgoingNewMessage
+import kotlin.time.Clock
 import kotlin.time.Instant
 
 fun ChatMessageDto.toDomain(): ChatMessage {
@@ -20,12 +24,12 @@ fun ChatMessageDto.toDomain(): ChatMessage {
 
 fun ChatMessageEntity.toDomain(): ChatMessage {
     return ChatMessage(
-        id = chatId,
+        id = messageId,
         chatId = chatId,
         content = content,
         createdAt = Instant.fromEpochMilliseconds(timestamp),
         senderId = senderId,
-        deliveryStatus = ChatMessageDeliveryStatus.SENT,
+        deliveryStatus = ChatMessageDeliveryStatus.valueOf(deliveryStatus),
     )
 }
 
@@ -59,5 +63,46 @@ fun ChatMessage.toLastMessageView(): LastMessageView {
         content = content,
         timestamp = createdAt.toEpochMilliseconds(),
         deliveryStatus = deliveryStatus.name,
+    )
+}
+
+fun ChatMessage.toNewMessage(): OutgoingWebSocketDto.NewMessage {
+    return OutgoingWebSocketDto.NewMessage(
+        messageId = id,
+        chatId = chatId,
+        content = content,
+    )
+}
+
+fun IncomingWebSocketDto.NewMessageDto.toEntity(): ChatMessageEntity {
+    return ChatMessageEntity(
+        messageId = id,
+        chatId = chatId,
+        senderId = senderId,
+        content = content,
+        timestamp = Instant.parse(createdAt).toEpochMilliseconds(),
+        deliveryStatus = ChatMessageDeliveryStatus.SENT.name,
+    )
+}
+
+fun OutgoingNewMessage.toWebSocketDto(): OutgoingWebSocketDto.NewMessage {
+    return OutgoingWebSocketDto.NewMessage(
+        chatId = chatId,
+        messageId = messageId,
+        content = content,
+    )
+}
+
+fun OutgoingWebSocketDto.NewMessage.toEntity(
+    senderId: String,
+    deliveryStatus: ChatMessageDeliveryStatus,
+): ChatMessageEntity {
+    return ChatMessageEntity(
+        messageId = messageId,
+        chatId = chatId,
+        content = content,
+        senderId = senderId,
+        deliveryStatus = deliveryStatus.name,
+        timestamp = Clock.System.now().toEpochMilliseconds(),
     )
 }
