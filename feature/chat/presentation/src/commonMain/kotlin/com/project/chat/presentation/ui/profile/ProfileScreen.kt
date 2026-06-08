@@ -44,6 +44,7 @@ import chirp.feature.chat.presentation.generated.resources.upload_icon
 import chirp.feature.chat.presentation.generated.resources.upload_image
 import com.project.chat.presentation.ui.profile.components.ProfileHeaderSection
 import com.project.chat.presentation.ui.profile.components.ProfileSectionLayout
+import com.project.chat.presentation.ui.profile.mediapicker.rememberImagePickerLauncher
 import com.project.core.designSystem.components.avatar.AvatarSize
 import com.project.core.designSystem.components.avatar.ChirpAvatarPhoto
 import com.project.core.designSystem.components.brand.ChirpHorizontalDivider
@@ -69,6 +70,15 @@ fun ProfileRoot(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    val launcher = rememberImagePickerLauncher { pickedImageData ->
+        viewModel.onAction(
+            ProfileAction.OnPictureSelected(
+                pickedImageData.bytes,
+                pickedImageData.mimeType,
+            ),
+        )
+    }
+
     ChirpAdaptiveDialogSheetLayout(
         onDismiss = onDismiss,
     ) {
@@ -77,6 +87,9 @@ fun ProfileRoot(
             onAction = { action ->
                 when (action) {
                     is ProfileAction.OnDismiss -> onDismiss()
+                    is ProfileAction.OnUploadPictureClick -> {
+                        launcher.launch()
+                    }
                     else -> Unit
                 }
                 viewModel.onAction(action)
