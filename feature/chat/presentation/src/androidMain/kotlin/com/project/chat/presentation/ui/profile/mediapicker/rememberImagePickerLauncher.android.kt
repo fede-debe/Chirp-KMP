@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:filename", "filename")
+
 package com.project.chat.presentation.ui.profile.mediapicker
 
 import androidx.activity.compose.rememberLauncherForActivityResult
