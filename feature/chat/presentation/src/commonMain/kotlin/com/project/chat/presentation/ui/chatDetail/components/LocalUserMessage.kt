@@ -19,7 +19,7 @@ import chirp.feature.chat.presentation.generated.resources.reload_icon
 import chirp.feature.chat.presentation.generated.resources.retry
 import chirp.feature.chat.presentation.generated.resources.you
 import com.project.chat.domain.models.ChatMessageDeliveryStatus
-import com.project.chat.presentation.models.ChatMessageUi
+import com.project.chat.presentation.models.MessageUi
 import com.project.core.designSystem.components.chat.ChirpChatBubble
 import com.project.core.designSystem.components.chat.TrianglePosition
 import com.project.core.designSystem.components.dropdown.ChirpDropDownMenu
@@ -30,7 +30,8 @@ import org.jetbrains.compose.resources.vectorResource
 
 @Composable
 fun LocalUserMessage(
-    message: ChatMessageUi.LocalUserMessage,
+    message: MessageUi.LocalUserMessage,
+    messageWithOpenMenu: MessageUi.LocalUserMessage?,
     onMessageLongClick: () -> Unit,
     onDismissMessageMenu: () -> Unit,
     onDeleteClick: () -> Unit,
@@ -43,9 +44,7 @@ fun LocalUserMessage(
         verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
     ) {
-        Box(
-            modifier = Modifier.weight(1f),
-        ) {
+        Box {
             ChirpChatBubble(
                 messageContent = message.content,
                 sender = stringResource(Res.string.you),
@@ -62,7 +61,7 @@ fun LocalUserMessage(
             )
 
             ChirpDropDownMenu(
-                isOpen = message.isMenuOpen,
+                isOpen = message.id == messageWithOpenMenu?.id,
                 onDismiss = onDismissMessageMenu,
                 items = listOf(
                     DropDownItem(
