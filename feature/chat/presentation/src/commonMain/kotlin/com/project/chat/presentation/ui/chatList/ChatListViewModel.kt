@@ -3,12 +3,20 @@ package com.project.chat.presentation.ui.chatList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.project.chat.domain.chat.ChatRepository
+import com.project.chat.domain.notification.DeviceTokenService
 import com.project.chat.presentation.mappers.toUi
+import com.project.core.domain.auth.AuthService
 import com.project.core.domain.auth.SessionStorage
+import com.project.core.domain.util.onFailure
+import com.project.core.domain.util.onSuccess
+import com.project.core.presentation.util.toUiText
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -31,7 +39,12 @@ import kotlinx.coroutines.launch
 class ChatListViewModel(
     private val repository: ChatRepository,
     private val sessionStorage: SessionStorage,
+    private val deviceTokenService: DeviceTokenService,
+    private val authService: AuthService,
 ) : ViewModel() {
+
+    private val eventChannel = Channel<ChatListEvent>()
+    val events = eventChannel.receiveAsFlow()
 
     private var hasLoadedInitialData = false
 
@@ -78,8 +91,16 @@ class ChatListViewModel(
                     )
                 }
             }
+            ChatListAction.OnLogoutClick -> showLogoutConfirmation()
+            ChatListAction.OnConfirmLogout -> logout()
+            ChatListAction.OnDismissLogoutDialog -> {
+                _state.update {
+                    it.copy(
+                        showLogoutConfirmation = false,
+                    )
+                }
+            }
             ChatListAction.OnProfileSettingsClick,
-            ChatListAction.OnLogoutClick,
             ChatListAction.OnDismissUserMenu,
             -> {
                 _state.update {
@@ -89,6 +110,46 @@ class ChatListViewModel(
                 }
             }
             else -> Unit
+        }
+    }
+
+    private fun logout() {
+        _state.update {
+            it.copy(
+                showLogoutConfirmation = false,
+            )
+        }
+
+        viewModelScope.launch {
+            val authInfo = sessionStorage.observeAuthInfo().first()
+            val refreshToken = authInfo?.refreshToken ?: return@launch
+
+            deviceTokenService
+                .unregisterToken(refreshToken)
+                .onSuccess {
+                    authService
+                        .logout(refreshToken)
+                        .onSuccess {
+                            sessionStorage.set(null)
+                            repository.deleteAllChats()
+                            eventChannel.send(ChatListEvent.OnLogoutSuccess)
+                        }
+                        .onFailure { error ->
+                            eventChannel.send(ChatListEvent.OnLogoutError(error.toUiText()))
+                        }
+                }
+                .onFailure { error ->
+                    eventChannel.send(ChatListEvent.OnLogoutError(error.toUiText()))
+                }
+        }
+    }
+
+    private fun showLogoutConfirmation() {
+        _state.update {
+            it.copy(
+                isUserMenuOpen = false,
+                showLogoutConfirmation = true,
+            )
         }
     }
 
