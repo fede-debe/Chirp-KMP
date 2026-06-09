@@ -43,6 +43,8 @@ import com.project.core.designSystem.components.buttons.ChirpFloatingActionButto
 import com.project.core.designSystem.components.dialogs.DestructiveConfirmationDialog
 import com.project.core.designSystem.theme.ChirpTheme
 import com.project.core.designSystem.theme.extended
+import com.project.core.presentation.permissions.Permission
+import com.project.core.presentation.permissions.rememberPermissionController
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -85,6 +87,11 @@ fun ChatListScreen(
     onAction: (ChatListAction) -> Unit,
     snackbarHostState: SnackbarHostState,
 ) {
+    val permissionController = rememberPermissionController()
+    LaunchedEffect(true) {
+        permissionController.requestPermission(Permission.NOTIFICATIONS)
+    }
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),

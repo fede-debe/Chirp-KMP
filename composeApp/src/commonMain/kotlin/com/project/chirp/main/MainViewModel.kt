@@ -2,10 +2,14 @@ package com.project.chirp.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.project.chat.domain.notification.DeviceTokenService
+import com.project.chat.domain.notification.PushNotificationService
+import com.project.core.data.util.PlatformUtils
 import com.project.core.domain.auth.SessionStorage
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -60,8 +64,30 @@ import kotlinx.coroutines.launch
  * - Employs a private `Channel<MainEvent>` exposed as a Flow via `receiveAsFlow()`.
  * - Requires caching state (`previousRefreshToken`) across asynchronous Flow emissions to compute transitions.
  */
+
+/**
+ * Application-level ViewModel managing lifecycle-aware auth state and proactive token registration.
+ *
+ * ## Strategy / Decisions
+ * FCM's `onNewToken` broadcast might fire on app installation before a user is authenticated, meaning the token
+ * is generated but never sent to the server. To solve this, `MainViewModel` actively listens to both auth state
+ * and token state to ensure the backend is always updated upon login, and cleared upon logout.
+ *
+ * ## How It Works
+ * 1. Combines the `SessionStorage.observeAuthInfo()` flow with `PushNotificationService.observeDeviceToken()`.
+ * 2. **Login/Update:** If the user is authenticated and the emitted device token differs from the cached `previousDeviceToken`,
+ * it triggers `registerDeviceToken`.
+ * 3. **Logout:** If the session expires (auth info becomes null), it takes the `currentDeviceToken` and calls `unregisterToken`
+ * so the server stops sending pushes to this specific device.
+ *
+ * ## Alternatives / Why Not
+ * We intentionally ignore the error result from `registerDeviceToken`. If it fails, it is silent. Notifying the user
+ * of a background token sync failure is unnecessary and degrades the UX.
+ */
 class MainViewModel(
     private val sessionStorage: SessionStorage,
+    private val pushNotificationService: PushNotificationService,
+    private val deviceTokenService: DeviceTokenService,
 ) : ViewModel() {
 
     private val eventChannel = Channel<MainEvent>()
@@ -84,6 +110,8 @@ class MainViewModel(
         )
 
     private var previousRefreshToken: String? = null
+    private var currentDeviceToken: String? = null
+    private var previousDeviceToken: String? = null
 
     init {
         viewModelScope.launch {
@@ -110,11 +138,28 @@ class MainViewModel(
                             isLoggedIn = false,
                         )
                     }
+                    currentDeviceToken?.let {
+                        deviceTokenService.unregisterToken(it)
+                    }
                     eventChannel.send(MainEvent.OnSessionExpired)
                 }
 
                 previousRefreshToken = currentRefreshToken
             }
+            .combine(
+                pushNotificationService.observeDeviceToken(),
+            ) { authInfo, deviceToken ->
+                currentDeviceToken = deviceToken
+                if (authInfo != null && deviceToken != previousDeviceToken && deviceToken != null) {
+                    registerDeviceToken(deviceToken, PlatformUtils.getOSName())
+                }
+            }
             .launchIn(viewModelScope)
+    }
+
+    private fun registerDeviceToken(token: String, platform: String) {
+        viewModelScope.launch {
+            deviceTokenService.registerToken(token, platform)
+        }
     }
 }
