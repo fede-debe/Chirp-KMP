@@ -3,9 +3,12 @@ package com.project.chat.data.di
 import com.project.chat.data.lifecycle.AppLifecycleObserver
 import com.project.chat.data.network.ConnectionErrorHandler
 import com.project.chat.data.network.ConnectivityObserver
+import com.project.chat.data.notification.FirebasePushNotificationService
 import com.project.chat.database.DatabaseFactory
+import com.project.chat.domain.notification.PushNotificationService
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
 /**
@@ -19,4 +22,6 @@ actual val platformChatDataModule = module {
     singleOf(::AppLifecycleObserver)
     singleOf(::ConnectivityObserver)
     singleOf(::ConnectionErrorHandler)
+
+    singleOf(::FirebasePushNotificationService) bind PushNotificationService::class
 }
