@@ -3,7 +3,9 @@ package com.project.chat.presentation.navigation
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
+import androidx.navigation.toRoute
 import com.project.chat.presentation.ui.chatListDetail.ChatListDetailAdaptiveLayout
 import kotlinx.serialization.Serializable
 
@@ -12,20 +14,27 @@ sealed interface ChatGraphRoutes {
     data object Graph : ChatGraphRoutes
 
     @Serializable
-    data object ChatListDetailRoute : ChatGraphRoutes
+    data class ChatListDetailRoute(val chatId: String? = null) : ChatGraphRoutes
 }
 
 fun NavGraphBuilder.chatGraph(
     navController: NavController,
+    onLogout: () -> Unit,
 ) {
     navigation<ChatGraphRoutes.Graph>(
-        startDestination = ChatGraphRoutes.ChatListDetailRoute,
+        startDestination = ChatGraphRoutes.ChatListDetailRoute(null),
     ) {
-        composable<ChatGraphRoutes.ChatListDetailRoute> {
-            ChatListDetailAdaptiveLayout(
-                onLogout = {
-                    // TODO: Logout user
+        composable<ChatGraphRoutes.ChatListDetailRoute>(
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern = "chirp://chat_detail/{chatId}"
                 },
+            ),
+        ) { backStackEntry ->
+            val route = backStackEntry.toRoute<ChatGraphRoutes.ChatListDetailRoute>()
+            ChatListDetailAdaptiveLayout(
+                initialChatId = route.chatId,
+                onLogout = onLogout,
             )
         }
     }

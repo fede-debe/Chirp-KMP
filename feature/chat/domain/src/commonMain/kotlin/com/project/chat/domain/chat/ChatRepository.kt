@@ -44,4 +44,5 @@ interface ChatRepository {
         chatId: String,
         userIds: List<String>,
     ): Result<Chat, DataError.Remote>
+    suspend fun deleteAllChats()
 }
