@@ -4,6 +4,7 @@ import com.project.core.data.dto.AuthInfoSerializable
 import com.project.core.data.dto.requests.ChangePasswordRequest
 import com.project.core.data.dto.requests.EmailRequest
 import com.project.core.data.dto.requests.LoginRequest
+import com.project.core.data.dto.requests.RefreshRequest
 import com.project.core.data.dto.requests.RegisterRequest
 import com.project.core.data.dto.requests.ResetPasswordRequest
 import com.project.core.data.mappers.toDomain
@@ -15,7 +16,10 @@ import com.project.core.domain.util.DataError
 import com.project.core.domain.util.EmptyResult
 import com.project.core.domain.util.Result
 import com.project.core.domain.util.map
+import com.project.core.domain.util.onSuccess
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.auth.authProvider
+import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 
 /**
  * Ktor-based implementation of the [AuthService] for executing authentication network requests.
@@ -121,5 +125,14 @@ class KtorAuthService(
                 newPassword = newPassword,
             ),
         )
+    }
+
+    override suspend fun logout(refreshToken: String): EmptyResult<DataError.Remote> {
+        return httpClient.post<RefreshRequest, Unit>(
+            route = "/auth/logout",
+            body = RefreshRequest(refreshToken),
+        ).onSuccess {
+            httpClient.authProvider<BearerAuthProvider>()?.clearToken()
+        }
     }
 }

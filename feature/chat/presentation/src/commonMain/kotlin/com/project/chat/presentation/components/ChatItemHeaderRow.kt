@@ -42,7 +42,7 @@ fun ChatItemHeaderRow(
         ) {
             Text(
                 text = if (!isGroupChat) {
-                    chat.otherParticipants.firstOrNull()?.username.orEmpty()
+                    chat.otherParticipants.first().username
                 } else {
                     stringResource(Res.string.group_chat)
                 },
