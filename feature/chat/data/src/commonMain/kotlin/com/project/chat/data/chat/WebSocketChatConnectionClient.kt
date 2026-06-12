@@ -106,6 +106,7 @@ class WebSocketChatConnectionClient(
         }
 
         val entity = message.toEntity()
+        database.chatDao.updateLastActivity(entity.chatId, entity.timestamp)
         database.chatMessageDao.upsertMessage(entity)
     }
 
