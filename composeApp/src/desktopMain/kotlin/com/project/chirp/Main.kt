@@ -1,0 +1,41 @@
+@file:Suppress("ktlint:standard:filename", "filename")
+
+package com.project.chirp
+
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.application
+import com.project.chirp.di.initKoin
+
+/**
+ * The process entry point for the Compose Desktop JVM application.
+ *
+ * ## Strategy / Decisions
+ * Desktop applications require a standard `main` function to launch, acting as the root process. We utilize the `application` scope provided by Compose Multiplatform to bridge our shared cross-platform Compose UI into a desktop Window environment.
+ * We ignore standard command-line arguments because this application is designed as a GUI launched via a desktop icon.
+ *
+ * ## How It Works
+ * 1. The `main()` function is invoked by the JVM upon process launch.
+ * 2. The Compose `application { ... }` block initializes the desktop rendering lifecycle.
+ * 3. A desktop `Window` is instantiated to host the composable tree.
+ * 4. The shared `App()` composable (containing cross-platform navigation and logic) is executed inside the window.
+ * 5. When the user clicks the close icon, the `onCloseRequest` lambda is triggered, invoking `exitApplication()` to kill the JVM process.
+ *
+ * ## Alternatives / Why Not
+ * - **Command Line Execution:** We could technically parse the `Array<String>` args, but rejected this because the target UX is double-clicking an application icon, rendering CLI args unnecessary.
+ * - **Direct AWT/Swing Usage:** Swing is a mature framework built on AWT, but we use Compose Multiplatform to abstract away Swing/AWT boilerplate and keep our UI declarative and cross-platform.
+ *
+ * Technical Details
+ * - Execution is bound to the JVM target.
+ * - `exitApplication()` terminates the underlying application process.
+ */
+fun main() {
+    initKoin()
+    application {
+        Window(
+            onCloseRequest = ::exitApplication,
+            title = "Chirp",
+        ) {
+            App()
+        }
+    }
+}
