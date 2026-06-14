@@ -1,10 +1,13 @@
+import com.project.chirp.convention.applyHierarchyTemplate
 import com.project.chirp.convention.configureAndroidTarget
 import com.project.chirp.convention.configureDesktopTarget
 import com.project.chirp.convention.configureIosTargets
 import com.project.chirp.convention.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 /**
  * Configures a Compose Multi-platform (CMP) application module by applying required plugins and shared dependencies.
@@ -44,6 +47,10 @@ class CmpApplicationConventionPlugin: Plugin<Project> {
             configureAndroidTarget()
             configureIosTargets()
             configureDesktopTarget()
+
+            extensions.configure<KotlinMultiplatformExtension> {
+                applyHierarchyTemplate()
+            }
 
             dependencies {
                 "debugImplementation"(libs.findLibrary("androidx-compose-ui-tooling").get())
