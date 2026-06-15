@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.project.chat.domain.chat.ChatRepository
 import com.project.chat.domain.notification.DeviceTokenService
+import com.project.chat.domain.participant.ChatParticipantRepository
 import com.project.chat.presentation.mappers.toUi
 import com.project.core.domain.auth.AuthService
 import com.project.core.domain.auth.SessionStorage
@@ -41,6 +42,7 @@ class ChatListViewModel(
     private val sessionStorage: SessionStorage,
     private val deviceTokenService: DeviceTokenService,
     private val authService: AuthService,
+    private val chatParticipantRepository: ChatParticipantRepository,
 ) : ViewModel() {
 
     private val eventChannel = Channel<ChatListEvent>()
@@ -66,6 +68,7 @@ class ChatListViewModel(
         .onStart {
             if (!hasLoadedInitialData) {
                 loadChats()
+                fetchLocalUserProfile()
                 hasLoadedInitialData = true
             }
         }
@@ -110,6 +113,13 @@ class ChatListViewModel(
                 }
             }
             else -> Unit
+        }
+    }
+
+    private fun fetchLocalUserProfile() {
+        viewModelScope.launch {
+            chatParticipantRepository
+                .fetchLocalParticipant()
         }
     }
 
