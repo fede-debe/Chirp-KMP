@@ -28,11 +28,14 @@ import androidx.navigation.NavUri
 @Composable
 fun DeepLinkListener(
     navController: NavController,
+    onSetup: () -> Unit,
 ) {
     DisposableEffect(Unit) {
         ExternalUriHandler.listener = { uri ->
             navController.navigate(NavUri(uri))
         }
+
+        onSetup()
 
         onDispose {
             ExternalUriHandler.listener = null
