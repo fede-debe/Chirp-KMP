@@ -61,7 +61,8 @@ fun main() {
                         applicationStateHolder.onWindowCloseRequest(window.id)
                     },
                     onAddWindowClick = applicationStateHolder::onAddWindowClick,
-                    onFocusChanged = {
+                    onFocusChanged = { focused ->
+                        applicationStateHolder.onWindowFocusChanged(window.id, focused)
                     },
                 )
             }
