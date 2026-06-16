@@ -13,6 +13,7 @@ plugins {
     alias(libs.plugins.room) apply false
     alias(libs.plugins.google.services) apply false
     alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.conveyor) apply false
     alias(libs.plugins.android.lint) apply false
     alias(libs.plugins.ktlint)
 }
@@ -32,6 +33,6 @@ subprojects {
     }
     afterEvaluate {
         extensions.findByType<org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension>()
-            ?.jvmToolchain(11)
+            ?.jvmToolchain(17)
     }
 }

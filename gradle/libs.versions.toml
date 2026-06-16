@@ -5,6 +5,7 @@ kotlin = "2.4.0"
 composeBom = "2026.03.01"
 ksp = "2.2.20-2.0.4"
 google-services = "4.4.4"
+conveyor = "1.12"
 
 androidDesugarJdkLibs = "2.1.5"
 androidTools = "32.1.0"
@@ -208,6 +209,7 @@ room = { id = "androidx.room", version.ref = "room" }
 google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildkonfig" }
+conveyor = { id = "dev.hydraulic.conveyor", version.ref = "conveyor" }
 
 android-lint = { id = "com.android.lint", version.ref = "agp" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version = "12.1.2" }
