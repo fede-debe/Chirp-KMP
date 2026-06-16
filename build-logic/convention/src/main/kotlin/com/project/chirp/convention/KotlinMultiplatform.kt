@@ -30,6 +30,7 @@ internal fun Project.configureKotlinMultiplatform() {
     }
 
     configureAndroidTarget()
+    configureDesktopTarget()
 
     extensions.configure<KotlinMultiplatformExtension> {
         listOf(
@@ -41,6 +42,8 @@ internal fun Project.configureKotlinMultiplatform() {
                 baseName = this@configureKotlinMultiplatform.pathToFrameworkName()
             }
         }
+
+        applyHierarchyTemplate()
 
         compilerOptions {
             freeCompilerArgs.add("-Xexpect-actual-classes")
