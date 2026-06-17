@@ -1,5 +1,6 @@
 package com.project.chirp.convention
 
+import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.CommonExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
@@ -28,11 +29,14 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
  *
  * ## Technical Details
  * - Resolves the desugaring library dynamically via the Version Catalog using the `coreLibraryDesugaring` configuration keyword rather than standard `implementation`.
+ *
+ * commonExtension became ApplicationExtension because of Gradle 9 migration.
+ *
  */
 internal fun Project.configureKotlinAndroid(
-    commonExtension: CommonExtension<*, *, *, *, *, *>
+    applicationExtension: ApplicationExtension
 ) {
-    with(commonExtension) {
+    with(applicationExtension) {
         compileSdk = libs.findVersion("projectCompileSdkVersion").get().toString().toInt()
 
         defaultConfig.minSdk = libs.findVersion("projectMinSdkVersion").get().toString().toInt()

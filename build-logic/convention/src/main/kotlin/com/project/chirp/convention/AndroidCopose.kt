@@ -1,6 +1,6 @@
 package com.project.chirp.convention
 
-import com.android.build.api.dsl.CommonExtension
+import com.android.build.api.dsl.ApplicationExtension
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
 
@@ -26,11 +26,12 @@ import org.gradle.kotlin.dsl.dependencies
  * - Requires a Version Catalog named `libs` containing `androidx-compose-bom`, `androidx-compose-ui-tooling-preview`, and `androidx-compose-ui-tooling`.
  *
  * @param commonExtension The base Android extension (either Application or Library) to apply the Compose features to.
+ * commonExtension became ApplicationExtension because of Gradle 9 migration.
  */
 internal fun Project.configureAndroidCompose(
-    commonExtension: CommonExtension<*, *, *, *, *, *>
+    applicationExtension: ApplicationExtension
 ) {
-    with(commonExtension) {
+    with(applicationExtension) {
         buildFeatures {
             compose = true
         }

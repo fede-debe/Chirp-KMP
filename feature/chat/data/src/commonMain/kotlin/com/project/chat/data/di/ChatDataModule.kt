@@ -73,6 +73,7 @@ val chatDataModule = module {
         get<DatabaseFactory>()
             .create()
             .setDriver(BundledSQLiteDriver())
+            .fallbackToDestructiveMigration(true)
             .build()
     }
 }

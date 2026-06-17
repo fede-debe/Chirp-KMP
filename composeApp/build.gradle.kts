@@ -9,18 +9,21 @@ plugins {
 version = "1.0.0"
 
 kotlin {
-    jvmToolchain(17)
+    androidLibrary {
+        compileSdk = 36
+        minSdk = 26
+        namespace = "com.project.chirp.composeapp"
+        experimentalProperties["android.experimental.kmp.enableAndroidResources"] = true
+    }
 
     sourceSets {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.core.splashscreen)
             implementation(libs.koin.android)
         }
         commonMain.dependencies {
-            implementation(libs.koin.core)
-
-            // wire everything together - Overview of the app
             implementation(projects.core.data)
             implementation(projects.core.domain)
             implementation(projects.core.designsystem)
@@ -30,9 +33,9 @@ kotlin {
             implementation(projects.feature.auth.presentation)
 
             implementation(projects.feature.chat.data)
+            implementation(projects.feature.chat.database)
             implementation(projects.feature.chat.domain)
             implementation(projects.feature.chat.presentation)
-            implementation(projects.feature.chat.database)
 
             implementation(libs.jetbrains.compose.navigation)
             implementation(libs.bundles.koin.common)
@@ -43,7 +46,6 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
-            implementation(compose.preview)
             implementation(libs.jetbrains.compose.viewmodel)
             implementation(libs.jetbrains.lifecycle.compose)
         }
@@ -82,10 +84,6 @@ kotlin {
             implementation(compose.desktop.windows_arm64)
         }
     }
-}
-
-android {
-    namespace = "com.project.chirp"
 }
 
 compose.desktop {

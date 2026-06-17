@@ -38,14 +38,19 @@ kotlin {
                 implementation(libs.jetbrains.lifecycle.compose)
                 implementation(libs.bundles.koin.common)
 
-                implementation(libs.components.resources)
+                implementation(compose.components.resources)
             }
         }
 
-        mobileMain.dependencies {
-            implementation(libs.moko.permissions)
-            implementation(libs.moko.permissions.compose)
-            implementation(libs.moko.permissions.notifications)
+        val mobileMain by getting {
+            dependencies {
+                implementation(libs.moko.permissions)
+                implementation(libs.moko.permissions.compose)
+                implementation(libs.moko.permissions.notifications)
+            }
+        }
+        androidMain {
+            dependsOn(mobileMain)
         }
     }
 }
