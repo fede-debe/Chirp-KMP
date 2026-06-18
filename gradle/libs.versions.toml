@@ -3,7 +3,7 @@ agp = "9.0.0"
 componentsResources = "1.10.3"
 kotlin = "2.4.0"
 composeBom = "2026.03.01"
-ksp = "2.3.4"
+ksp = "2.3.9"
 google-services = "4.4.4"
 conveyor = "1.12"
 
