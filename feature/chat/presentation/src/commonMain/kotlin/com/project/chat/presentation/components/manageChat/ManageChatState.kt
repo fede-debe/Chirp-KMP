@@ -1,7 +1,7 @@
 package com.project.chat.presentation.components.manageChat
 
 import androidx.compose.foundation.text.input.TextFieldState
-import com.project.core.designSystem.components.avatar.ChatParticipantUi
+import com.project.core.designsystem.components.avatar.ChatParticipantUi
 import com.project.core.presentation.util.UiText
 
 data class ManageChatState(

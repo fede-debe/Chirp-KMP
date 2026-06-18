@@ -1,4 +1,4 @@
-package com.project.core.designSystem.components.dialogs
+package com.project.core.designsystem.components.dialogs
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -22,12 +22,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import chirp.core.designsystem.generated.resources.Res
-import chirp.core.designsystem.generated.resources.dismiss_dialog
-import com.project.core.designSystem.components.buttons.ChirpButton
-import com.project.core.designSystem.components.buttons.ChirpButtonStyle
-import com.project.core.designSystem.theme.ChirpTheme
-import com.project.core.designSystem.theme.extended
+import com.project.core.designsystem.Res
+import com.project.core.designsystem.components.buttons.ChirpButton
+import com.project.core.designsystem.components.buttons.ChirpButtonStyle
+import com.project.core.designsystem.dismiss_dialog
+import com.project.core.designsystem.theme.ChirpTheme
+import com.project.core.designsystem.theme.extended
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

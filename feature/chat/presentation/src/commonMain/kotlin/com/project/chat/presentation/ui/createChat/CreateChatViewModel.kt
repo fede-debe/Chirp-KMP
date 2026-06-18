@@ -4,12 +4,12 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import chirp.feature.chat.presentation.generated.resources.Res
-import chirp.feature.chat.presentation.generated.resources.error_participant_not_found
 import com.project.chat.domain.chat.ChatRepository
 import com.project.chat.domain.participant.ChatParticipantService
+import com.project.chat.presentation.Res
 import com.project.chat.presentation.components.manageChat.ManageChatAction
 import com.project.chat.presentation.components.manageChat.ManageChatState
+import com.project.chat.presentation.error_participant_not_found
 import com.project.chat.presentation.mappers.toUi
 import com.project.core.domain.util.DataError
 import com.project.core.domain.util.onFailure

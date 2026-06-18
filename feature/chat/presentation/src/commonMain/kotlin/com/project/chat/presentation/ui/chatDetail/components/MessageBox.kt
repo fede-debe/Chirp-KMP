@@ -26,16 +26,16 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import chirp.feature.chat.presentation.generated.resources.Res
-import chirp.feature.chat.presentation.generated.resources.cloud_off_icon
-import chirp.feature.chat.presentation.generated.resources.send
-import chirp.feature.chat.presentation.generated.resources.send_a_message
 import com.project.chat.domain.models.ConnectionState
+import com.project.chat.presentation.Res
+import com.project.chat.presentation.cloud_off_icon
+import com.project.chat.presentation.send
+import com.project.chat.presentation.send_a_message
 import com.project.chat.presentation.util.toUiText
-import com.project.core.designSystem.components.buttons.ChirpButton
-import com.project.core.designSystem.components.textFields.ChirpMultiLineTextField
-import com.project.core.designSystem.theme.ChirpTheme
-import com.project.core.designSystem.theme.extended
+import com.project.core.designsystem.components.buttons.ChirpButton
+import com.project.core.designsystem.components.textFields.ChirpMultiLineTextField
+import com.project.core.designsystem.theme.ChirpTheme
+import com.project.core.designsystem.theme.extended
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 

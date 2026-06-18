@@ -14,22 +14,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import chirp.core.designsystem.generated.resources.log_out_icon
-import chirp.core.designsystem.generated.resources.logo_chirp
-import chirp.feature.chat.presentation.generated.resources.Res
-import chirp.feature.chat.presentation.generated.resources.logout
-import chirp.feature.chat.presentation.generated.resources.profile_settings
-import chirp.feature.chat.presentation.generated.resources.users_icon
+import com.project.chat.presentation.Res
 import com.project.chat.presentation.components.ChatHeader
-import com.project.core.designSystem.components.avatar.ChatParticipantUi
-import com.project.core.designSystem.components.avatar.ChirpAvatarPhoto
-import com.project.core.designSystem.components.dropdown.ChirpDropDownMenu
-import com.project.core.designSystem.components.dropdown.DropDownItem
-import com.project.core.designSystem.theme.ChirpTheme
-import com.project.core.designSystem.theme.extended
+import com.project.chat.presentation.logout
+import com.project.chat.presentation.profile_settings
+import com.project.chat.presentation.users_icon
+import com.project.core.designsystem.components.avatar.ChatParticipantUi
+import com.project.core.designsystem.components.avatar.ChirpAvatarPhoto
+import com.project.core.designsystem.components.dropdown.ChirpDropDownMenu
+import com.project.core.designsystem.components.dropdown.DropDownItem
+import com.project.core.designsystem.log_out_icon
+import com.project.core.designsystem.logo_chirp
+import com.project.core.designsystem.theme.ChirpTheme
+import com.project.core.designsystem.theme.extended
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
-import chirp.core.designsystem.generated.resources.Res as DesignSystemRes
+import com.project.core.designsystem.Res as DesignSystemRes
 
 @Composable
 fun ChatListHeader(

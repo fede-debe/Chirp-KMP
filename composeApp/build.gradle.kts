@@ -1,8 +1,5 @@
-@file:Suppress("DEPRECATION")
-
 plugins {
     alias(libs.plugins.convention.cmp.application)
-    alias(libs.plugins.compose.hot.reload)
     alias(libs.plugins.conveyor)
 }
 
@@ -10,18 +7,18 @@ version = "1.0.0"
 
 kotlin {
     androidLibrary {
+        namespace = "com.project.chirp.shared"
         compileSdk = 36
         minSdk = 26
-        namespace = "com.project.chirp.composeapp"
-        experimentalProperties["android.experimental.kmp.enableAndroidResources"] = true
+
+        androidResources {
+            enable = true
+        }
     }
 
     sourceSets {
         androidMain.dependencies {
-            implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
-            implementation(libs.core.splashscreen)
-            implementation(libs.koin.android)
         }
         commonMain.dependencies {
             implementation(projects.core.data)
@@ -39,13 +36,6 @@ kotlin {
 
             implementation(libs.jetbrains.compose.navigation)
             implementation(libs.bundles.koin.common)
-
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
             implementation(libs.jetbrains.compose.viewmodel)
             implementation(libs.jetbrains.lifecycle.compose)
         }
@@ -84,6 +74,10 @@ kotlin {
             implementation(compose.desktop.windows_arm64)
         }
     }
+}
+
+compose.resources {
+    packageOfResClass = "com.project.chirp"
 }
 
 compose.desktop {

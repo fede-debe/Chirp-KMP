@@ -1,22 +1,22 @@
 package com.project.core.presentation.util
 
-import chirp.core.presentation.generated.resources.Res
-import chirp.core.presentation.generated.resources.error_bad_request
-import chirp.core.presentation.generated.resources.error_conflict
-import chirp.core.presentation.generated.resources.error_disk_full
-import chirp.core.presentation.generated.resources.error_forbidden
-import chirp.core.presentation.generated.resources.error_no_internet
-import chirp.core.presentation.generated.resources.error_not_found
-import chirp.core.presentation.generated.resources.error_payload_too_large
-import chirp.core.presentation.generated.resources.error_request_timeout
-import chirp.core.presentation.generated.resources.error_serialization
-import chirp.core.presentation.generated.resources.error_server
-import chirp.core.presentation.generated.resources.error_service_unavailable
-import chirp.core.presentation.generated.resources.error_too_many_requests
-import chirp.core.presentation.generated.resources.error_unable_to_send_message
-import chirp.core.presentation.generated.resources.error_unauthorized
-import chirp.core.presentation.generated.resources.error_unknown
 import com.project.core.domain.util.DataError
+import com.project.core.presentation.Res
+import com.project.core.presentation.error_bad_request
+import com.project.core.presentation.error_conflict
+import com.project.core.presentation.error_disk_full
+import com.project.core.presentation.error_forbidden
+import com.project.core.presentation.error_no_internet
+import com.project.core.presentation.error_not_found
+import com.project.core.presentation.error_payload_too_large
+import com.project.core.presentation.error_request_timeout
+import com.project.core.presentation.error_serialization
+import com.project.core.presentation.error_server
+import com.project.core.presentation.error_service_unavailable
+import com.project.core.presentation.error_too_many_requests
+import com.project.core.presentation.error_unable_to_send_message
+import com.project.core.presentation.error_unauthorized
+import com.project.core.presentation.error_unknown
 
 fun DataError.toUiText(): UiText {
     val resource = when (this) {

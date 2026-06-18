@@ -1,4 +1,4 @@
-package com.project.core.designSystem.components.textFields
+package com.project.core.designsystem.components.textFields
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,7 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.project.core.designSystem.theme.extended
+import com.project.core.designsystem.theme.extended
 
 /**
  * Extracts the common structural layout for text fields to enable reuse across different input types.

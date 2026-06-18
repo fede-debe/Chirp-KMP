@@ -3,10 +3,10 @@ package com.project.auth.presentation.ui.login
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import chirp.feature.auth.presentation.generated.resources.Res
-import chirp.feature.auth.presentation.generated.resources.error_email_not_verified
-import chirp.feature.auth.presentation.generated.resources.error_invalid_credentials
 import com.project.auth.domain.EmailValidator
+import com.project.auth.presentation.Res
+import com.project.auth.presentation.error_email_not_verified
+import com.project.auth.presentation.error_invalid_credentials
 import com.project.core.domain.auth.AuthService
 import com.project.core.domain.auth.SessionStorage
 import com.project.core.domain.util.DataError

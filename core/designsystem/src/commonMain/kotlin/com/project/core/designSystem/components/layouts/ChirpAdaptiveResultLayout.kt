@@ -1,4 +1,4 @@
-package com.project.core.designSystem.components.layouts
+package com.project.core.designsystem.components.layouts
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -22,8 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.project.core.designSystem.components.brand.ChirpBrandLogo
-import com.project.core.designSystem.theme.ChirpTheme
+import com.project.core.designsystem.components.brand.ChirpBrandLogo
+import com.project.core.designsystem.theme.ChirpTheme
 import com.project.core.presentation.util.DeviceConfiguration
 import com.project.core.presentation.util.currentDeviceConfiguration
 

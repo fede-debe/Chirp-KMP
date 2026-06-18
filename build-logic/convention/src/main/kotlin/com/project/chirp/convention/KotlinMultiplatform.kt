@@ -30,13 +30,6 @@ internal fun Project.configureKotlinMultiplatform() {
     configureDesktopTarget()
 
     extensions.configure<KotlinMultiplatformExtension> {
-        extensions.configure<KotlinMultiplatformAndroidLibraryExtension> {
-            compileSdk = 36
-            minSdk = 26
-            namespace = pathToPackageName()
-            experimentalProperties["android.experimental.kmp.enableAndroidResources"] = true
-        }
-
         listOf(
             iosX64(),
             iosArm64(),

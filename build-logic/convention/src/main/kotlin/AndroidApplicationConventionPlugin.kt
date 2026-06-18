@@ -26,12 +26,13 @@ import org.gradle.kotlin.dsl.configure
  *
  * Technical Details: Relies on `com.android.build.api.dsl.ApplicationExtension`. Version catalog references require `.get()` and explicit string-to-int parsing.
  */
-class AndroidApplicationConventionPlugin : Plugin<Project> {
+class AndroidApplicationConventionPlugin: Plugin<Project> {
 
     override fun apply(target: Project) {
         with(target) {
             with(pluginManager) {
                 apply("com.android.application")
+                // AGP 9.0+ has built-in Kotlin support, no need for kotlin.android plugin
             }
 
             extensions.configure<ApplicationExtension> {
@@ -48,7 +49,6 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                         excludes += "/META-INF/{AL2.0,LGPL2.1}"
                     }
                 }
-                // make it true for release builds to shrink the APK size
                 buildTypes {
                     getByName("release") {
                         isMinifyEnabled = false

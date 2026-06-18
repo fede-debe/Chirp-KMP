@@ -1,4 +1,4 @@
-package com.project.core.designSystem.components.chat
+package com.project.core.designsystem.components.chat
 
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.RoundRect

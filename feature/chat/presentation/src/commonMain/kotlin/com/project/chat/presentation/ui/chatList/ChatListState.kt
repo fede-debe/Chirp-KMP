@@ -1,7 +1,7 @@
 package com.project.chat.presentation.ui.chatList
 
 import com.project.chat.presentation.models.ChatUi
-import com.project.core.designSystem.components.avatar.ChatParticipantUi
+import com.project.core.designsystem.components.avatar.ChatParticipantUi
 import com.project.core.presentation.util.UiText
 
 data class ChatListState(

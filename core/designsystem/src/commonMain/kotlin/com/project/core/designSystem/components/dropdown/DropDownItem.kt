@@ -1,4 +1,4 @@
-package com.project.core.designSystem.components.dropdown
+package com.project.core.designsystem.components.dropdown
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector

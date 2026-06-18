@@ -12,14 +12,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import chirp.feature.chat.presentation.generated.resources.Res
-import chirp.feature.chat.presentation.generated.resources.group_chat
-import chirp.feature.chat.presentation.generated.resources.only_you
-import chirp.feature.chat.presentation.generated.resources.you
+import com.project.chat.presentation.Res
+import com.project.chat.presentation.group_chat
 import com.project.chat.presentation.models.ChatUi
-import com.project.core.designSystem.components.avatar.ChirpStackedAvatars
-import com.project.core.designSystem.theme.extended
-import com.project.core.designSystem.theme.titleXSmall
+import com.project.chat.presentation.only_you
+import com.project.chat.presentation.you
+import com.project.core.designsystem.components.avatar.ChirpStackedAvatars
+import com.project.core.designsystem.theme.extended
+import com.project.core.designsystem.theme.titleXSmall
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

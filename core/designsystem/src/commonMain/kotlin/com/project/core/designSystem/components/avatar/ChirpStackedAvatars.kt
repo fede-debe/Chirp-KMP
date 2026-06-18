@@ -1,4 +1,4 @@
-package com.project.core.designSystem.components.avatar
+package com.project.core.designsystem.components.avatar
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.project.core.designSystem.theme.ChirpTheme
+import com.project.core.designsystem.theme.ChirpTheme
 
 @Composable
 fun ChirpStackedAvatars(

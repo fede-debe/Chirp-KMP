@@ -9,12 +9,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import chirp.feature.chat.presentation.generated.resources.Res
-import chirp.feature.chat.presentation.generated.resources.add
-import chirp.feature.chat.presentation.generated.resources.email_or_username
-import com.project.core.designSystem.components.buttons.ChirpButton
-import com.project.core.designSystem.components.buttons.ChirpButtonStyle
-import com.project.core.designSystem.components.textFields.ChirpTextField
+import com.project.chat.presentation.Res
+import com.project.chat.presentation.add
+import com.project.chat.presentation.email_or_username
+import com.project.core.designsystem.components.buttons.ChirpButton
+import com.project.core.designsystem.components.buttons.ChirpButtonStyle
+import com.project.core.designsystem.components.textFields.ChirpTextField
 import com.project.core.presentation.util.UiText
 import org.jetbrains.compose.resources.stringResource
 

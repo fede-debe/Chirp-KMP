@@ -1,4 +1,4 @@
-package com.project.core.designSystem.components.brand
+package com.project.core.designsystem.components.brand
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close

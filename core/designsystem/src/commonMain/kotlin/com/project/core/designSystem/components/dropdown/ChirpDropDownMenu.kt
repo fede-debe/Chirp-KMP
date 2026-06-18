@@ -1,4 +1,4 @@
-package com.project.core.designSystem.components.dropdown
+package com.project.core.designsystem.components.dropdown
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -14,8 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.project.core.designSystem.components.brand.ChirpHorizontalDivider
-import com.project.core.designSystem.theme.extended
+import com.project.core.designsystem.components.brand.ChirpHorizontalDivider
+import com.project.core.designsystem.theme.extended
 
 @Composable
 fun ChirpDropDownMenu(

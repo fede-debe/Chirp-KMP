@@ -1,4 +1,4 @@
-package com.project.core.designSystem.components.textFields
+package com.project.core.designsystem.components.textFields
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -24,13 +24,13 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import chirp.core.designsystem.generated.resources.Res
-import chirp.core.designsystem.generated.resources.eye_icon
-import chirp.core.designsystem.generated.resources.eye_off_icon
-import chirp.core.designsystem.generated.resources.hide_password
-import chirp.core.designsystem.generated.resources.show_password
-import com.project.core.designSystem.theme.ChirpTheme
-import com.project.core.designSystem.theme.extended
+import com.project.core.designsystem.Res
+import com.project.core.designsystem.eye_icon
+import com.project.core.designsystem.eye_off_icon
+import com.project.core.designsystem.hide_password
+import com.project.core.designsystem.show_password
+import com.project.core.designsystem.theme.ChirpTheme
+import com.project.core.designsystem.theme.extended
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 

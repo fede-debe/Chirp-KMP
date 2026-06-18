@@ -23,7 +23,7 @@ import com.project.chat.presentation.ui.chatList.ChatListRoot
 import com.project.chat.presentation.ui.createChat.CreateChatRoot
 import com.project.chat.presentation.ui.manageChat.ManageChatRoot
 import com.project.chat.presentation.ui.profile.ProfileRoot
-import com.project.core.designSystem.theme.extended
+import com.project.core.designsystem.theme.extended
 import com.project.core.presentation.util.DialogSheetScopedViewModel
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel

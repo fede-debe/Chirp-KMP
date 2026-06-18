@@ -3,6 +3,15 @@ plugins {
 }
 
 kotlin {
+    androidLibrary {
+        namespace = "com.project.feature.auth.presentation"
+        compileSdk = 36
+        minSdk = 26
+
+        androidResources {
+            enable = true
+        }
+    }
     sourceSets {
         commonMain {
             dependencies {
@@ -12,12 +21,8 @@ kotlin {
                 implementation(projects.core.domain)
                 implementation(projects.core.designsystem)
                 implementation(projects.core.presentation)
-                // Add KMP dependencies here
 
-                implementation(libs.koin.core)
-
-                implementation(libs.ui.tooling.preview)
-                implementation(libs.components.resources)
+                implementation(libs.bundles.koin.common)
             }
         }
 
@@ -39,4 +44,8 @@ kotlin {
             }
         }
     }
+}
+
+compose.resources {
+    packageOfResClass = "com.project.auth.presentation"
 }

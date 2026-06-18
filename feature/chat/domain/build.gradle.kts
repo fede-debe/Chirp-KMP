@@ -3,6 +3,11 @@ plugins {
 }
 
 kotlin {
+    androidLibrary {
+        namespace = "com.project.feature.chat.domain"
+        compileSdk = 36
+        minSdk = 26
+    }
     sourceSets {
         commonMain {
             dependencies {
@@ -10,9 +15,6 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.core)
 
                 implementation(projects.core.domain)
-                implementation(projects.core.data)
-
-                // Add KMP dependencies here
             }
         }
 

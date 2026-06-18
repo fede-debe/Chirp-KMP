@@ -3,7 +3,7 @@ package com.project.chat.presentation.util
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import com.project.core.designSystem.theme.extended
+import com.project.core.designsystem.theme.extended
 
 @Composable
 fun getChatBubbleColorForUser(userId: String): Color {

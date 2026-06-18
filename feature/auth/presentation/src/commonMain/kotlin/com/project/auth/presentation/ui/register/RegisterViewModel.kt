@@ -3,12 +3,12 @@ package com.project.auth.presentation.ui.register
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import chirp.feature.auth.presentation.generated.resources.Res
-import chirp.feature.auth.presentation.generated.resources.error_account_exists
-import chirp.feature.auth.presentation.generated.resources.error_invalid_email
-import chirp.feature.auth.presentation.generated.resources.error_invalid_password
-import chirp.feature.auth.presentation.generated.resources.error_invalid_username
 import com.project.auth.domain.EmailValidator
+import com.project.auth.presentation.Res
+import com.project.auth.presentation.error_account_exists
+import com.project.auth.presentation.error_invalid_email
+import com.project.auth.presentation.error_invalid_password
+import com.project.auth.presentation.error_invalid_username
 import com.project.core.domain.auth.AuthService
 import com.project.core.domain.util.DataError
 import com.project.core.domain.util.onFailure

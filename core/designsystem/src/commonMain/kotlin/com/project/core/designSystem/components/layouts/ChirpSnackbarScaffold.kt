@@ -1,4 +1,4 @@
-package com.project.core.designSystem.components.layouts
+package com.project.core.designsystem.components.layouts
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets

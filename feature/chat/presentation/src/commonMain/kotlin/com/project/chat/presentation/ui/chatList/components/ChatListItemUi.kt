@@ -27,9 +27,9 @@ import com.project.chat.domain.models.ChatMessage
 import com.project.chat.domain.models.ChatMessageDeliveryStatus
 import com.project.chat.presentation.components.ChatItemHeaderRow
 import com.project.chat.presentation.models.ChatUi
-import com.project.core.designSystem.components.avatar.ChatParticipantUi
-import com.project.core.designSystem.theme.ChirpTheme
-import com.project.core.designSystem.theme.extended
+import com.project.core.designsystem.components.avatar.ChatParticipantUi
+import com.project.core.designsystem.theme.ChirpTheme
+import com.project.core.designsystem.theme.extended
 import kotlin.time.Clock
 
 @Composable

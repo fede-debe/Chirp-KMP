@@ -1,12 +1,12 @@
 package com.project.chat.presentation.util
 
-import chirp.feature.chat.presentation.generated.resources.Res
-import chirp.feature.chat.presentation.generated.resources.network_error
-import chirp.feature.chat.presentation.generated.resources.offline
-import chirp.feature.chat.presentation.generated.resources.online
-import chirp.feature.chat.presentation.generated.resources.reconnecting
-import chirp.feature.chat.presentation.generated.resources.unknown_error
 import com.project.chat.domain.models.ConnectionState
+import com.project.chat.presentation.Res
+import com.project.chat.presentation.network_error
+import com.project.chat.presentation.offline
+import com.project.chat.presentation.online
+import com.project.chat.presentation.reconnecting
+import com.project.chat.presentation.unknown_error
 import com.project.core.presentation.util.UiText
 
 fun ConnectionState.toUiText(): UiText {

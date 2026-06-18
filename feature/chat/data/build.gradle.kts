@@ -6,6 +6,11 @@ plugins {
 }
 
 kotlin {
+    androidLibrary {
+        namespace = "com.project.feature.chat.data"
+        compileSdk = 36
+        minSdk = 26
+    }
     sourceSets {
         commonMain {
             dependencies {
