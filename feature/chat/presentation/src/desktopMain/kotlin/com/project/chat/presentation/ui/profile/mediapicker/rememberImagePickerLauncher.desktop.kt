@@ -5,8 +5,8 @@ package com.project.chat.presentation.ui.profile.mediapicker
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import chirp.feature.chat.presentation.generated.resources.Res
-import chirp.feature.chat.presentation.generated.resources.select_a_profile_picture
+import com.project.chat.presentation.Res
+import com.project.chat.presentation.select_a_profile_picture
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch

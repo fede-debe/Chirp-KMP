@@ -3,12 +3,12 @@ package com.project.chat.presentation.ui.createChat
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import chirp.feature.chat.presentation.generated.resources.Res
-import chirp.feature.chat.presentation.generated.resources.create_chat
 import com.project.chat.domain.models.Chat
+import com.project.chat.presentation.Res
 import com.project.chat.presentation.components.manageChat.ManageChatAction
 import com.project.chat.presentation.components.manageChat.ManageChatScreen
-import com.project.core.designSystem.components.dialogs.ChirpAdaptiveDialogSheetLayout
+import com.project.chat.presentation.create_chat
+import com.project.core.designsystem.components.dialogs.ChirpAdaptiveDialogSheetLayout
 import com.project.core.presentation.util.ObserveAsEvents
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel

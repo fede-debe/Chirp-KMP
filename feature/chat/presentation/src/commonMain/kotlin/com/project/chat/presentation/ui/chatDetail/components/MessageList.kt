@@ -19,14 +19,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import chirp.feature.chat.presentation.generated.resources.Res
-import chirp.feature.chat.presentation.generated.resources.no_messages
-import chirp.feature.chat.presentation.generated.resources.no_messages_subtitle
-import chirp.feature.chat.presentation.generated.resources.retry
+import com.project.chat.presentation.Res
 import com.project.chat.presentation.components.EmptySection
 import com.project.chat.presentation.models.MessageUi
-import com.project.core.designSystem.components.buttons.ChirpButton
-import com.project.core.designSystem.components.buttons.ChirpButtonStyle
+import com.project.chat.presentation.no_messages
+import com.project.chat.presentation.no_messages_subtitle
+import com.project.chat.presentation.retry
+import com.project.core.designsystem.components.buttons.ChirpButton
+import com.project.core.designsystem.components.buttons.ChirpButtonStyle
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

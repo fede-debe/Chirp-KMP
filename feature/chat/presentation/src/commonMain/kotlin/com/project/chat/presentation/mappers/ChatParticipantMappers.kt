@@ -1,7 +1,7 @@
 package com.project.chat.presentation.mappers
 
 import com.project.chat.domain.models.ChatParticipant
-import com.project.core.designSystem.components.avatar.ChatParticipantUi
+import com.project.core.designsystem.components.avatar.ChatParticipantUi
 import com.project.core.domain.auth.User
 
 fun ChatParticipant.toUi(): ChatParticipantUi {

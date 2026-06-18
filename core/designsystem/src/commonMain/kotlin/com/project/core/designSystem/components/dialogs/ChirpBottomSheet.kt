@@ -1,4 +1,4 @@
-package com.project.core.designSystem.components.dialogs
+package com.project.core.designsystem.components.dialogs
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBarsPadding

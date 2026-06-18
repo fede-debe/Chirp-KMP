@@ -12,7 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.project.core.designSystem.theme.extended
+import com.project.core.designsystem.theme.extended
 import com.project.core.presentation.util.DeviceConfiguration
 import com.project.core.presentation.util.currentDeviceConfiguration
 

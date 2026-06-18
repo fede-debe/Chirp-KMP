@@ -1,12 +1,12 @@
 plugins {
     alias(libs.plugins.convention.android.application.compose)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.services)
 }
 
 dependencies {
-    implementation(project(":composeApp"))
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.core.splashscreen)
+    implementation(projects.composeApp)
     implementation(libs.koin.android)
+    implementation(libs.core.splashscreen)
+    implementation(libs.core.ktx)
+    implementation(libs.androidx.activity.compose)
 }

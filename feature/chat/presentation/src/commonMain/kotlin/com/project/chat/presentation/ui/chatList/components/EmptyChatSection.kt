@@ -12,11 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import chirp.feature.chat.presentation.generated.resources.Res
-import chirp.feature.chat.presentation.generated.resources.empty_chat
-import chirp.feature.chat.presentation.generated.resources.no_messages
-import chirp.feature.chat.presentation.generated.resources.no_messages_subtitle
-import com.project.core.designSystem.theme.extended
+import com.project.chat.presentation.Res
+import com.project.chat.presentation.empty_chat
+import com.project.chat.presentation.no_messages
+import com.project.chat.presentation.no_messages_subtitle
+import com.project.core.designsystem.theme.extended
 import com.project.core.presentation.util.DeviceConfiguration
 import com.project.core.presentation.util.currentDeviceConfiguration
 import org.jetbrains.compose.resources.painterResource

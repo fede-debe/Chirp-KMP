@@ -1,4 +1,4 @@
-package com.project.core.designSystem.components.avatar
+package com.project.core.designsystem.components.avatar
 
 data class ChatParticipantUi(
     val id: String,

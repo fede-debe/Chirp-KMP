@@ -1,5 +1,6 @@
 package com.project.chirp.convention
 
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension
 import com.android.build.api.dsl.LibraryExtension
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
@@ -25,11 +26,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
  * - The iOS target framework configuration dynamically dictates the output `.framework` binary name used by Xcode during native iOS compilation.
  */
 internal fun Project.configureKotlinMultiplatform() {
-    extensions.configure<LibraryExtension> {
-        namespace = this@configureKotlinMultiplatform.pathToPackageName()
-    }
-
-    configureAndroidTarget()
+    configureAndroidLibraryTarget()
     configureDesktopTarget()
 
     extensions.configure<KotlinMultiplatformExtension> {

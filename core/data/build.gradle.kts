@@ -4,6 +4,12 @@ plugins {
 }
 
 kotlin {
+
+    androidLibrary {
+        namespace = "com.project.core.data"
+        compileSdk = 36
+        minSdk = 26
+    }
     // Source set declarations.
     // Declaring a target automatically creates a source set with the same name. By default, the
     // Kotlin Gradle Plugin creates additional source sets that depend on each other, since it is
@@ -28,13 +34,19 @@ kotlin {
             }
         }
 
+        val jvmCommonMain by creating {
+            dependsOn(commonMain.get())
+        }
+
         desktopMain {
+            dependsOn(jvmCommonMain)
             dependencies {
                 implementation(libs.ktor.client.okhttp)
             }
         }
 
         androidMain {
+            dependsOn(jvmCommonMain)
             dependencies {
                 implementation(libs.ktor.client.okhttp)
                 implementation(libs.koin.android)

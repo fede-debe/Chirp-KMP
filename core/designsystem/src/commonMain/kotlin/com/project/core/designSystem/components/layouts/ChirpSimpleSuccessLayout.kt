@@ -1,4 +1,4 @@
-package com.project.core.designSystem.components.layouts
+package com.project.core.designsystem.components.layouts
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -16,11 +16,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
-import com.project.core.designSystem.components.brand.ChirpSuccessIcon
-import com.project.core.designSystem.components.buttons.ChirpButton
-import com.project.core.designSystem.components.buttons.ChirpButtonStyle
-import com.project.core.designSystem.theme.ChirpTheme
-import com.project.core.designSystem.theme.extended
+import com.project.core.designsystem.components.brand.ChirpSuccessIcon
+import com.project.core.designsystem.components.buttons.ChirpButton
+import com.project.core.designsystem.components.buttons.ChirpButtonStyle
+import com.project.core.designsystem.theme.ChirpTheme
+import com.project.core.designsystem.theme.extended
 
 /**
  * A slot-based layout designed to display consistent success messages (e.g., successful account creation or verification) across the application.

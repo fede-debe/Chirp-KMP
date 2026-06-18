@@ -1,4 +1,4 @@
-package com.project.core.designSystem.components.brand
+package com.project.core.designsystem.components.brand
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.HorizontalDivider

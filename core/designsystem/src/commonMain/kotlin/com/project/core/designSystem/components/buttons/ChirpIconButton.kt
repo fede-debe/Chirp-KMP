@@ -1,4 +1,4 @@
-package com.project.core.designSystem.components.buttons
+package com.project.core.designsystem.components.buttons
 
 /**
  * A reusable, theme-styled outlined icon button used throughout the Chirp application.
@@ -42,8 +42,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.project.core.designSystem.theme.ChirpTheme
-import com.project.core.designSystem.theme.extended
+import com.project.core.designsystem.theme.ChirpTheme
+import com.project.core.designsystem.theme.extended
 
 @Composable
 fun ChirpIconButton(

@@ -13,10 +13,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import chirp.feature.chat.presentation.generated.resources.Res
-import chirp.feature.chat.presentation.generated.resources.drop_picture_info
-import chirp.feature.chat.presentation.generated.resources.upload_icon
-import chirp.feature.chat.presentation.generated.resources.upload_image
+import com.project.chat.presentation.Res
+import com.project.chat.presentation.drop_picture_info
+import com.project.chat.presentation.upload_icon
+import com.project.chat.presentation.upload_image
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 

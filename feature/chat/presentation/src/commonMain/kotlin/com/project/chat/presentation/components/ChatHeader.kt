@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.project.core.designSystem.components.brand.ChirpHorizontalDivider
+import com.project.core.designsystem.components.brand.ChirpHorizontalDivider
 
 @Composable
 fun ChatHeader(

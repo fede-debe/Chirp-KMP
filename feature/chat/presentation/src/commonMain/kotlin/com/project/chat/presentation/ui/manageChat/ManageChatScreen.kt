@@ -4,12 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import chirp.feature.chat.presentation.generated.resources.Res
-import chirp.feature.chat.presentation.generated.resources.chat_members
-import chirp.feature.chat.presentation.generated.resources.save
+import com.project.chat.presentation.Res
+import com.project.chat.presentation.chat_members
 import com.project.chat.presentation.components.manageChat.ManageChatAction
 import com.project.chat.presentation.components.manageChat.ManageChatScreen
-import com.project.core.designSystem.components.dialogs.ChirpAdaptiveDialogSheetLayout
+import com.project.chat.presentation.save
+import com.project.core.designsystem.components.dialogs.ChirpAdaptiveDialogSheetLayout
 import com.project.core.presentation.util.ObserveAsEvents
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel

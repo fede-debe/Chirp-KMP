@@ -1,13 +1,13 @@
-package com.project.core.designSystem.preview
+package com.project.core.designsystem.preview
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
-import com.project.core.designSystem.components.brand.ChirpBrandLogo
-import com.project.core.designSystem.components.layouts.ChirpAdaptiveFormLayout
-import com.project.core.designSystem.theme.ChirpTheme
+import com.project.core.designsystem.components.brand.ChirpBrandLogo
+import com.project.core.designsystem.components.layouts.ChirpAdaptiveFormLayout
+import com.project.core.designsystem.theme.ChirpTheme
 
 @Composable
 @PreviewLightDark

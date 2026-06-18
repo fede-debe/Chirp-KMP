@@ -3,6 +3,11 @@ plugins {
 }
 
 kotlin {
+    androidLibrary {
+        namespace = "com.project.feature.auth.domain"
+        compileSdk = 36
+        minSdk = 26
+    }
     sourceSets {
         commonMain {
             dependencies {

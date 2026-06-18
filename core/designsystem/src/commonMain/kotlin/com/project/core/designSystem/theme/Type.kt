@@ -1,4 +1,4 @@
-package com.project.core.designSystem.theme
+package com.project.core.designsystem.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
@@ -6,12 +6,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import chirp.core.designsystem.generated.resources.Res
-import chirp.core.designsystem.generated.resources.plusjakartasans_bold
-import chirp.core.designsystem.generated.resources.plusjakartasans_light
-import chirp.core.designsystem.generated.resources.plusjakartasans_medium
-import chirp.core.designsystem.generated.resources.plusjakartasans_regular
-import chirp.core.designsystem.generated.resources.plusjakartasans_semibold
+import com.project.core.designsystem.Res
+import com.project.core.designsystem.plusjakartasans_bold
+import com.project.core.designsystem.plusjakartasans_light
+import com.project.core.designsystem.plusjakartasans_medium
+import com.project.core.designsystem.plusjakartasans_regular
+import com.project.core.designsystem.plusjakartasans_semibold
 import org.jetbrains.compose.resources.Font
 
 /**

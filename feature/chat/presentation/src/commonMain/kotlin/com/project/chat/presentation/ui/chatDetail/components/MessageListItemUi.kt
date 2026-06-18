@@ -16,9 +16,9 @@ import androidx.compose.ui.unit.dp
 import com.project.chat.domain.models.ChatMessageDeliveryStatus
 import com.project.chat.presentation.models.MessageUi
 import com.project.chat.presentation.util.getChatBubbleColorForUser
-import com.project.core.designSystem.components.avatar.ChatParticipantUi
-import com.project.core.designSystem.theme.ChirpTheme
-import com.project.core.designSystem.theme.extended
+import com.project.core.designsystem.components.avatar.ChatParticipantUi
+import com.project.core.designsystem.theme.ChirpTheme
+import com.project.core.designsystem.theme.extended
 import com.project.core.presentation.util.UiText
 
 @Composable

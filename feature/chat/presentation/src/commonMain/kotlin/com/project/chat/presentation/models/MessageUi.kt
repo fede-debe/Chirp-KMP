@@ -1,7 +1,7 @@
 package com.project.chat.presentation.models
 
 import com.project.chat.domain.models.ChatMessageDeliveryStatus
-import com.project.core.designSystem.components.avatar.ChatParticipantUi
+import com.project.core.designsystem.components.avatar.ChatParticipantUi
 import com.project.core.presentation.util.UiText
 
 sealed class MessageUi(open val id: String) {

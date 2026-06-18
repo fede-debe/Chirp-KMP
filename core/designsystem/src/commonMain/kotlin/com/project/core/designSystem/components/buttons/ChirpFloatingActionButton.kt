@@ -1,4 +1,4 @@
-package com.project.core.designSystem.components.buttons
+package com.project.core.designsystem.components.buttons
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.project.core.designSystem.theme.ChirpTheme
+import com.project.core.designsystem.theme.ChirpTheme
 
 /**
  * A reusable floating action button (FAB) component that serves as the final button variation for the design system model.

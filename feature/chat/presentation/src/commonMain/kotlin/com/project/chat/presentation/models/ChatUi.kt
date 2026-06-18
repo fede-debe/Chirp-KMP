@@ -1,7 +1,7 @@
 package com.project.chat.presentation.models
 
 import com.project.chat.domain.models.ChatMessage
-import com.project.core.designSystem.components.avatar.ChatParticipantUi
+import com.project.core.designsystem.components.avatar.ChatParticipantUi
 
 data class ChatUi(
     val id: String,

@@ -1,4 +1,4 @@
-package com.project.core.designSystem.theme
+package com.project.core.designsystem.theme
 
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme

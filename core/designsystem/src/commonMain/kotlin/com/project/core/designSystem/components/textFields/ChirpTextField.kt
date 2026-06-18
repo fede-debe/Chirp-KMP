@@ -1,4 +1,4 @@
-package com.project.core.designSystem.components.textFields
+package com.project.core.designsystem.components.textFields
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,8 +17,8 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.project.core.designSystem.theme.ChirpTheme
-import com.project.core.designSystem.theme.extended
+import com.project.core.designsystem.theme.ChirpTheme
+import com.project.core.designsystem.theme.extended
 
 /**
  * A comprehensive design system component that bundles a text input field with an optional title and

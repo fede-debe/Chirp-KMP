@@ -3,18 +3,25 @@ plugins {
 }
 
 kotlin {
+    androidLibrary {
+        namespace = "com.project.core.designsystem"
+        compileSdk = 36
+        minSdk = 26
+
+        androidResources {
+            enable = true
+        }
+    }
     sourceSets {
         commonMain {
             dependencies {
                 implementation(libs.kotlin.stdlib)
                 // Add KMP dependencies here
+
                 implementation(projects.core.presentation)
 
                 implementation(libs.coil.compose)
                 implementation(libs.coil.network.ktor)
-
-                implementation(libs.components.resources)
-                implementation(libs.ui.tooling.preview)
             }
         }
 
@@ -40,4 +47,5 @@ kotlin {
 
 compose.resources {
     publicResClass = true
+    packageOfResClass = "com.project.core.designsystem"
 }

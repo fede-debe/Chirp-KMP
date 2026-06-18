@@ -9,9 +9,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.project.chat.presentation.models.MessageUi
-import com.project.core.designSystem.components.avatar.ChirpAvatarPhoto
-import com.project.core.designSystem.components.chat.ChirpChatBubble
-import com.project.core.designSystem.components.chat.TrianglePosition
+import com.project.core.designsystem.components.avatar.ChirpAvatarPhoto
+import com.project.core.designsystem.components.chat.ChirpChatBubble
+import com.project.core.designsystem.components.chat.TrianglePosition
 
 @Composable
 fun OtherUserMessage(

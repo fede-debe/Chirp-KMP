@@ -13,15 +13,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import chirp.feature.chat.presentation.generated.resources.Res
-import chirp.feature.chat.presentation.generated.resources.check_icon
-import chirp.feature.chat.presentation.generated.resources.failed
-import chirp.feature.chat.presentation.generated.resources.loading_icon
-import chirp.feature.chat.presentation.generated.resources.sending
-import chirp.feature.chat.presentation.generated.resources.sent
 import com.project.chat.domain.models.ChatMessageDeliveryStatus
-import com.project.core.designSystem.theme.extended
-import com.project.core.designSystem.theme.labelXSmall
+import com.project.chat.presentation.Res
+import com.project.chat.presentation.check_icon
+import com.project.chat.presentation.failed
+import com.project.chat.presentation.loading_icon
+import com.project.chat.presentation.sending
+import com.project.chat.presentation.sent
+import com.project.core.designsystem.theme.extended
+import com.project.core.designsystem.theme.labelXSmall
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 

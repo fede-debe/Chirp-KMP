@@ -17,30 +17,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import chirp.core.designsystem.generated.resources.arrow_left_icon
-import chirp.core.designsystem.generated.resources.dots_icon
-import chirp.core.designsystem.generated.resources.log_out_icon
-import chirp.feature.chat.presentation.generated.resources.Res
-import chirp.feature.chat.presentation.generated.resources.chat_members
-import chirp.feature.chat.presentation.generated.resources.go_back
-import chirp.feature.chat.presentation.generated.resources.leave_chat
-import chirp.feature.chat.presentation.generated.resources.open_chat_options_menu
-import chirp.feature.chat.presentation.generated.resources.users_icon
 import com.project.chat.domain.models.ChatMessage
 import com.project.chat.domain.models.ChatMessageDeliveryStatus
+import com.project.chat.presentation.Res
+import com.project.chat.presentation.chat_members
 import com.project.chat.presentation.components.ChatHeader
 import com.project.chat.presentation.components.ChatItemHeaderRow
+import com.project.chat.presentation.go_back
+import com.project.chat.presentation.leave_chat
 import com.project.chat.presentation.models.ChatUi
-import com.project.core.designSystem.components.avatar.ChatParticipantUi
-import com.project.core.designSystem.components.buttons.ChirpIconButton
-import com.project.core.designSystem.components.dropdown.ChirpDropDownMenu
-import com.project.core.designSystem.components.dropdown.DropDownItem
-import com.project.core.designSystem.theme.ChirpTheme
-import com.project.core.designSystem.theme.extended
+import com.project.chat.presentation.open_chat_options_menu
+import com.project.chat.presentation.users_icon
+import com.project.core.designsystem.arrow_left_icon
+import com.project.core.designsystem.components.avatar.ChatParticipantUi
+import com.project.core.designsystem.components.buttons.ChirpIconButton
+import com.project.core.designsystem.components.dropdown.ChirpDropDownMenu
+import com.project.core.designsystem.components.dropdown.DropDownItem
+import com.project.core.designsystem.dots_icon
+import com.project.core.designsystem.log_out_icon
+import com.project.core.designsystem.theme.ChirpTheme
+import com.project.core.designsystem.theme.extended
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import kotlin.time.Clock
-import chirp.core.designsystem.generated.resources.Res as DesignSystemRes
+import com.project.core.designsystem.Res as DesignSystemRes
 
 @Composable
 fun ChatDetailHeader(
