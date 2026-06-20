@@ -56,7 +56,6 @@ kotlin {
             implementation(libs.kotlin.stdlib)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
-            implementation(libs.koin.compose.viewmodel)
             implementation(libs.jsystemthemedetector)
 
             implementation(compose.desktop.linux_x64)

@@ -24,9 +24,8 @@ kotlin {
 
                 implementation(projects.core.shared)
                 // core.ui auto-added by CmpFeatureConventionPlugin
-                // koin BOM, koin-compose, koin-compose-viewmodel auto-added by CmpFeatureConventionPlugin
+                // koin (BOM, koin-core, koin-compose, koin-compose-viewmodel) auto-added by CmpFeatureConventionPlugin
 
-                implementation(libs.koin.core)
                 implementation(libs.bundles.ktor.common)
                 implementation(libs.kotlinx.coroutines.core)
 
