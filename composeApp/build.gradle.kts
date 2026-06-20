@@ -26,8 +26,7 @@ kotlin {
             implementation(projects.core.designsystem)
             implementation(projects.core.presentation)
 
-            implementation(projects.feature.auth.domain)
-            implementation(projects.feature.auth.presentation)
+            implementation(projects.feature.auth)
 
             implementation(projects.feature.chat.data)
             implementation(projects.feature.chat.database)
