@@ -70,7 +70,7 @@ kotlin {
 }
 
 compose.resources {
-    packageOfResClass = "com.project.chirp"
+    packageOfResClass = "chirp.composeapp.generated.resources"
 }
 
 compose.desktop {
