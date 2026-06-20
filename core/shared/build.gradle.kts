@@ -20,11 +20,12 @@ kotlin {
                 implementation(libs.datastore)
                 implementation(libs.datastore.preferences)
                 implementation(libs.touchlab.kermit)
-                implementation(libs.androidx.room.runtime)
                 implementation(libs.sqlite.bundled)
             }
         }
 
+        // Explicit opt-in for Android+Desktop JVM sharing — see HierarchyTemplate.kt: jvmCommon was
+        // removed from the global hierarchy for AGP 9 path conflict reasons; we define it locally here.
         val jvmCommonMain by creating {
             dependsOn(commonMain.get())
         }
@@ -33,7 +34,6 @@ kotlin {
             dependsOn(jvmCommonMain)
             dependencies {
                 implementation(libs.ktor.client.okhttp)
-                implementation(libs.kotlinx.coroutines.swing)
             }
         }
 
