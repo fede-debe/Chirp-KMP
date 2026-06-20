@@ -13,8 +13,7 @@ import org.gradle.kotlin.dsl.dependencies
  *
  * ## How It Works
  * 1. **Base Layer:** Applies the `CmpLibraryConventionPlugin` to get standard Compose support.
- * 2. **Cross-Module Linking:** Automatically adds dependencies on `core:presentation` and
- * `core:design-system` since every feature needs shared UI utilities and the design system.
+ * 2. **Cross-Module Linking:** Automatically adds a dependency on `core:ui` since every feature needs shared UI utilities and the design system.
  * 3. **Architectural Stack:** Adds Koin for DI, JetBrains Lifecycle for ViewModels, and
  * Compose Navigation for screen transitions.
  * 4. **Android Specifics:** Includes `AndroidMain` specific Koin dependencies for Android-specific

@@ -23,7 +23,7 @@ kotlin {
                 implementation(libs.kotlin.stdlib)
 
                 implementation(projects.core.shared)
-                // core.designsystem + core.presentation auto-added by CmpFeatureConventionPlugin
+                // core.ui auto-added by CmpFeatureConventionPlugin
                 // koin BOM, koin-compose, koin-compose-viewmodel auto-added by CmpFeatureConventionPlugin
 
                 implementation(libs.koin.core)
