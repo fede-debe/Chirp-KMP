@@ -4,31 +4,22 @@ plugins {
 }
 
 kotlin {
-
     androidLibrary {
-        namespace = "com.project.core.data"
+        namespace = "com.project.core.shared"
         compileSdk = 36
         minSdk = 26
     }
-    // Source set declarations.
-    // Declaring a target automatically creates a source set with the same name. By default, the
-    // Kotlin Gradle Plugin creates additional source sets that depend on each other, since it is
-    // common to share sources between related targets.
-    // See: https://kotlinlang.org/docs/multiplatform-hierarchy.html
+
     sourceSets {
         commonMain {
             dependencies {
                 implementation(libs.kotlin.stdlib)
-
-                implementation(projects.core.domain)
-
+                implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.bundles.ktor.common)
-                implementation(libs.touchlab.kermit)
                 implementation(libs.koin.core)
-
                 implementation(libs.datastore)
                 implementation(libs.datastore.preferences)
-
+                implementation(libs.touchlab.kermit)
                 implementation(libs.androidx.room.runtime)
                 implementation(libs.sqlite.bundled)
             }
@@ -42,14 +33,15 @@ kotlin {
             dependsOn(jvmCommonMain)
             dependencies {
                 implementation(libs.ktor.client.okhttp)
+                implementation(libs.kotlinx.coroutines.swing)
             }
         }
 
         androidMain {
             dependsOn(jvmCommonMain)
             dependencies {
-                implementation(libs.ktor.client.okhttp)
                 implementation(libs.koin.android)
+                implementation(libs.ktor.client.okhttp)
             }
         }
 
@@ -59,4 +51,10 @@ kotlin {
             }
         }
     }
+}
+
+// Keep the generated BuildKonfig class in com.project.core.data so existing
+// source files (e.g. HttpClientFactory.kt) need no package-name changes.
+buildkonfig {
+    packageName = "com.project.core.data"
 }

@@ -22,8 +22,7 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.stdlib)
 
-                implementation(projects.core.domain)
-                implementation(projects.core.data)
+                implementation(projects.core.shared)
                 // core.designsystem + core.presentation auto-added by CmpFeatureConventionPlugin
                 // koin BOM, koin-compose, koin-compose-viewmodel auto-added by CmpFeatureConventionPlugin
 
