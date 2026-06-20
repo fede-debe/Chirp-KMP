@@ -53,8 +53,6 @@ kotlin {
     }
 }
 
-// Keep the generated BuildKonfig class in com.project.core.data so existing
-// source files (e.g. HttpClientFactory.kt) need no package-name changes.
 buildkonfig {
-    packageName = "com.project.core.data"
+    packageName = "com.project.core.shared"
 }

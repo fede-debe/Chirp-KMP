@@ -36,8 +36,7 @@ plugins {
 
 include(":composeApp")
 include(":androidApp")
-include(":core:presentation")
-include(":core:designsystem")
 include(":core:shared")
+include(":core:ui")
 include(":feature:auth")
 include(":feature:chat")

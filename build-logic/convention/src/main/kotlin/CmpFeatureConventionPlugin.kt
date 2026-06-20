@@ -35,8 +35,7 @@ class CmpFeatureConventionPlugin: Plugin<Project> {
             }
 
             dependencies {
-                "commonMainImplementation"(project(":core:presentation"))
-                "commonMainImplementation"(project(":core:designsystem"))
+                "commonMainImplementation"(project(":core:ui"))
 
                 "commonMainImplementation"(platform(libs.findLibrary("koin-bom").get()))
                 "androidMainImplementation"(platform(libs.findLibrary("koin-bom").get()))

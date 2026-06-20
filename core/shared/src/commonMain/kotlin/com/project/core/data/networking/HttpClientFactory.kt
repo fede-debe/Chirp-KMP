@@ -1,6 +1,6 @@
 package com.project.core.data.networking
 
-import com.project.core.data.BuildKonfig
+import com.project.core.shared.BuildKonfig
 import com.project.core.data.dto.AuthInfoSerializable
 import com.project.core.data.dto.requests.RefreshRequest
 import com.project.core.data.mappers.toDomain

@@ -22,8 +22,7 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(projects.core.shared)
-            implementation(projects.core.designsystem)
-            implementation(projects.core.presentation)
+            implementation(projects.core.ui)
 
             implementation(projects.feature.auth)
 
@@ -52,7 +51,6 @@ kotlin {
          * - `JSystemThemeDetector` requires the JitPack repository (`maven { url = uri("https://jitpack.io") }`) to be added to `settings.gradle.kts` for dependency resolution.
          */
         desktopMain.dependencies {
-            implementation(projects.core.presentation)
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
             implementation(libs.kotlin.stdlib)
