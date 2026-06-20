@@ -29,6 +29,7 @@ kotlin {
 
                 implementation(libs.koin.core)
                 implementation(libs.bundles.ktor.common)
+                implementation(libs.kotlinx.coroutines.core)
 
                 implementation(libs.material3.adaptive)
                 implementation(libs.material3.adaptive.layout)
