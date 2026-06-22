@@ -41,3 +41,21 @@ fun createDataStore(): DataStore<Preferences> {
         requireNotNull(directory).path + "/$DATA_STORE_FILE_NAME"
     }
 }
+
+/**
+ * Deletes the legacy plaintext session file written by [createDataStore].
+ *
+ * Mobile now persists the session encrypted (Keychain), so this one-time cleanup ensures no readable
+ * tokens linger on disk from a previous app version that used the plaintext DataStore.
+ */
+fun deleteLegacySessionFile() {
+    val directory = NSFileManager.defaultManager.URLForDirectory(
+        directory = NSDocumentDirectory,
+        inDomain = NSUserDomainMask,
+        appropriateForURL = null,
+        create = false,
+        error = null,
+    )
+    val path = requireNotNull(directory).path ?: return
+    NSFileManager.defaultManager.removeItemAtPath("$path/$DATA_STORE_FILE_NAME", null)
+}

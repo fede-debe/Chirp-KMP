@@ -28,3 +28,13 @@ fun createDataStore(context: Context): DataStore<Preferences> {
         context.filesDir.resolve(DATA_STORE_FILE_NAME).absolutePath
     }
 }
+
+/**
+ * Deletes the legacy plaintext session file written by [createDataStore].
+ *
+ * Mobile now persists the session encrypted (Android Keystore), so this one-time cleanup ensures no
+ * readable tokens linger on disk from a previous app version that used the plaintext DataStore.
+ */
+fun deleteLegacySessionFile(context: Context) {
+    context.filesDir.resolve(DATA_STORE_FILE_NAME).delete()
+}
