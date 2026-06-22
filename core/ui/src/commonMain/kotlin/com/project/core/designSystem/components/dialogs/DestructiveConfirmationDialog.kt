@@ -22,12 +22,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.project.core.ui.Res
 import com.project.core.designsystem.components.buttons.ChirpButton
 import com.project.core.designsystem.components.buttons.ChirpButtonStyle
-import com.project.core.ui.dismiss_dialog
 import com.project.core.designsystem.theme.ChirpTheme
 import com.project.core.designsystem.theme.extended
+import com.project.core.ui.Res
+import com.project.core.ui.dismiss_dialog
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

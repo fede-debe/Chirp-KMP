@@ -24,13 +24,13 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.project.core.designsystem.theme.ChirpTheme
+import com.project.core.designsystem.theme.extended
 import com.project.core.ui.Res
 import com.project.core.ui.eye_icon
 import com.project.core.ui.eye_off_icon
 import com.project.core.ui.hide_password
 import com.project.core.ui.show_password
-import com.project.core.designsystem.theme.ChirpTheme
-import com.project.core.designsystem.theme.extended
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 

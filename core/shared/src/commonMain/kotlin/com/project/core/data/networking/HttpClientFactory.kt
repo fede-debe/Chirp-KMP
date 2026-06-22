@@ -1,6 +1,5 @@
 package com.project.core.data.networking
 
-import com.project.core.shared.BuildKonfig
 import com.project.core.data.dto.AuthInfoSerializable
 import com.project.core.data.dto.requests.RefreshRequest
 import com.project.core.data.mappers.toDomain
@@ -8,6 +7,7 @@ import com.project.core.domain.auth.SessionStorage
 import com.project.core.domain.logging.ChirpLogger
 import com.project.core.domain.util.onFailure
 import com.project.core.domain.util.onSuccess
+import com.project.core.shared.BuildKonfig
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpTimeout

@@ -23,10 +23,10 @@ import com.project.core.designsystem.components.avatar.ChatParticipantUi
 import com.project.core.designsystem.components.avatar.ChirpAvatarPhoto
 import com.project.core.designsystem.components.dropdown.ChirpDropDownMenu
 import com.project.core.designsystem.components.dropdown.DropDownItem
-import com.project.core.ui.log_out_icon
-import com.project.core.ui.logo_chirp
 import com.project.core.designsystem.theme.ChirpTheme
 import com.project.core.designsystem.theme.extended
+import com.project.core.ui.log_out_icon
+import com.project.core.ui.logo_chirp
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import com.project.core.ui.Res as DesignSystemRes
