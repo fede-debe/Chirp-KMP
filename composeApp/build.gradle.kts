@@ -21,18 +21,12 @@ kotlin {
             implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
-            implementation(projects.core.data)
-            implementation(projects.core.domain)
-            implementation(projects.core.designsystem)
-            implementation(projects.core.presentation)
+            implementation(projects.core.shared)
+            implementation(projects.core.ui)
 
-            implementation(projects.feature.auth.domain)
-            implementation(projects.feature.auth.presentation)
+            implementation(projects.feature.auth)
 
-            implementation(projects.feature.chat.data)
-            implementation(projects.feature.chat.database)
-            implementation(projects.feature.chat.domain)
-            implementation(projects.feature.chat.presentation)
+            implementation(projects.feature.chat)
 
             implementation(libs.jetbrains.compose.navigation)
             implementation(libs.bundles.koin.common)
@@ -57,12 +51,10 @@ kotlin {
          * - `JSystemThemeDetector` requires the JitPack repository (`maven { url = uri("https://jitpack.io") }`) to be added to `settings.gradle.kts` for dependency resolution.
          */
         desktopMain.dependencies {
-            implementation(projects.core.presentation)
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
             implementation(libs.kotlin.stdlib)
             implementation(libs.koin.compose)
-            implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.jsystemthemedetector)
 
@@ -77,7 +69,7 @@ kotlin {
 }
 
 compose.resources {
-    packageOfResClass = "com.project.chirp"
+    packageOfResClass = "chirp.composeapp.generated.resources"
 }
 
 compose.desktop {
