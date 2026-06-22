@@ -34,6 +34,9 @@ sealed interface AuthGraphRoutes {
     data class RegisterSuccess(val email: String) : AuthGraphRoutes
 
     @Serializable
+    data class VerificationSent(val email: String) : AuthGraphRoutes
+
+    @Serializable
     data object ForgotPassword : AuthGraphRoutes
 
     @Serializable

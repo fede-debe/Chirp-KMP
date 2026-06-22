@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.project.auth.domain.EmailValidator
 import com.project.auth.presentation.Res
-import com.project.auth.presentation.error_email_not_verified
 import com.project.auth.presentation.error_invalid_credentials
 import com.project.core.domain.auth.AuthService
 import com.project.core.domain.auth.SessionStorage
@@ -127,17 +126,28 @@ class LoginViewModel(
                     eventChannel.send(LoginEvent.Success)
                 }
                 .onFailure { error ->
-                    val errorMessage = when (error) {
-                        DataError.Remote.UNAUTHORIZED -> UiText.Resource(Res.string.error_invalid_credentials)
-                        DataError.Remote.FORBIDDEN -> UiText.Resource(Res.string.error_email_not_verified)
-                        else -> error.toUiText()
-                    }
+                    // The backend only returns 403 on login when the account's email isn't verified
+                    // (and, when not rate-limited, it has already resent the verification email). Route
+                    // the user to the confirmation screen instead of showing an inline error.
+                    if (error == DataError.Remote.FORBIDDEN) {
+                        _state.update {
+                            it.copy(
+                                isLoggingIn = false,
+                            )
+                        }
+                        eventChannel.send(LoginEvent.EmailNotVerified(email))
+                    } else {
+                        val errorMessage = when (error) {
+                            DataError.Remote.UNAUTHORIZED -> UiText.Resource(Res.string.error_invalid_credentials)
+                            else -> error.toUiText()
+                        }
 
-                    _state.update {
-                        it.copy(
-                            error = errorMessage,
-                            isLoggingIn = false,
-                        )
+                        _state.update {
+                            it.copy(
+                                error = errorMessage,
+                                isLoggingIn = false,
+                            )
+                        }
                     }
                 }
         }

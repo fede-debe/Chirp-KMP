@@ -41,12 +41,14 @@ fun LoginRoot(
     onLoginSuccess: () -> Unit,
     onForgotPasswordClick: () -> Unit,
     onCreateAccountClick: () -> Unit,
+    onEmailNotVerified: (String) -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
             LoginEvent.Success -> onLoginSuccess()
+            is LoginEvent.EmailNotVerified -> onEmailNotVerified(event.email)
         }
     }
 
