@@ -1,5 +1,6 @@
 package com.project.chat.data.dto.websocket
 
+import com.project.chat.data.dto.request.AttachmentInput
 import kotlinx.serialization.Serializable
 
 /**
@@ -29,5 +30,6 @@ sealed class OutgoingWebSocketDto(
         val chatId: String,
         val messageId: String,
         val content: String,
+        val attachments: List<AttachmentInput> = emptyList(),
     ) : OutgoingWebSocketDto(OutgoingWebSocketType.NEW_MESSAGE)
 }

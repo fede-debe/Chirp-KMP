@@ -31,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -48,12 +49,17 @@ import com.project.chat.domain.models.ChatMessageDeliveryStatus
 import com.project.chat.presentation.Res
 import com.project.chat.presentation.components.ChatHeader
 import com.project.chat.presentation.components.EmptySection
+import com.project.chat.presentation.mediapicker.rememberCameraLauncher
+import com.project.chat.presentation.mediapicker.rememberMultiImagePickerLauncher
 import com.project.chat.presentation.models.ChatUi
 import com.project.chat.presentation.models.MessageUi
 import com.project.chat.presentation.no_chat_selected
+import com.project.chat.presentation.saved_to_device
 import com.project.chat.presentation.select_a_chat
+import com.project.chat.presentation.ui.chatDetail.components.AttachmentSourceBottomSheet
 import com.project.chat.presentation.ui.chatDetail.components.ChatDetailHeader
 import com.project.chat.presentation.ui.chatDetail.components.DateChip
+import com.project.chat.presentation.ui.chatDetail.components.ImageViewerOverlay
 import com.project.chat.presentation.ui.chatDetail.components.MessageBannerListener
 import com.project.chat.presentation.ui.chatDetail.components.MessageBox
 import com.project.chat.presentation.ui.chatDetail.components.MessageList
@@ -88,6 +94,18 @@ fun ChatDetailRoot(
     val messageListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
+    val imagePicker = rememberMultiImagePickerLauncher(
+        selectionLimit = 10,
+    ) { picked ->
+        viewModel.onAction(ChatDetailAction.OnAttachmentsPicked(picked))
+    }
+
+    val cameraLauncher = rememberCameraLauncher { picked ->
+        viewModel.onAction(ChatDetailAction.OnAttachmentsPicked(listOf(picked)))
+    }
+
+    val savedToDeviceMessage = stringResource(Res.string.saved_to_device)
+
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
             ChatDetailEvent.OnChatLeft -> onBack()
@@ -100,6 +118,26 @@ fun ChatDetailRoot(
             is ChatDetailEvent.OnError -> {
                 snackbarState.showSnackbar(event.error.asStringAsync())
             }
+
+            ChatDetailEvent.OnAttachmentSaved -> {
+                snackbarState.showSnackbar(savedToDeviceMessage)
+            }
+        }
+    }
+
+    // Launch the picker/camera only after the attachment sheet has fully closed. Presenting while the
+    // sheet is still dismissing puts the picker on the sheet's transient window, which is then torn
+    // down with it (picker never appears; camera session dies with -17281).
+    LaunchedEffect(state.pendingAttachmentSource, state.isAttachmentSheetOpen) {
+        val source = state.pendingAttachmentSource
+        if (source != null && !state.isAttachmentSheetOpen) {
+            // Wait one frame so the sheet's window is fully removed before we present.
+            withFrameNanos { }
+            when (source) {
+                AttachmentSource.CAMERA -> cameraLauncher.launch()
+                AttachmentSource.GALLERY -> imagePicker.launch()
+            }
+            viewModel.onAction(ChatDetailAction.OnAttachmentLaunchHandled)
         }
     }
 
@@ -129,6 +167,7 @@ fun ChatDetailRoot(
         state = state,
         messageListState = messageListState,
         isDetailPresent = isDetailPresent,
+        isCameraAvailable = cameraLauncher.isAvailable,
         onAction = { action ->
             when (action) {
                 is ChatDetailAction.OnChatMembersClick -> onChatMembersClick()
@@ -148,6 +187,7 @@ fun ChatDetailScreen(
     isDetailPresent: Boolean,
     snackbarState: SnackbarHostState,
     onAction: (ChatDetailAction) -> Unit,
+    isCameraAvailable: Boolean = false,
 ) {
     val configuration = currentDeviceConfiguration()
 
@@ -287,6 +327,9 @@ fun ChatDetailScreen(
                             onRetryPaginationClick = {
                                 onAction(ChatDetailAction.OnRetryPaginationClick)
                             },
+                            onAttachmentClick = { attachment ->
+                                onAction(ChatDetailAction.OnAttachmentClick(attachment))
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f),
@@ -299,8 +342,16 @@ fun ChatDetailScreen(
                                 messageTextFieldState = state.messageTextFieldState,
                                 isSendButtonEnabled = state.canSendMessage,
                                 connectionState = state.connectionState,
+                                pendingAttachments = state.pendingAttachments,
+                                isSending = state.isSending,
                                 onSendClick = {
                                     onAction(ChatDetailAction.OnSendMessageClick)
+                                },
+                                onAttachClick = {
+                                    onAction(ChatDetailAction.OnAttachClick)
+                                },
+                                onRemoveAttachment = { id ->
+                                    onAction(ChatDetailAction.OnRemoveAttachment(id))
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -328,8 +379,16 @@ fun ChatDetailScreen(
                             messageTextFieldState = state.messageTextFieldState,
                             isSendButtonEnabled = state.canSendMessage,
                             connectionState = state.connectionState,
+                            pendingAttachments = state.pendingAttachments,
+                            isSending = state.isSending,
                             onSendClick = {
                                 onAction(ChatDetailAction.OnSendMessageClick)
+                            },
+                            onAttachClick = {
+                                onAction(ChatDetailAction.OnAttachClick)
+                            },
+                            onRemoveAttachment = { id ->
+                                onAction(ChatDetailAction.OnRemoveAttachment(id))
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -353,6 +412,36 @@ fun ChatDetailScreen(
                         date = state.bannerState.formattedDate.asString(),
                     )
                 }
+            }
+
+            if (state.openedAttachment != null) {
+                ImageViewerOverlay(
+                    attachment = state.openedAttachment,
+                    isSaving = state.isSavingAttachment,
+                    onSaveClick = {
+                        onAction(ChatDetailAction.OnSaveOpenedAttachment)
+                    },
+                    onDismiss = {
+                        onAction(ChatDetailAction.OnDismissAttachmentViewer)
+                    },
+                )
+            }
+
+            if (state.isAttachmentSheetOpen) {
+                AttachmentSourceBottomSheet(
+                    isCameraAvailable = isCameraAvailable,
+                    onTakePhoto = {
+                        onAction(ChatDetailAction.OnDismissAttachmentSheet)
+                        onAction(ChatDetailAction.OnTakePhotoClick)
+                    },
+                    onChooseFromGallery = {
+                        onAction(ChatDetailAction.OnDismissAttachmentSheet)
+                        onAction(ChatDetailAction.OnPickFromGalleryClick)
+                    },
+                    onDismiss = {
+                        onAction(ChatDetailAction.OnDismissAttachmentSheet)
+                    },
+                )
             }
         }
     }

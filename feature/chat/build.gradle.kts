@@ -34,6 +34,10 @@ kotlin {
                 implementation(libs.material3.adaptive.navigation)
                 implementation(libs.jetbrains.compose.backhandler)
                 implementation(libs.kotlinx.datetime)
+
+                // Image attachments: thumbnails + full-screen viewer.
+                implementation(libs.coil.compose)
+                implementation(libs.coil.network.ktor)
             }
         }
 

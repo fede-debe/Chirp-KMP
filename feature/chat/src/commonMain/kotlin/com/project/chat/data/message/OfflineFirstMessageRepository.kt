@@ -4,6 +4,7 @@ import com.project.chat.data.dto.websocket.OutgoingWebSocketDto
 import com.project.chat.data.dto.websocket.WebSocketMessageDto
 import com.project.chat.data.mappers.toDomain
 import com.project.chat.data.mappers.toEntity
+import com.project.chat.data.mappers.toNewMessage
 import com.project.chat.data.mappers.toWebSocketDto
 import com.project.chat.data.network.KtorWebSocketConnector
 import com.project.chat.database.ChirpChatDatabase
@@ -85,11 +86,9 @@ class OfflineFirstMessageRepository(
                 status = ChatMessageDeliveryStatus.SENDING.name,
             )
 
-            val outgoingNewMessage = OutgoingWebSocketDto.NewMessage(
-                chatId = message.chatId,
-                messageId = messageId,
-                content = message.content,
-            )
+            // Re-send via the domain mapper so any attachments persisted on the message are
+            // included again (their bytes are already uploaded to Supabase).
+            val outgoingNewMessage = message.toDomain().toNewMessage()
             return webSocketConnector
                 .sendMessage(outgoingNewMessage.toJsonPayload())
                 .onFailure {

@@ -2,6 +2,7 @@ package com.project.chat.presentation.ui.chatDetail.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
@@ -16,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.project.chat.domain.models.ChatMessageDeliveryStatus
 import com.project.chat.presentation.Res
 import com.project.chat.presentation.delete_for_everyone
+import com.project.chat.presentation.models.MessageAttachmentUi
 import com.project.chat.presentation.models.MessageUi
 import com.project.chat.presentation.reload_icon
 import com.project.chat.presentation.retry
@@ -36,6 +38,7 @@ fun LocalUserMessage(
     onDismissMessageMenu: () -> Unit,
     onDeleteClick: () -> Unit,
     onRetryClick: () -> Unit,
+    onAttachmentClick: (MessageAttachmentUi) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -45,20 +48,33 @@ fun LocalUserMessage(
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
     ) {
         Box {
-            ChirpChatBubble(
-                messageContent = message.content,
-                sender = stringResource(Res.string.you),
-                formattedDateTime = message.formattedSentTime.asString(),
-                trianglePosition = TrianglePosition.RIGHT,
-                messageStatus = {
-                    MessageStatus(
-                        status = message.deliveryStatus,
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                if (message.content.isNotBlank()) {
+                    ChirpChatBubble(
+                        messageContent = message.content,
+                        sender = stringResource(Res.string.you),
+                        formattedDateTime = message.formattedSentTime.asString(),
+                        trianglePosition = TrianglePosition.RIGHT,
+                        messageStatus = {
+                            MessageStatus(
+                                status = message.deliveryStatus,
+                            )
+                        },
+                        onLongClick = {
+                            onMessageLongClick()
+                        },
                     )
-                },
-                onLongClick = {
-                    onMessageLongClick()
-                },
-            )
+                }
+                if (message.attachments.isNotEmpty()) {
+                    BubbleAttachmentsRow(
+                        attachments = message.attachments,
+                        onAttachmentClick = onAttachmentClick,
+                    )
+                }
+            }
 
             ChirpDropDownMenu(
                 isOpen = message.id == messageWithOpenMenu?.id,

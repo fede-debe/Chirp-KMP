@@ -2,12 +2,16 @@
 
 package com.project.chat.data.di
 
+import com.project.chat.data.attachment.DesktopImageCompressor
+import com.project.chat.data.attachment.DesktopImageSaver
 import com.project.chat.data.lifecycle.AppLifecycleObserver
 import com.project.chat.data.network.ConnectionErrorHandler
 import com.project.chat.data.network.ConnectivityObserver
 import com.project.chat.data.notification.DesktopNotifier
 import com.project.chat.data.notification.FirebasePushNotificationService
 import com.project.chat.database.DatabaseFactory
+import com.project.chat.domain.attachment.ImageCompressor
+import com.project.chat.domain.attachment.ImageSaver
 import com.project.chat.domain.notification.PushNotificationService
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
@@ -40,4 +44,6 @@ actual val platformChatDataModule = module {
     singleOf(::AppLifecycleObserver)
     singleOf(::DesktopNotifier)
     singleOf(::FirebasePushNotificationService) bind PushNotificationService::class
+    singleOf(::DesktopImageCompressor) bind ImageCompressor::class
+    singleOf(::DesktopImageSaver) bind ImageSaver::class
 }

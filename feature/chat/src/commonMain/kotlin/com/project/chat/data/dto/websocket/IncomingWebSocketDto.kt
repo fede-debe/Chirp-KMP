@@ -1,5 +1,6 @@
 package com.project.chat.data.dto.websocket
 
+import com.project.chat.data.dto.ChatAttachmentDto
 import kotlinx.serialization.Serializable
 
 enum class IncomingWebSocketType {
@@ -19,6 +20,7 @@ sealed interface IncomingWebSocketDto {
         val content: String,
         val senderId: String,
         val createdAt: String,
+        val attachments: List<ChatAttachmentDto> = emptyList(),
         val type: IncomingWebSocketType = IncomingWebSocketType.NEW_MESSAGE,
     ) : IncomingWebSocketDto
 

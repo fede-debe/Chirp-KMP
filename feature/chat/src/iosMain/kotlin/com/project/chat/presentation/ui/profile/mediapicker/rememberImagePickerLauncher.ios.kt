@@ -7,6 +7,7 @@ package com.project.chat.presentation.ui.profile.mediapicker
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import com.project.chat.presentation.mediapicker.topMostViewController
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.refTo
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +19,6 @@ import platform.PhotosUI.PHPickerFilter
 import platform.PhotosUI.PHPickerResult
 import platform.PhotosUI.PHPickerViewController
 import platform.PhotosUI.PHPickerViewControllerDelegateProtocol
-import platform.UIKit.UIApplication
 import platform.UniformTypeIdentifiers.UTType
 import platform.darwin.NSObject
 import platform.darwin.dispatch_get_main_queue
@@ -49,7 +49,13 @@ actual fun rememberImagePickerLauncher(
                     val itemProvider = result.itemProvider
 
                     val typeIdentifiers = itemProvider.registeredTypeIdentifiers
-                    val primaryType = typeIdentifiers.firstOrNull() as? String
+                        .filterIsInstance<String>()
+                    // Prefer a plain still-image type; a Live Photo lists "live-photo-bundle" first,
+                    // which loads the whole bundle (still + video) and can't be decoded as an image.
+                    val primaryType = typeIdentifiers.firstOrNull {
+                        it == "public.heic" || it == "public.jpeg" || it == "public.png"
+                    }
+                        ?: typeIdentifiers.firstOrNull { it != LIVE_PHOTO_BUNDLE_TYPE }
 
                     if (primaryType == null) {
                         dispatch_group_leave(dispatchGroup)
@@ -111,7 +117,7 @@ actual fun rememberImagePickerLauncher(
 
         ImagePickerLauncher(
             onLaunch = {
-                UIApplication.sharedApplication.keyWindow?.rootViewController?.presentViewController(
+                topMostViewController()?.presentViewController(
                     pickerViewController,
                     true,
                     null,
@@ -120,3 +126,5 @@ actual fun rememberImagePickerLauncher(
         )
     }
 }
+
+private const val LIVE_PHOTO_BUNDLE_TYPE = "com.apple.live-photo-bundle"

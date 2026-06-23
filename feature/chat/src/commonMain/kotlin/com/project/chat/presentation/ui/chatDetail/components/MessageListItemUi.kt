@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.project.chat.domain.models.ChatMessageDeliveryStatus
+import com.project.chat.presentation.models.MessageAttachmentUi
 import com.project.chat.presentation.models.MessageUi
 import com.project.chat.presentation.util.getChatBubbleColorForUser
 import com.project.core.designsystem.components.avatar.ChatParticipantUi
@@ -29,6 +30,7 @@ fun MessageListItemUi(
     onDismissMessageMenu: () -> Unit,
     onDeleteClick: (MessageUi.LocalUserMessage) -> Unit,
     onRetryClick: (MessageUi.LocalUserMessage) -> Unit,
+    onAttachmentClick: (MessageAttachmentUi) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -49,12 +51,14 @@ fun MessageListItemUi(
                     onDismissMessageMenu = onDismissMessageMenu,
                     onDeleteClick = { onDeleteClick(messageUi) },
                     onRetryClick = { onRetryClick(messageUi) },
+                    onAttachmentClick = onAttachmentClick,
                 )
             }
             is MessageUi.OtherUserMessage -> {
                 OtherUserMessage(
                     message = messageUi,
                     color = getChatBubbleColorForUser(messageUi.sender.id),
+                    onAttachmentClick = onAttachmentClick,
                 )
             }
         }
@@ -99,6 +103,7 @@ fun MessageListItemLocalMessageUiPreview() {
             onMessageLongClick = {},
             onDismissMessageMenu = {},
             onDeleteClick = {},
+            onAttachmentClick = {},
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp),
@@ -122,6 +127,7 @@ fun MessageListItemLocalMessageRetryUiPreview() {
             onMessageLongClick = {},
             onDismissMessageMenu = {},
             onDeleteClick = {},
+            onAttachmentClick = {},
             modifier = Modifier
                 .fillMaxWidth(),
         )
@@ -148,6 +154,7 @@ fun MessageListItemOtherMessageUiPreview() {
             onMessageLongClick = {},
             onDismissMessageMenu = {},
             onDeleteClick = {},
+            onAttachmentClick = {},
             modifier = Modifier
                 .fillMaxWidth(),
         )

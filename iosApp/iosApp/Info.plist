@@ -20,5 +20,9 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Chirp needs access to save chat images to your photo library.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Chirp needs access to your camera to take and send photos in chats.</string>
 </dict>
 </plist>
