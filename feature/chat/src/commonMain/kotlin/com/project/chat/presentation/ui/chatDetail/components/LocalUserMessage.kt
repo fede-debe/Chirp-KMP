@@ -39,6 +39,8 @@ fun LocalUserMessage(
     onDeleteClick: () -> Unit,
     onRetryClick: () -> Unit,
     onAttachmentClick: (MessageAttachmentUi) -> Unit,
+    onPlayAttachment: (MessageAttachmentUi) -> Unit,
+    onPauseAttachment: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -52,7 +54,11 @@ fun LocalUserMessage(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                if (message.content.isNotBlank()) {
+                val audioAttachments = message.attachments.filter { it.mimeType.startsWith("audio/") }
+                val imageAttachments = message.attachments
+                    .filterNot { it.mimeType.startsWith("audio/") }
+
+                if (message.content.isNotBlank() || audioAttachments.isNotEmpty()) {
                     ChirpChatBubble(
                         messageContent = message.content,
                         sender = stringResource(Res.string.you),
@@ -66,11 +72,26 @@ fun LocalUserMessage(
                         onLongClick = {
                             onMessageLongClick()
                         },
+                        content = if (audioAttachments.isNotEmpty()) {
+                            {
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    audioAttachments.forEach { audio ->
+                                        VoiceMessagePlayer(
+                                            attachment = audio,
+                                            onPlay = { onPlayAttachment(audio) },
+                                            onPause = onPauseAttachment,
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            null
+                        },
                     )
                 }
-                if (message.attachments.isNotEmpty()) {
+                if (imageAttachments.isNotEmpty()) {
                     BubbleAttachmentsRow(
-                        attachments = message.attachments,
+                        attachments = imageAttachments,
                         onAttachmentClick = onAttachmentClick,
                     )
                 }

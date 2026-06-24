@@ -7,6 +7,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.project.chat.domain.attachment.AttachmentService
+import com.project.chat.domain.attachment.AudioPlayer
+import com.project.chat.domain.attachment.AudioRecorder
 import com.project.chat.domain.attachment.ImageCompressor
 import com.project.chat.domain.attachment.ImageSaver
 import com.project.chat.domain.chat.ChatConnectionClient
@@ -20,10 +22,13 @@ import com.project.chat.presentation.Res
 import com.project.chat.presentation.mappers.toUi
 import com.project.chat.presentation.mappers.toUiList
 import com.project.chat.presentation.mediapicker.PickedAttachment
+import com.project.chat.presentation.mic_permission_denied
 import com.project.chat.presentation.models.MessageAttachmentUi
 import com.project.chat.presentation.models.MessageUi
 import com.project.chat.presentation.models.PendingAttachmentStatus
 import com.project.chat.presentation.models.PendingAttachmentUi
+import com.project.chat.presentation.playback_failed
+import com.project.chat.presentation.record_failed
 import com.project.chat.presentation.today
 import com.project.core.domain.auth.SessionStorage
 import com.project.core.domain.util.DataErrorException
@@ -34,7 +39,9 @@ import com.project.core.domain.util.onSuccess
 import com.project.core.presentation.util.UiText
 import com.project.core.presentation.util.toUiText
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -60,10 +67,14 @@ class ChatDetailViewModel(
     private val imageCompressor: ImageCompressor,
     private val attachmentService: AttachmentService,
     private val imageSaver: ImageSaver,
+    private val audioRecorder: AudioRecorder,
+    private val audioPlayer: AudioPlayer,
 ) : ViewModel() {
 
     private val eventChannel = Channel<ChatDetailEvent>()
     val events = eventChannel.receiveAsFlow()
+
+    private var recordingTickerJob: Job? = null
 
     private val chatIdFlow = MutableStateFlow<String?>(null)
 
@@ -201,6 +212,14 @@ class ChatDetailViewModel(
             ChatDetailAction.OnAttachmentLaunchHandled -> {
                 _state.update { it.copy(pendingAttachmentSource = null) }
             }
+            ChatDetailAction.OnStartRecording -> startRecording()
+            ChatDetailAction.OnStopRecording -> stopRecording()
+            ChatDetailAction.OnCancelRecording -> cancelRecording()
+            ChatDetailAction.OnPauseRecording -> pauseRecording()
+            ChatDetailAction.OnResumeRecording -> resumeRecording()
+            ChatDetailAction.OnRecordPermissionDenied -> onRecordPermissionDenied()
+            is ChatDetailAction.OnPlayAttachment -> playAttachment(action.attachment)
+            ChatDetailAction.OnPauseAttachment -> audioPlayer.pause()
             else -> Unit
         }
     }
@@ -397,11 +416,12 @@ class ChatDetailViewModel(
             val uploaded = mutableListOf<MessageAttachment>()
             for (attachment in readyAttachments) {
                 when (
-                    val result = attachmentService.uploadImage(
+                    val result = attachmentService.uploadAttachment(
                         chatId = currentChatId,
                         fileName = attachment.fileName,
                         mimeType = attachment.mimeType,
                         bytes = attachment.bytes,
+                        durationInSeconds = attachment.durationInSeconds,
                     )
                 ) {
                     is Result.Success -> uploaded.add(result.data)
@@ -499,6 +519,99 @@ class ChatDetailViewModel(
                 pendingAttachments = current.pendingAttachments.filterNot { it.id == id },
             )
         }
+    }
+
+    private fun startRecording() {
+        if (state.value.recording != null) return
+        viewModelScope.launch {
+            val started = audioRecorder.start()
+            if (!started) {
+                eventChannel.send(ChatDetailEvent.OnError(UiText.Resource(Res.string.record_failed)))
+                return@launch
+            }
+            _state.update { it.copy(recording = RecordingState(elapsedSeconds = 0)) }
+            recordingTickerJob?.cancel()
+            recordingTickerJob = viewModelScope.launch {
+                while (true) {
+                    delay(1_000)
+                    _state.update { current ->
+                        val active = current.recording ?: return@update current
+                        if (active.isPaused) return@update current
+                        current.copy(recording = active.copy(elapsedSeconds = active.elapsedSeconds + 1))
+                    }
+                }
+            }
+        }
+    }
+
+    private fun pauseRecording() {
+        val active = state.value.recording ?: return
+        if (active.isPaused) return
+        audioRecorder.pause()
+        _state.update { it.copy(recording = it.recording?.copy(isPaused = true)) }
+    }
+
+    private fun resumeRecording() {
+        val active = state.value.recording ?: return
+        if (!active.isPaused) return
+        audioRecorder.resume()
+        _state.update { it.copy(recording = it.recording?.copy(isPaused = false)) }
+    }
+
+    @OptIn(ExperimentalUuidApi::class)
+    private fun stopRecording() {
+        if (state.value.recording == null) return
+        recordingTickerJob?.cancel()
+        recordingTickerJob = null
+        viewModelScope.launch {
+            val audio = audioRecorder.stop()
+            _state.update { it.copy(recording = null) }
+            if (audio == null) {
+                eventChannel.send(ChatDetailEvent.OnError(UiText.Resource(Res.string.record_failed)))
+                return@launch
+            }
+            val remainingSlots = (MAX_ATTACHMENTS - state.value.pendingAttachments.size)
+                .coerceAtLeast(0)
+            if (remainingSlots == 0) return@launch
+            val pending = PendingAttachmentUi(
+                id = Uuid.random().toString(),
+                fileName = audio.fileName,
+                mimeType = audio.mimeType,
+                bytes = audio.bytes,
+                status = PendingAttachmentStatus.READY,
+                durationInSeconds = audio.durationInSeconds,
+            )
+            _state.update { it.copy(pendingAttachments = it.pendingAttachments + pending) }
+        }
+    }
+
+    private fun cancelRecording() {
+        recordingTickerJob?.cancel()
+        recordingTickerJob = null
+        audioRecorder.cancel()
+        _state.update { it.copy(recording = null) }
+    }
+
+    private fun onRecordPermissionDenied() {
+        viewModelScope.launch {
+            eventChannel.send(ChatDetailEvent.OnError(UiText.Resource(Res.string.mic_permission_denied)))
+        }
+    }
+
+    private fun playAttachment(attachment: MessageAttachmentUi) {
+        viewModelScope.launch {
+            try {
+                audioPlayer.play(id = attachment.url, url = attachment.url)
+            } catch (e: Exception) {
+                eventChannel.send(ChatDetailEvent.OnError(UiText.Resource(Res.string.playback_failed)))
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        recordingTickerJob?.cancel()
+        audioPlayer.release()
     }
 
     private fun observeCanSendMessage() {

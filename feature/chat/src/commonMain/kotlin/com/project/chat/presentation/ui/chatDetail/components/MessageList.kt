@@ -43,6 +43,8 @@ fun MessageList(
     onDismissMessageMenu: () -> Unit,
     onDeleteMessageClick: (MessageUi.LocalUserMessage) -> Unit,
     onAttachmentClick: (MessageAttachmentUi) -> Unit,
+    onPlayAttachment: (MessageAttachmentUi) -> Unit,
+    onPauseAttachment: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (messages.isEmpty()) {
@@ -76,6 +78,8 @@ fun MessageList(
                     onDeleteClick = onDeleteMessageClick,
                     onRetryClick = onMessageRetryClick,
                     onAttachmentClick = onAttachmentClick,
+                    onPlayAttachment = onPlayAttachment,
+                    onPauseAttachment = onPauseAttachment,
                     modifier = Modifier
                         .fillMaxWidth()
                         .animateItem(),

@@ -2,7 +2,36 @@
 
 **Date:** 2026-06-24
 **Module:** `feature/chat` (Compose Multiplatform; mobile now, desktop stub)
-**Status:** Approved design — ready for implementation plan
+**Status:** Implemented; UI revised after first Android device test (see Revision 1)
+
+## Revision 1 — UI rework (post first device test)
+
+First Android build worked end-to-end (record → send → play). The simple recording bar
+and below-bubble player did not match the target design, so the UI was reworked per four
+user decisions:
+
+1. **Recording bar = WhatsApp-style.** Layout: delete (trash) · pause/resume · **live
+   waveform** · timer · confirm (✓). No auto-upload on stop.
+2. **Pause/resume the recording itself.** `AudioRecorder` gained `pause()`/`resume()` and a
+   `amplitudes: StateFlow<List<Float>>` (live mic levels, frozen while paused). Android polls
+   `MediaRecorder.getMaxAmplitude()`; iOS uses `AVAudioRecorder` metering
+   (`averagePowerForChannel`). `RecordingState` gained `isPaused`; the timer ticks only when
+   not paused.
+3. **Confirm (✓) stages, not sends.** Confirm finalizes the clip into a staged
+   `PendingAttachmentUi`; the user may add text and press the main Send to send text + audio
+   together (this was already the staging behavior; the bar now exposes it explicitly).
+4. **Audio renders inside the chat bubble.** `ChirpChatBubble` gained an optional `content`
+   slot and now skips the empty-text line. `LocalUserMessage`/`OtherUserMessage` render the
+   voice player inside the bubble (sender + timestamp on top, optional text, then the player,
+   then status). **Images stay in the row below the bubble** (unchanged). `BubbleAttachmentsRow`
+   is images-only again. The live waveform appears only while recording; the sent/staged
+   player uses a plain progress bar.
+
+New files from the rework: `components/WaveformView.kt`, `drawable/trash_icon.xml`.
+
+---
+
+## Original design (pre-revision)
 
 ## Summary
 

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,10 +32,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.project.chat.presentation.Res
+import com.project.chat.presentation.mic_icon
 import com.project.chat.presentation.models.MessageAttachmentUi
 import com.project.chat.presentation.models.PendingAttachmentStatus
 import com.project.chat.presentation.models.PendingAttachmentUi
 import com.project.chat.presentation.upload_icon
+import com.project.chat.presentation.util.formatDuration
 import com.project.core.designsystem.theme.extended
 import org.jetbrains.compose.resources.vectorResource
 
@@ -90,11 +94,35 @@ fun ComposerAttachmentChip(
     Box(
         modifier = modifier.size(CHIP_SIZE),
     ) {
-        AttachmentImageThumbnail(
-            model = if (showThumbnail) item.bytes else null,
-            contentDescription = item.fileName,
-            modifier = Modifier.matchParentSize(),
-        )
+        if (item.mimeType.startsWith("audio/")) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.extended.surfaceLower),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        imageVector = vectorResource(Res.drawable.mic_icon),
+                        contentDescription = item.fileName,
+                        tint = MaterialTheme.colorScheme.extended.textPlaceholder,
+                        modifier = Modifier.size(20.dp),
+                    )
+                    Text(
+                        text = formatDuration(item.durationInSeconds ?: 0),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.extended.textPlaceholder,
+                    )
+                }
+            }
+        } else {
+            AttachmentImageThumbnail(
+                model = if (showThumbnail) item.bytes else null,
+                contentDescription = item.fileName,
+                modifier = Modifier.matchParentSize(),
+            )
+        }
 
         if (showSpinner) {
             Box(
@@ -156,6 +184,7 @@ fun ComposerAttachmentsRow(
     }
 }
 
+/** Image attachments shown below a message bubble. Audio renders inside the bubble, not here. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BubbleAttachmentsRow(

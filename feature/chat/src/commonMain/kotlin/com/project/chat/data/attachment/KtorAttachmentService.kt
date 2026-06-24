@@ -25,11 +25,12 @@ class KtorAttachmentService(
     private val httpClient: HttpClient,
 ) : AttachmentService {
 
-    override suspend fun uploadImage(
+    override suspend fun uploadAttachment(
         chatId: String,
         fileName: String,
         mimeType: String,
         bytes: ByteArray,
+        durationInSeconds: Int?,
     ): Result<MessageAttachment, DataError.Remote> {
         val uploadUrls = when (
             val result = httpClient.get<AttachmentUploadUrlResponse>(
@@ -63,7 +64,7 @@ class KtorAttachmentService(
                 mimeType = mimeType,
                 fileName = fileName,
                 sizeInBytes = bytes.size.toLong(),
-                durationInSeconds = null,
+                durationInSeconds = durationInSeconds,
             ),
         )
     }

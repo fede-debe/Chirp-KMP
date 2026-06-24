@@ -24,5 +24,7 @@
 	<string>Chirp needs access to save chat images to your photo library.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Chirp needs access to your camera to take and send photos in chats.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Chirp needs access to your microphone to record and send voice messages in chats.</string>
 </dict>
 </plist>

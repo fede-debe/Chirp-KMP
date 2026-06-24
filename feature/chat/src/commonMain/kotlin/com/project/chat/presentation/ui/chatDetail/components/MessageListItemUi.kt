@@ -31,6 +31,8 @@ fun MessageListItemUi(
     onDeleteClick: (MessageUi.LocalUserMessage) -> Unit,
     onRetryClick: (MessageUi.LocalUserMessage) -> Unit,
     onAttachmentClick: (MessageAttachmentUi) -> Unit,
+    onPlayAttachment: (MessageAttachmentUi) -> Unit,
+    onPauseAttachment: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -52,6 +54,8 @@ fun MessageListItemUi(
                     onDeleteClick = { onDeleteClick(messageUi) },
                     onRetryClick = { onRetryClick(messageUi) },
                     onAttachmentClick = onAttachmentClick,
+                    onPlayAttachment = onPlayAttachment,
+                    onPauseAttachment = onPauseAttachment,
                 )
             }
             is MessageUi.OtherUserMessage -> {
@@ -59,6 +63,8 @@ fun MessageListItemUi(
                     message = messageUi,
                     color = getChatBubbleColorForUser(messageUi.sender.id),
                     onAttachmentClick = onAttachmentClick,
+                    onPlayAttachment = onPlayAttachment,
+                    onPauseAttachment = onPauseAttachment,
                 )
             }
         }
@@ -104,6 +110,8 @@ fun MessageListItemLocalMessageUiPreview() {
             onDismissMessageMenu = {},
             onDeleteClick = {},
             onAttachmentClick = {},
+            onPlayAttachment = {},
+            onPauseAttachment = {},
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp),
@@ -128,6 +136,8 @@ fun MessageListItemLocalMessageRetryUiPreview() {
             onDismissMessageMenu = {},
             onDeleteClick = {},
             onAttachmentClick = {},
+            onPlayAttachment = {},
+            onPauseAttachment = {},
             modifier = Modifier
                 .fillMaxWidth(),
         )
@@ -155,6 +165,8 @@ fun MessageListItemOtherMessageUiPreview() {
             onDismissMessageMenu = {},
             onDeleteClick = {},
             onAttachmentClick = {},
+            onPlayAttachment = {},
+            onPauseAttachment = {},
             modifier = Modifier
                 .fillMaxWidth(),
         )

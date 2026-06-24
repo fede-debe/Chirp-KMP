@@ -37,6 +37,7 @@ fun ChirpChatBubble(
     messageStatus: @Composable (() -> Unit)? = null,
     triangleSize: Dp = 16.dp,
     onLongClick: (() -> Unit)? = null,
+    content: @Composable (() -> Unit)? = null,
 ) {
     val padding = 12.dp
     Column(
@@ -97,13 +98,16 @@ fun ChirpChatBubble(
                 color = MaterialTheme.colorScheme.extended.textSecondary,
             )
         }
-        Text(
-            text = messageContent,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.extended.textPrimary,
-            modifier = Modifier
-                .fillMaxWidth(),
-        )
+        if (messageContent.isNotBlank()) {
+            Text(
+                text = messageContent,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.extended.textPrimary,
+                modifier = Modifier
+                    .fillMaxWidth(),
+            )
+        }
+        content?.invoke()
         messageStatus?.invoke()
     }
 }

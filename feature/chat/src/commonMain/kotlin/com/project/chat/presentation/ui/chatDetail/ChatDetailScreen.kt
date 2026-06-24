@@ -49,6 +49,7 @@ import com.project.chat.domain.models.ChatMessageDeliveryStatus
 import com.project.chat.presentation.Res
 import com.project.chat.presentation.components.ChatHeader
 import com.project.chat.presentation.components.EmptySection
+import com.project.chat.presentation.mediapicker.rememberAudioPermissionLauncher
 import com.project.chat.presentation.mediapicker.rememberCameraLauncher
 import com.project.chat.presentation.mediapicker.rememberMultiImagePickerLauncher
 import com.project.chat.presentation.models.ChatUi
@@ -102,6 +103,14 @@ fun ChatDetailRoot(
 
     val cameraLauncher = rememberCameraLauncher { picked ->
         viewModel.onAction(ChatDetailAction.OnAttachmentsPicked(listOf(picked)))
+    }
+
+    val audioPermission = rememberAudioPermissionLauncher { granted ->
+        if (granted) {
+            viewModel.onAction(ChatDetailAction.OnStartRecording)
+        } else {
+            viewModel.onAction(ChatDetailAction.OnRecordPermissionDenied)
+        }
     }
 
     val savedToDeviceMessage = stringResource(Res.string.saved_to_device)
@@ -172,6 +181,7 @@ fun ChatDetailRoot(
             when (action) {
                 is ChatDetailAction.OnChatMembersClick -> onChatMembersClick()
                 is ChatDetailAction.OnBackClick -> onBack()
+                ChatDetailAction.OnMicClick -> audioPermission.request()
                 else -> Unit
             }
             viewModel.onAction(action)
@@ -330,6 +340,12 @@ fun ChatDetailScreen(
                             onAttachmentClick = { attachment ->
                                 onAction(ChatDetailAction.OnAttachmentClick(attachment))
                             },
+                            onPlayAttachment = { attachment ->
+                                onAction(ChatDetailAction.OnPlayAttachment(attachment))
+                            },
+                            onPauseAttachment = {
+                                onAction(ChatDetailAction.OnPauseAttachment)
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f),
@@ -344,11 +360,27 @@ fun ChatDetailScreen(
                                 connectionState = state.connectionState,
                                 pendingAttachments = state.pendingAttachments,
                                 isSending = state.isSending,
+                                recording = state.recording,
                                 onSendClick = {
                                     onAction(ChatDetailAction.OnSendMessageClick)
                                 },
                                 onAttachClick = {
                                     onAction(ChatDetailAction.OnAttachClick)
+                                },
+                                onMicClick = {
+                                    onAction(ChatDetailAction.OnMicClick)
+                                },
+                                onStopRecording = {
+                                    onAction(ChatDetailAction.OnStopRecording)
+                                },
+                                onCancelRecording = {
+                                    onAction(ChatDetailAction.OnCancelRecording)
+                                },
+                                onPauseRecording = {
+                                    onAction(ChatDetailAction.OnPauseRecording)
+                                },
+                                onResumeRecording = {
+                                    onAction(ChatDetailAction.OnResumeRecording)
                                 },
                                 onRemoveAttachment = { id ->
                                     onAction(ChatDetailAction.OnRemoveAttachment(id))
@@ -381,11 +413,27 @@ fun ChatDetailScreen(
                             connectionState = state.connectionState,
                             pendingAttachments = state.pendingAttachments,
                             isSending = state.isSending,
+                            recording = state.recording,
                             onSendClick = {
                                 onAction(ChatDetailAction.OnSendMessageClick)
                             },
                             onAttachClick = {
                                 onAction(ChatDetailAction.OnAttachClick)
+                            },
+                            onMicClick = {
+                                onAction(ChatDetailAction.OnMicClick)
+                            },
+                            onStopRecording = {
+                                onAction(ChatDetailAction.OnStopRecording)
+                            },
+                            onCancelRecording = {
+                                onAction(ChatDetailAction.OnCancelRecording)
+                            },
+                            onPauseRecording = {
+                                onAction(ChatDetailAction.OnPauseRecording)
+                            },
+                            onResumeRecording = {
+                                onAction(ChatDetailAction.OnResumeRecording)
                             },
                             onRemoveAttachment = { id ->
                                 onAction(ChatDetailAction.OnRemoveAttachment(id))

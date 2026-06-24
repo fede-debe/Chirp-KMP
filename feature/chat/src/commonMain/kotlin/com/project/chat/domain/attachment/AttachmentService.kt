@@ -5,8 +5,8 @@ import com.project.core.domain.util.DataError
 import com.project.core.domain.util.Result
 
 /**
- * Uploads a single (already-compressed) image to storage and returns the [MessageAttachment] reference
- * to attach to an outgoing message.
+ * Uploads a single (already-processed) attachment — image or audio — to storage and returns the
+ * [MessageAttachment] reference to attach to an outgoing message.
  *
  * ## How It Works
  * 1. Requests a Supabase signed upload URL from the backend for the given chat + mime type.
@@ -14,11 +14,12 @@ import com.project.core.domain.util.Result
  * 3. Returns a [MessageAttachment] pointing at the permanent public URL.
  */
 interface AttachmentService {
-    suspend fun uploadImage(
+    suspend fun uploadAttachment(
         chatId: String,
         fileName: String,
         mimeType: String,
         bytes: ByteArray,
+        durationInSeconds: Int? = null,
     ): Result<MessageAttachment, DataError.Remote>
 
     /**

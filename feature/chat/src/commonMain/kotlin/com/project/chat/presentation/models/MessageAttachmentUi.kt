@@ -9,4 +9,5 @@ data class MessageAttachmentUi(
     val url: String,
     val fileName: String,
     val mimeType: String,
+    val durationInSeconds: Int? = null,
 )

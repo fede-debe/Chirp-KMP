@@ -20,6 +20,8 @@ fun OtherUserMessage(
     message: MessageUi.OtherUserMessage,
     color: Color,
     onAttachmentClick: (MessageAttachmentUi) -> Unit,
+    onPlayAttachment: (MessageAttachmentUi) -> Unit,
+    onPauseAttachment: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -35,18 +37,37 @@ fun OtherUserMessage(
         Column(
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            if (message.content.isNotBlank()) {
+            val audioAttachments = message.attachments.filter { it.mimeType.startsWith("audio/") }
+            val imageAttachments = message.attachments
+                .filterNot { it.mimeType.startsWith("audio/") }
+
+            if (message.content.isNotBlank() || audioAttachments.isNotEmpty()) {
                 ChirpChatBubble(
                     messageContent = message.content,
                     sender = message.sender.username,
                     trianglePosition = TrianglePosition.LEFT,
                     color = color,
                     formattedDateTime = message.formattedSentTime.asString(),
+                    content = if (audioAttachments.isNotEmpty()) {
+                        {
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                audioAttachments.forEach { audio ->
+                                    VoiceMessagePlayer(
+                                        attachment = audio,
+                                        onPlay = { onPlayAttachment(audio) },
+                                        onPause = onPauseAttachment,
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        null
+                    },
                 )
             }
-            if (message.attachments.isNotEmpty()) {
+            if (imageAttachments.isNotEmpty()) {
                 BubbleAttachmentsRow(
-                    attachments = message.attachments,
+                    attachments = imageAttachments,
                     onAttachmentClick = onAttachmentClick,
                 )
             }

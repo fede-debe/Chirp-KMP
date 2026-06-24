@@ -31,6 +31,15 @@ sealed interface ChatDetailAction {
     data object OnTakePhotoClick : ChatDetailAction
     data object OnPickFromGalleryClick : ChatDetailAction
     data object OnAttachmentLaunchHandled : ChatDetailAction
+    data object OnMicClick : ChatDetailAction
+    data object OnStartRecording : ChatDetailAction
+    data object OnStopRecording : ChatDetailAction
+    data object OnCancelRecording : ChatDetailAction
+    data object OnPauseRecording : ChatDetailAction
+    data object OnResumeRecording : ChatDetailAction
+    data object OnRecordPermissionDenied : ChatDetailAction
+    data class OnPlayAttachment(val attachment: MessageAttachmentUi) : ChatDetailAction
+    data object OnPauseAttachment : ChatDetailAction
 }
 
 data class OnTopVisibleIndexChanged(val topVisibleIndex: Int) : ChatDetailAction

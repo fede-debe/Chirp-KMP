@@ -16,6 +16,7 @@ data class PendingAttachmentUi(
     val mimeType: String,
     val bytes: ByteArray,
     val status: PendingAttachmentStatus,
+    val durationInSeconds: Int? = null,
 ) {
     // ByteArray needs structural equals/hashCode for correct list diffing in Compose state.
     override fun equals(other: Any?): Boolean {
@@ -25,6 +26,7 @@ data class PendingAttachmentUi(
             fileName == other.fileName &&
             mimeType == other.mimeType &&
             status == other.status &&
+            durationInSeconds == other.durationInSeconds &&
             bytes.contentEquals(other.bytes)
     }
 
@@ -33,6 +35,7 @@ data class PendingAttachmentUi(
         result = 31 * result + fileName.hashCode()
         result = 31 * result + mimeType.hashCode()
         result = 31 * result + status.hashCode()
+        result = 31 * result + (durationInSeconds ?: 0)
         result = 31 * result + bytes.contentHashCode()
         return result
     }

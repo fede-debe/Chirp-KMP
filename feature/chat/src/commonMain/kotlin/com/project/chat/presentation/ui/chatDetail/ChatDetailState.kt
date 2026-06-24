@@ -29,6 +29,13 @@ data class ChatDetailState(
     val isSavingAttachment: Boolean = false,
     val isAttachmentSheetOpen: Boolean = false,
     val pendingAttachmentSource: AttachmentSource? = null,
+    val recording: RecordingState? = null,
+)
+
+/** Present only while a voice message is being recorded; drives the composer's recording bar. */
+data class RecordingState(
+    val elapsedSeconds: Int = 0,
+    val isPaused: Boolean = false,
 )
 
 /**

@@ -66,4 +66,15 @@
     <string name="add_attachment">Add attachment</string>
     <string name="take_photo">Take photo</string>
     <string name="choose_from_gallery">Choose from gallery</string>
+    <string name="record_voice_message">Record voice message</string>
+    <string name="stop_recording">Stop recording</string>
+    <string name="cancel_recording">Cancel recording</string>
+    <string name="delete_recording">Delete recording</string>
+    <string name="confirm_recording">Confirm recording</string>
+    <string name="pause_recording">Pause recording</string>
+    <string name="resume_recording">Resume recording</string>
+    <string name="voice_message">Voice message</string>
+    <string name="mic_permission_denied">Microphone permission is needed to record voice messages.</string>
+    <string name="record_failed">Couldn\'t record audio. Please try again.</string>
+    <string name="playback_failed">Couldn\'t play this voice message.</string>
 </resources>

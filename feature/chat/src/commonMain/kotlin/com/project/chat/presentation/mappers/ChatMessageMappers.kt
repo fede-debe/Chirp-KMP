@@ -51,5 +51,6 @@ private fun MessageAttachment.toUi(): MessageAttachmentUi {
         url = storageUrl,
         fileName = fileName,
         mimeType = mimeType,
+        durationInSeconds = durationInSeconds,
     )
 }
