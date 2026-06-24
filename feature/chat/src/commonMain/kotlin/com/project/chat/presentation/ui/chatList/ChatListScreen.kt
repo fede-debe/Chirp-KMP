@@ -28,8 +28,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.project.chat.domain.models.ChatRemovalReason
 import com.project.chat.presentation.Res
 import com.project.chat.presentation.cancel
+import com.project.chat.presentation.chat_deleted_by_me_notice
+import com.project.chat.presentation.chat_deleted_notice
 import com.project.chat.presentation.components.EmptySection
 import com.project.chat.presentation.create_chat
 import com.project.chat.presentation.do_you_want_to_logout
@@ -37,6 +40,7 @@ import com.project.chat.presentation.do_you_want_to_logout_desc
 import com.project.chat.presentation.logout
 import com.project.chat.presentation.no_chats
 import com.project.chat.presentation.no_chats_subtitle
+import com.project.chat.presentation.removed_from_chat_notice
 import com.project.chat.presentation.ui.chatList.components.ChatListHeader
 import com.project.chat.presentation.ui.chatList.components.ChatListItemUi
 import com.project.core.designsystem.components.brand.ChirpHorizontalDivider
@@ -68,6 +72,10 @@ fun ChatListRoot(
         viewModel.onAction(ChatListAction.OnSelectChat(selectedChatId))
     }
 
+    val removedFromChatNotice = stringResource(Res.string.removed_from_chat_notice)
+    val chatDeletedNotice = stringResource(Res.string.chat_deleted_notice)
+    val chatDeletedByMeNotice = stringResource(Res.string.chat_deleted_by_me_notice)
+
     val scope = rememberCoroutineScope()
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
@@ -79,6 +87,17 @@ fun ChatListRoot(
                 }
             }
             ChatListEvent.OnLogoutSuccess -> onSuccessfulLogout()
+            is ChatListEvent.OnChatRemoved -> {
+                scope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = when (event.reason) {
+                            ChatRemovalReason.REMOVED_BY_ADMIN -> removedFromChatNotice
+                            ChatRemovalReason.CHAT_DELETED -> chatDeletedNotice
+                            ChatRemovalReason.CHAT_DELETED_BY_ME -> chatDeletedByMeNotice
+                        },
+                    )
+                }
+            }
         }
     }
 

@@ -23,6 +23,7 @@ import com.project.chat.presentation.Res
 import com.project.chat.presentation.chat_members
 import com.project.chat.presentation.components.ChatHeader
 import com.project.chat.presentation.components.ChatItemHeaderRow
+import com.project.chat.presentation.delete_chat
 import com.project.chat.presentation.go_back
 import com.project.chat.presentation.leave_chat
 import com.project.chat.presentation.models.ChatUi
@@ -103,6 +104,13 @@ fun ChatDetailHeader(
                 )
             }
 
+            // The creator leaving deletes the whole chat for everyone, so the action is labelled accordingly.
+            val leaveOrDeleteTitle = if (chatUi?.isLocalUserCreator == true) {
+                stringResource(Res.string.delete_chat)
+            } else {
+                stringResource(Res.string.leave_chat)
+            }
+
             ChirpDropDownMenu(
                 isOpen = isChatOptionsDropDownOpen,
                 onDismiss = onDismissChatOptions,
@@ -114,7 +122,7 @@ fun ChatDetailHeader(
                         onClick = onManageChatClick,
                     ),
                     DropDownItem(
-                        title = stringResource(Res.string.leave_chat),
+                        title = leaveOrDeleteTitle,
                         icon = vectorResource(DesignSystemRes.drawable.log_out_icon),
                         contentColor = MaterialTheme.colorScheme.extended.destructiveHover,
                         onClick = onLeaveChatClick,
@@ -166,6 +174,7 @@ fun ChatDetailHeaderPreview() {
                             deliveryStatus = ChatMessageDeliveryStatus.SENT,
                         ),
                         lastMessageSenderUsername = "Philipp",
+                        creatorId = "1",
                     ),
                     onChatOptionsClick = {},
                     onManageChatClick = {},

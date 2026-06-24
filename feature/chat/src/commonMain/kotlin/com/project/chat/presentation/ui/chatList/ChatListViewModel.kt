@@ -77,6 +77,7 @@ class ChatListViewModel(
                 loadChats()
                 fetchLocalUserProfile()
                 observeTypingUsers()
+                observeChatRemovals()
                 hasLoadedInitialData = true
             }
         }
@@ -129,6 +130,19 @@ class ChatListViewModel(
             chatParticipantRepository
                 .fetchLocalParticipant()
         }
+    }
+
+    /**
+     * When a chat disappears because the user lost access (removed by an admin, or the chat was deleted),
+     * surface a one-time snackbar so it doesn't look like the chat vanished for no reason. The connection
+     * client already deleted the local chat, so the list itself updates on its own.
+     */
+    private fun observeChatRemovals() {
+        connectionClient.chatRemovals
+            .onEach { removal ->
+                eventChannel.send(ChatListEvent.OnChatRemoved(removal.reason))
+            }
+            .launchIn(viewModelScope)
     }
 
     /**

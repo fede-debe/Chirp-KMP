@@ -195,6 +195,19 @@ class OfflineFirstChatRepository(
             }
     }
 
+    override suspend fun removeParticipant(
+        chatId: String,
+        userId: String,
+    ): EmptyResult<DataError.Remote> {
+        // The DELETE returns no body; re-fetch the chat so the (now smaller) participant list is reflected
+        // locally — same refresh path the CHAT_PARTICIPANTS_CHANGED websocket event uses.
+        return chatService
+            .removeParticipant(chatId, userId)
+            .onSuccess {
+                fetchChatById(chatId)
+            }
+    }
+
     override suspend fun addParticipantsToChat(
         chatId: String,
         userIds: List<String>,

@@ -5,8 +5,11 @@ package com.project.chat.presentation.ui.chatDetail
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
@@ -17,14 +20,22 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,6 +67,7 @@ import com.project.chat.presentation.models.ChatUi
 import com.project.chat.presentation.models.MessageUi
 import com.project.chat.presentation.no_chat_selected
 import com.project.chat.presentation.saved_to_device
+import com.project.chat.presentation.scroll_to_latest
 import com.project.chat.presentation.select_a_chat
 import com.project.chat.presentation.ui.chatDetail.components.AttachmentSourceBottomSheet
 import com.project.chat.presentation.ui.chatDetail.components.ChatDetailHeader
@@ -119,6 +131,7 @@ fun ChatDetailRoot(
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
             ChatDetailEvent.OnChatLeft -> onBack()
+            ChatDetailEvent.OnChatRemoved -> onBack()
             ChatDetailEvent.OnNewMessage -> {
                 scope.launch {
                     messageListState.animateScrollToItem(0)
@@ -155,7 +168,11 @@ fun ChatDetailRoot(
         viewModel.onAction(ChatDetailAction.OnSelectChat(chatId))
     }
 
-    LaunchedEffect(chatId, state.messages) {
+    // Jump to the latest message only when a chat first opens or we switch chats — keyed on the
+    // emptiness flip (not the whole list), so loading older pages or receiving messages no longer yanks
+    // the user back down. New-message autoscroll while near the bottom is handled by OnNewMessage; when
+    // scrolled up, the scroll-to-latest FAB takes over instead.
+    LaunchedEffect(chatId, state.messages.isEmpty()) {
         if (state.messages.isNotEmpty()) {
             messageListState.scrollToItem(0)
         }
@@ -201,6 +218,13 @@ fun ChatDetailScreen(
     isCameraAvailable: Boolean = false,
 ) {
     val configuration = currentDeviceConfiguration()
+    val scope = rememberCoroutineScope()
+
+    // The list is reverseLayout (index 0 == newest/bottom), so a non-zero first visible index means the
+    // user has scrolled up far enough to want a quick jump back to the latest message.
+    val showScrollToLatest by remember {
+        derivedStateOf { messageListState.firstVisibleItemIndex > 2 }
+    }
 
     val realMessageItemCount = remember(state.messages) {
         state
@@ -317,40 +341,56 @@ fun ChatDetailScreen(
                                 modifier = Modifier.fillMaxWidth(),
                             )
                         }
-                        MessageList(
-                            messages = state.messages,
-                            messageWithOpenMenu = state.messageWithOpenMenu,
-                            listState = messageListState,
-                            isPaginationLoading = state.isPaginationLoading,
-                            paginationError = state.paginationError?.asString(),
-                            onMessageLongClick = { message ->
-                                onAction(ChatDetailAction.OnMessageLongClick(message))
-                            },
-                            onMessageRetryClick = { message ->
-                                onAction(ChatDetailAction.OnRetryClick(message))
-                            },
-                            onDismissMessageMenu = {
-                                onAction(ChatDetailAction.OnDismissMessageMenu)
-                            },
-                            onDeleteMessageClick = { message ->
-                                onAction(ChatDetailAction.OnDeleteMessageClick(message))
-                            },
-                            onRetryPaginationClick = {
-                                onAction(ChatDetailAction.OnRetryPaginationClick)
-                            },
-                            onAttachmentClick = { attachment ->
-                                onAction(ChatDetailAction.OnAttachmentClick(attachment))
-                            },
-                            onPlayAttachment = { attachment ->
-                                onAction(ChatDetailAction.OnPlayAttachment(attachment))
-                            },
-                            onPauseAttachment = {
-                                onAction(ChatDetailAction.OnPauseAttachment)
-                            },
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f),
-                        )
+                        ) {
+                            MessageList(
+                                messages = state.messages,
+                                messageWithOpenMenu = state.messageWithOpenMenu,
+                                listState = messageListState,
+                                isPaginationLoading = state.isPaginationLoading,
+                                paginationError = state.paginationError?.asString(),
+                                onMessageLongClick = { message ->
+                                    onAction(ChatDetailAction.OnMessageLongClick(message))
+                                },
+                                onMessageRetryClick = { message ->
+                                    onAction(ChatDetailAction.OnRetryClick(message))
+                                },
+                                onDismissMessageMenu = {
+                                    onAction(ChatDetailAction.OnDismissMessageMenu)
+                                },
+                                onDeleteMessageClick = { message ->
+                                    onAction(ChatDetailAction.OnDeleteMessageClick(message))
+                                },
+                                onRetryPaginationClick = {
+                                    onAction(ChatDetailAction.OnRetryPaginationClick)
+                                },
+                                onAttachmentClick = { attachment ->
+                                    onAction(ChatDetailAction.OnAttachmentClick(attachment))
+                                },
+                                onPlayAttachment = { attachment ->
+                                    onAction(ChatDetailAction.OnPlayAttachment(attachment))
+                                },
+                                onPauseAttachment = {
+                                    onAction(ChatDetailAction.OnPauseAttachment)
+                                },
+                                modifier = Modifier.fillMaxSize(),
+                            )
+
+                            // Small corner FAB so it never blocks manual scrolling; only visible once the
+                            // user has scrolled up. Tapping it smooth-scrolls back to the newest message.
+                            ScrollToLatestFab(
+                                visible = showScrollToLatest,
+                                hasBadge = state.hasUnseenMessages,
+                                onClick = {
+                                    scope.launch {
+                                        messageListState.animateScrollToItem(0)
+                                    }
+                                },
+                            )
+                        }
 
                         AnimatedVisibility(
                             visible = !configuration.isWideScreen && state.typingUsernames.isNotEmpty(),
@@ -518,6 +558,57 @@ fun ChatDetailScreen(
     }
 }
 
+// BoxScope receiver so AnimatedVisibility resolves to the plain overload (not the outer ColumnScope's)
+// and so .align() is available for corner placement.
+@Composable
+private fun BoxScope.ScrollToLatestFab(
+    visible: Boolean,
+    hasBadge: Boolean,
+    onClick: () -> Unit,
+) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn() + scaleIn(),
+        exit = fadeOut() + scaleOut(),
+        modifier = Modifier
+            .align(Alignment.BottomEnd)
+            .padding(16.dp),
+    ) {
+        ScrollToLatestButton(
+            onClick = onClick,
+            hasBadge = hasBadge,
+        )
+    }
+}
+
+@Composable
+private fun ScrollToLatestButton(
+    onClick: () -> Unit,
+    hasBadge: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    BadgedBox(
+        badge = {
+            if (hasBadge) {
+                Badge()
+            }
+        },
+        modifier = modifier,
+    ) {
+        SmallFloatingActionButton(
+            onClick = onClick,
+            shape = CircleShape,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.extended.textSecondary,
+        ) {
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowDown,
+                contentDescription = stringResource(Res.string.scroll_to_latest),
+            )
+        }
+    }
+}
+
 @Composable
 private fun DynamicRoundedCornerColumn(
     isCornersRounded: Boolean,
@@ -594,6 +685,7 @@ private fun ChatDetailMessagesPreview() {
                         deliveryStatus = ChatMessageDeliveryStatus.SENT,
                     ),
                     lastMessageSenderUsername = "Philipp",
+                    creatorId = "1",
                 ),
                 messages = (1..20).map {
                     if (it % 2 == 0) {

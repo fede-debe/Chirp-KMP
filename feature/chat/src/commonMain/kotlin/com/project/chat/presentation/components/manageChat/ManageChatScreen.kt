@@ -24,9 +24,13 @@ import com.project.chat.presentation.components.ChatParticipantSearchTextSection
 import com.project.chat.presentation.components.ChatParticipantsSelectionSection
 import com.project.chat.presentation.components.ManageChatButtonSection
 import com.project.chat.presentation.components.ManageChatHeaderRow
+import com.project.chat.presentation.remove
+import com.project.chat.presentation.remove_member
+import com.project.chat.presentation.remove_member_confirmation
 import com.project.core.designsystem.components.brand.ChirpHorizontalDivider
 import com.project.core.designsystem.components.buttons.ChirpButton
 import com.project.core.designsystem.components.buttons.ChirpButtonStyle
+import com.project.core.designsystem.components.dialogs.DestructiveConfirmationDialog
 import com.project.core.designsystem.theme.ChirpTheme
 import com.project.core.presentation.util.DeviceConfiguration
 import com.project.core.presentation.util.clearFocusOnTap
@@ -92,6 +96,10 @@ fun ManageChatScreen(
             modifier = Modifier
                 .fillMaxWidth(),
             searchResult = state.currentSearchResult,
+            removableParticipantIds = state.removableParticipantIds,
+            onRemoveParticipant = { participant ->
+                onAction(ManageChatAction.OnRemoveParticipantClick(participant))
+            },
         )
         ChirpHorizontalDivider()
         ManageChatButtonSection(
@@ -114,9 +122,24 @@ fun ManageChatScreen(
                     style = ChirpButtonStyle.SECONDARY,
                 )
             },
-            error = state.submitError?.asString(),
+            error = (state.submitError ?: state.removeError)?.asString(),
             modifier = Modifier.fillMaxWidth(),
         )
+
+        state.participantToRemove?.let { participant ->
+            DestructiveConfirmationDialog(
+                title = stringResource(Res.string.remove_member),
+                description = stringResource(
+                    Res.string.remove_member_confirmation,
+                    participant.username,
+                ),
+                confirmButtonText = stringResource(Res.string.remove),
+                cancelButtonText = stringResource(Res.string.cancel),
+                onConfirmClick = { onAction(ManageChatAction.OnConfirmRemoveParticipant) },
+                onCancelClick = { onAction(ManageChatAction.OnDismissRemoveDialog) },
+                onDismiss = { onAction(ManageChatAction.OnDismissRemoveDialog) },
+            )
+        }
     }
 }
 

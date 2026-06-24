@@ -144,6 +144,7 @@ fun ChatListItemUiTypingPreview() {
                     deliveryStatus = ChatMessageDeliveryStatus.SENT,
                 ),
                 lastMessageSenderUsername = "Cinderella",
+                creatorId = "1",
             ),
         )
     }
@@ -186,6 +187,7 @@ fun ChatListItemUiPreview() {
                     deliveryStatus = ChatMessageDeliveryStatus.SENT,
                 ),
                 lastMessageSenderUsername = "Philipp",
+                creatorId = "1",
             ),
         )
     }

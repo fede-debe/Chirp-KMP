@@ -9,4 +9,9 @@ data class ChatUi(
     val otherParticipants: List<ChatParticipantUi>,
     val lastMessage: ChatMessage?,
     val lastMessageSenderUsername: String?,
-)
+    /** User id of the chat's creator. The local user manages members only when this equals their own id. */
+    val creatorId: String,
+) {
+    val isLocalUserCreator: Boolean
+        get() = localParticipant.id == creatorId
+}

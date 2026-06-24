@@ -7,12 +7,14 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.project.chat.domain.chat.ChatRepository
+import com.project.chat.domain.models.ChatParticipant
 import com.project.chat.domain.participant.ChatParticipantService
 import com.project.chat.presentation.Res
 import com.project.chat.presentation.components.manageChat.ManageChatAction
 import com.project.chat.presentation.components.manageChat.ManageChatState
 import com.project.chat.presentation.error_participant_not_found
 import com.project.chat.presentation.mappers.toUi
+import com.project.core.domain.auth.SessionStorage
 import com.project.core.domain.util.DataError
 import com.project.core.domain.util.onFailure
 import com.project.core.domain.util.onSuccess
@@ -25,9 +27,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -39,6 +43,7 @@ import kotlin.time.Duration.Companion.seconds
 class ManageChatViewModel(
     private val chatRepository: ChatRepository,
     private val chatParticipantService: ChatParticipantService,
+    private val sessionStorage: SessionStorage,
 ) : ViewModel() {
 
     private val flowChatId = MutableStateFlow<String?>(null)
@@ -52,14 +57,32 @@ class ManageChatViewModel(
     val state = flowChatId
         .flatMapLatest { chatId ->
             if (chatId != null) {
-                chatRepository.getActiveParticipantsByChatId(chatId)
+                combine(
+                    chatRepository.getActiveParticipantsByChatId(chatId),
+                    chatRepository.getChatInfoById(chatId)
+                        .map { it.chat.creatorId }
+                        .distinctUntilChanged(),
+                    sessionStorage.observeAuthInfo(),
+                ) { participants, creatorId, authInfo ->
+                    Triple(participants, creatorId, authInfo?.user?.id)
+                }
             } else {
                 emptyFlow()
             }
         }
-        .combine(_state) { participants, currentState ->
+        .combine(_state) { (participants, creatorId, currentUserId), currentState ->
+            // Only the creator can remove members, and never themselves.
+            val canManage = currentUserId != null && currentUserId == creatorId
+            val removableParticipantIds = if (canManage) {
+                participants.map(ChatParticipant::userId)
+                    .filter { it != creatorId }
+                    .toSet()
+            } else {
+                emptySet()
+            }
             currentState.copy(
                 existingChatParticipants = participants.map { it.toUi() },
+                removableParticipantIds = removableParticipantIds,
             )
         }
         .onStart {
@@ -87,7 +110,40 @@ class ManageChatViewModel(
             is ManageChatAction.ChatParticipants.OnSelectChat -> {
                 flowChatId.update { action.chatId }
             }
+            is ManageChatAction.OnRemoveParticipantClick -> {
+                _state.update {
+                    it.copy(participantToRemove = action.participant, removeError = null)
+                }
+            }
+            ManageChatAction.OnConfirmRemoveParticipant -> removeParticipant()
+            ManageChatAction.OnDismissRemoveDialog -> {
+                _state.update { it.copy(participantToRemove = null) }
+            }
             else -> Unit
+        }
+    }
+
+    private fun removeParticipant() {
+        val chatId = flowChatId.value ?: return
+        val participant = state.value.participantToRemove ?: return
+
+        viewModelScope.launch {
+            _state.update { it.copy(removingUserId = participant.id, removeError = null) }
+            chatRepository
+                .removeParticipant(chatId, participant.id)
+                .onSuccess {
+                    // The participant list refreshes via fetchChatById / CHAT_PARTICIPANTS_CHANGED.
+                    _state.update { it.copy(participantToRemove = null, removingUserId = null) }
+                }
+                .onFailure { error ->
+                    _state.update {
+                        it.copy(
+                            participantToRemove = null,
+                            removingUserId = null,
+                            removeError = error.toUiText(),
+                        )
+                    }
+                }
         }
     }
 

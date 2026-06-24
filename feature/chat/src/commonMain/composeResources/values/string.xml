@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <resources>
+    <string name="delete_chat">Delete chat</string>
+    <string name="remove_member">Remove member</string>
+    <string name="remove_member_confirmation">Remove %1$s from this chat? They will lose access to it.</string>
+    <string name="remove">Remove</string>
+    <string name="removed_from_chat_notice">You were removed from a chat by the admin</string>
+    <string name="chat_deleted_notice">A chat was deleted by the admin</string>
+    <string name="chat_deleted_by_me_notice">Chat deleted successfully</string>
     <string name="typing_one">%1$s is typing…</string>
     <string name="typing_two">%1$s and %2$s are typing…</string>
     <string name="typing_many">%1$s and %2$d others are typing…</string>
@@ -77,6 +84,7 @@
     <string name="pause_recording">Pause recording</string>
     <string name="resume_recording">Resume recording</string>
     <string name="voice_message">Voice message</string>
+    <string name="scroll_to_latest">Scroll to latest message</string>
     <string name="mic_permission_denied">Microphone permission is needed to record voice messages.</string>
     <string name="record_failed">Couldn\'t record audio. Please try again.</string>
     <string name="playback_failed">Couldn\'t play this voice message.</string>

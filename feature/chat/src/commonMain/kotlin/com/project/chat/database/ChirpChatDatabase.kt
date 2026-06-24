@@ -36,7 +36,7 @@ import com.project.chat.database.view.LastMessageView
     views = [
         LastMessageView::class,
     ],
-    version = 3,
+    version = 4,
 )
 @ConstructedBy(ChirpChatDatabaseConstructor::class)
 abstract class ChirpChatDatabase : RoomDatabase() {

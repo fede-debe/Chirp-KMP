@@ -1,6 +1,7 @@
 package com.project.chat.domain.chat
 
 import com.project.chat.domain.models.ChatMessage
+import com.project.chat.domain.models.ChatRemoval
 import com.project.chat.domain.models.ConnectionState
 import com.project.chat.domain.models.TypingUser
 import kotlinx.coroutines.flow.Flow
@@ -23,6 +24,9 @@ interface ChatConnectionClient {
     val chatMessages: Flow<ChatMessage>
     val connectionState: StateFlow<ConnectionState>
     val typingUsers: Flow<TypingUser>
+
+    /** Emits when the local user loses access to a chat (removed by an admin, or chat deleted), with the reason. */
+    val chatRemovals: Flow<ChatRemoval>
 
     suspend fun sendTypingStarted(chatId: String)
     suspend fun sendTypingStopped(chatId: String)

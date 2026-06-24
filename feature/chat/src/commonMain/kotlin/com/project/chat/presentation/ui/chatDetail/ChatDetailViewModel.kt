@@ -80,6 +80,10 @@ class ChatDetailViewModel(
 
     private var recordingTickerJob: Job? = null
 
+    // Id of the newest message we've already accounted for, per chat. Drives new-message detection for
+    // autoscroll + the unseen-messages FAB badge. Reset on every chat switch (see switchChat).
+    private var lastSeenNewestMessageId: String? = null
+
     // Outgoing typing-indicator state. `typingChatId` is the chat we've currently signalled "typing" for
     // (null = not signalling). The heartbeat re-sends TYPING_STARTED to keep the server's 3s timer alive;
     // the idle job sends TYPING_STOPPED once the user pauses.
@@ -185,6 +189,7 @@ class ChatDetailViewModel(
                 observeCanSendMessage()
                 observeTypingUsers()
                 observeOutgoingTyping()
+                observeChatRemovals()
                 hasLoadedInitialData = true
             }
         }
@@ -296,9 +301,12 @@ class ChatDetailViewModel(
     }
 
     private fun updateNearBottom(firstVisibleIndex: Int) {
+        val isNearBottom = firstVisibleIndex <= 3
         _state.update {
             it.copy(
-                isNearBottom = firstVisibleIndex <= 3,
+                isNearBottom = isNearBottom,
+                // Reaching the bottom (incl. tapping the scroll-to-latest FAB) marks new messages as seen.
+                hasUnseenMessages = if (isNearBottom) false else it.hasUnseenMessages,
             )
         }
     }
@@ -640,10 +648,6 @@ class ChatDetailViewModel(
     }
 
     private fun observeChatMessages() {
-        val currentMessages = state
-            .map { it.messages }
-            .distinctUntilChanged()
-
         val newMessages = chatIdFlow.flatMapLatest { chatId ->
             if (chatId != null) {
                 messageRepository.getMessagesForChat(chatId)
@@ -655,15 +659,31 @@ class ChatDetailViewModel(
         val isNearBottom = state.map { it.isNearBottom }.distinctUntilChanged()
 
         combine(
-            currentMessages,
             newMessages,
             isNearBottom,
-        ) { currentMessages, newMessages, isNearBottom ->
-            val lastNewId = newMessages.lastOrNull()?.message?.id
-            val lastCurrentId = currentMessages.lastOrNull()?.id
+            sessionStorage.observeAuthInfo(),
+        ) { messages, isNearBottom, authInfo ->
+            // The newest message is the one with the latest timestamp — the DB and the date-separated UI
+            // list order things differently, so first/last position is not reliable. A genuinely new
+            // message is one whose id differs from the last id we recorded for this chat (reset to null on
+            // every chat switch, so opening a chat doesn't count its existing newest as "new").
+            val newest = messages.maxByOrNull { it.message.createdAt }
+            val newestId = newest?.message?.id
+            val newestSenderId = newest?.message?.senderId
+            val isNewMessage = newestId != null &&
+                lastSeenNewestMessageId != null &&
+                newestId != lastSeenNewestMessageId
+            lastSeenNewestMessageId = newestId
 
-            if (lastNewId != lastCurrentId && isNearBottom) {
-                eventChannel.send(ChatDetailEvent.OnNewMessage)
+            if (isNewMessage) {
+                when {
+                    // At the bottom: follow the conversation by scrolling to the newest message.
+                    isNearBottom -> eventChannel.send(ChatDetailEvent.OnNewMessage)
+                    // Scrolled up + from someone else: badge the FAB instead of yanking the user down.
+                    newestSenderId != authInfo?.user?.id -> {
+                        _state.update { it.copy(hasUnseenMessages = true) }
+                    }
+                }
             }
         }.launchIn(viewModelScope)
     }
@@ -721,6 +741,29 @@ class ChatDetailViewModel(
      * typing, blank text stops it. The idle timeout and message-send/leave (which clear the field) flow
      * through the same blank-text path.
      */
+    /**
+     * If the currently-open chat is removed under us (admin kicked us, or the chat was deleted), leave the
+     * screen. The local chat row is already deleted by the connection client, so the list updates on its own.
+     */
+    private fun observeChatRemovals() {
+        connectionClient.chatRemovals
+            .onEach { removal ->
+                if (removal.chatId == chatIdFlow.value) {
+                    stopTypingSignal()
+                    chatIdFlow.update { null }
+                    _state.update {
+                        it.copy(
+                            chatUi = null,
+                            messages = emptyList(),
+                            bannerState = BannerState(),
+                        )
+                    }
+                    eventChannel.send(ChatDetailEvent.OnChatRemoved)
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
     private fun observeOutgoingTyping() {
         snapshotFlow { _state.value.messageTextFieldState.text.toString() }
             .drop(1) // ignore the initial value emitted on subscription
@@ -876,6 +919,10 @@ class ChatDetailViewModel(
         // Stop signalling typing for the previous chat (the composer text can survive a chat switch, so the
         // text-change observer won't necessarily fire to stop it).
         stopTypingSignal()
+        // Reset new-message tracking so the incoming chat doesn't treat its existing newest message as new
+        // (which would wrongly badge the FAB), and clear any leftover badge from the previous chat.
+        lastSeenNewestMessageId = null
+        _state.update { it.copy(hasUnseenMessages = false) }
         chatIdFlow.update { chatId }
         viewModelScope.launch {
             chatId?.let {

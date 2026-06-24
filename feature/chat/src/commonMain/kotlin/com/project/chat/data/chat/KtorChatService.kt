@@ -73,6 +73,15 @@ class KtorChatService(
         ).asEmptyResult()
     }
 
+    override suspend fun removeParticipant(
+        chatId: String,
+        userId: String,
+    ): EmptyResult<DataError.Remote> {
+        return httpClient.delete<Unit>(
+            route = "/chat/$chatId/participants/$userId",
+        ).asEmptyResult()
+    }
+
     override suspend fun addParticipantsToChat(
         chatId: String,
         userIds: List<String>,

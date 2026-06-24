@@ -14,4 +14,10 @@ data class ManageChatState(
     val searchError: UiText? = null,
     val isSubmitting: Boolean = false,
     val submitError: UiText? = null,
+    // Member management (creator only). `removableParticipantIds` is the set of existing members the local
+    // user is allowed to remove — empty unless the local user is the creator (and never includes the creator).
+    val removableParticipantIds: Set<String> = emptySet(),
+    val participantToRemove: ChatParticipantUi? = null,
+    val removingUserId: String? = null,
+    val removeError: UiText? = null,
 )
