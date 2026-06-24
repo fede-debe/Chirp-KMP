@@ -12,4 +12,6 @@ data class ChatListState(
     val showLogoutConfirmation: Boolean = false,
     val selectedChatId: String? = null,
     val isLoading: Boolean = false,
+    /** Per chat id, the usernames of other participants currently typing (ephemeral, server-driven). */
+    val typingUsersByChat: Map<String, List<String>> = emptyMap(),
 )

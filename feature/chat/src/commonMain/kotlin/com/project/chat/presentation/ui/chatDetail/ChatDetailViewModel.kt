@@ -46,13 +46,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -75,6 +79,13 @@ class ChatDetailViewModel(
     val events = eventChannel.receiveAsFlow()
 
     private var recordingTickerJob: Job? = null
+
+    // Outgoing typing-indicator state. `typingChatId` is the chat we've currently signalled "typing" for
+    // (null = not signalling). The heartbeat re-sends TYPING_STARTED to keep the server's 3s timer alive;
+    // the idle job sends TYPING_STOPPED once the user pauses.
+    private var typingChatId: String? = null
+    private var typingHeartbeatJob: Job? = null
+    private var typingIdleJob: Job? = null
 
     private val chatIdFlow = MutableStateFlow<String?>(null)
 
@@ -172,6 +183,8 @@ class ChatDetailViewModel(
                 observeConnectionState()
                 observeChatMessages()
                 observeCanSendMessage()
+                observeTypingUsers()
+                observeOutgoingTyping()
                 hasLoadedInitialData = true
             }
         }
@@ -611,6 +624,8 @@ class ChatDetailViewModel(
     override fun onCleared() {
         super.onCleared()
         recordingTickerJob?.cancel()
+        typingHeartbeatJob?.cancel()
+        typingIdleJob?.cancel()
         audioPlayer.release()
     }
 
@@ -668,6 +683,100 @@ class ChatDetailViewModel(
                 }
             }
             .launchIn(viewModelScope)
+    }
+
+    /**
+     * Folds the incoming typing-presence stream (scoped to the open chat) into the list of usernames shown
+     * in the UI. `flatMapLatest` on the chat id resets the fold on every chat switch, so stale typers from a
+     * previous chat never leak in. The server only broadcasts to *other* participants, so the local user is
+     * already excluded. `scan` keeps a userId→username map so a "stopped" event removes exactly one typer.
+     */
+    private fun observeTypingUsers() {
+        chatIdFlow
+            .flatMapLatest { chatId ->
+                if (chatId == null) {
+                    flowOf(emptyList())
+                } else {
+                    connectionClient.typingUsers
+                        .filter { it.chatId == chatId }
+                        .scan(emptyMap<String, String>()) { typers, event ->
+                            if (event.isTyping) {
+                                typers + (event.userId to event.username)
+                            } else {
+                                typers - event.userId
+                            }
+                        }
+                        .map { it.values.toList() }
+                }
+            }
+            .distinctUntilChanged()
+            .onEach { usernames ->
+                _state.update { it.copy(typingUsernames = usernames) }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    /**
+     * Translates composer text changes into outgoing typing signals: non-blank text starts (and keeps)
+     * typing, blank text stops it. The idle timeout and message-send/leave (which clear the field) flow
+     * through the same blank-text path.
+     */
+    private fun observeOutgoingTyping() {
+        snapshotFlow { _state.value.messageTextFieldState.text.toString() }
+            .drop(1) // ignore the initial value emitted on subscription
+            .onEach { text ->
+                if (text.isNotBlank()) {
+                    onUserTyping()
+                } else {
+                    stopTypingSignal()
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun onUserTyping() {
+        val chatId = chatIdFlow.value ?: return
+
+        if (typingChatId != chatId) {
+            stopTypingSignal()
+            typingChatId = chatId
+            sendTyping(chatId, isTyping = true)
+            // The server auto-stops 3s after the last TYPING_STARTED, so refresh it while typing continues.
+            typingHeartbeatJob = viewModelScope.launch {
+                while (true) {
+                    delay(TYPING_HEARTBEAT_MS)
+                    sendTyping(chatId, isTyping = true)
+                }
+            }
+        }
+
+        // Restart the idle countdown on every keystroke.
+        typingIdleJob?.cancel()
+        typingIdleJob = viewModelScope.launch {
+            delay(TYPING_IDLE_TIMEOUT_MS)
+            stopTypingSignal()
+        }
+    }
+
+    private fun stopTypingSignal() {
+        typingHeartbeatJob?.cancel()
+        typingHeartbeatJob = null
+        typingIdleJob?.cancel()
+        typingIdleJob = null
+
+        val chatId = typingChatId ?: return
+        typingChatId = null
+        sendTyping(chatId, isTyping = false)
+    }
+
+    private fun sendTyping(chatId: String, isTyping: Boolean) {
+        viewModelScope.launch {
+            if (isTyping) {
+                connectionClient.sendTypingStarted(chatId)
+            } else {
+                connectionClient.sendTypingStopped(chatId)
+            }
+        }
     }
 
     private fun setupPaginatorForChat(chatId: String) {
@@ -764,6 +873,9 @@ class ChatDetailViewModel(
     }
 
     private fun switchChat(chatId: String?) {
+        // Stop signalling typing for the previous chat (the composer text can survive a chat switch, so the
+        // text-change observer won't necessarily fire to stop it).
+        stopTypingSignal()
         chatIdFlow.update { chatId }
         viewModelScope.launch {
             chatId?.let {
@@ -774,5 +886,10 @@ class ChatDetailViewModel(
 
     private companion object {
         const val MAX_ATTACHMENTS = 10
+
+        // Re-send TYPING_STARTED every 2s (below the server's 3s auto-stop) so the indicator stays alive
+        // while the user keeps typing; stop signalling 3s after the last keystroke.
+        const val TYPING_HEARTBEAT_MS = 2_000L
+        const val TYPING_IDLE_TIMEOUT_MS = 3_000L
     }
 }

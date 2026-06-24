@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <resources>
+    <string name="typing_one">%1$s is typing…</string>
+    <string name="typing_two">%1$s and %2$s are typing…</string>
+    <string name="typing_many">%1$s and %2$d others are typing…</string>
     <string name="create_chat">Create Chat</string>
     <string name="add">Add</string>
     <string name="cancel">Cancel</string>

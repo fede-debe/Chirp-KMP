@@ -1,5 +1,9 @@
 package com.project.chat.presentation.ui.chatList.components
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.project.chat.domain.models.ChatMessage
 import com.project.chat.domain.models.ChatMessageDeliveryStatus
 import com.project.chat.presentation.components.ChatItemHeaderRow
+import com.project.chat.presentation.components.typingUsersLabel
 import com.project.chat.presentation.models.ChatUi
 import com.project.core.designsystem.components.avatar.ChatParticipantUi
 import com.project.core.designsystem.theme.ChirpTheme
@@ -37,8 +42,10 @@ fun ChatListItemUi(
     chat: ChatUi,
     isSelected: Boolean,
     modifier: Modifier = Modifier,
+    typingUsernames: List<String> = emptyList(),
 ) {
     val isGroupChat = chat.otherParticipants.size > 1
+    val isTyping = typingUsernames.isNotEmpty()
     Row(
         modifier = modifier
             .height(IntrinsicSize.Min)
@@ -64,27 +71,42 @@ fun ChatListItemUi(
                     .fillMaxWidth(),
             )
 
-            if (chat.lastMessage != null) {
-                val previewMessage = buildAnnotatedString {
-                    withStyle(
-                        style = SpanStyle(
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.extended.textSecondary,
-                        ),
-                    ) {
-                        if (chat.lastMessageSenderUsername != null) {
-                            append(chat.lastMessageSenderUsername + ": ")
+            // While someone else is typing, the named indicator crossfades over the last-message preview.
+            AnimatedContent(
+                targetState = isTyping,
+                transitionSpec = { fadeIn() togetherWith fadeOut() },
+                label = "chat-list-typing",
+            ) { typing ->
+                if (typing) {
+                    Text(
+                        text = typingUsersLabel(typingUsernames),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                } else if (chat.lastMessage != null) {
+                    val previewMessage = buildAnnotatedString {
+                        withStyle(
+                            style = SpanStyle(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.extended.textSecondary,
+                            ),
+                        ) {
+                            if (chat.lastMessageSenderUsername != null) {
+                                append(chat.lastMessageSenderUsername + ": ")
+                            }
                         }
+                        append(chat.lastMessage.content)
                     }
-                    append(chat.lastMessage.content)
+                    Text(
+                        text = previewMessage,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.extended.textSecondary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                 }
-                Text(
-                    text = previewMessage,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.extended.textSecondary,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
             }
         }
         Box(
@@ -93,6 +115,36 @@ fun ChatListItemUi(
                 .background(MaterialTheme.colorScheme.primary)
                 .width(4.dp)
                 .fillMaxHeight(),
+        )
+    }
+}
+
+@Composable
+@Preview
+fun ChatListItemUiTypingPreview() {
+    ChirpTheme(darkTheme = true) {
+        ChatListItemUi(
+            isSelected = false,
+            typingUsernames = listOf("Cinderella", "Josh"),
+            modifier = Modifier
+                .fillMaxWidth(),
+            chat = ChatUi(
+                id = "1",
+                localParticipant = ChatParticipantUi(id = "1", username = "Philipp", initials = "PH"),
+                otherParticipants = listOf(
+                    ChatParticipantUi(id = "2", username = "Cinderella", initials = "CI"),
+                    ChatParticipantUi(id = "3", username = "Josh", initials = "JO"),
+                ),
+                lastMessage = ChatMessage(
+                    id = "1",
+                    chatId = "1",
+                    content = "See you at 8!",
+                    createdAt = Clock.System.now(),
+                    senderId = "2",
+                    deliveryStatus = ChatMessageDeliveryStatus.SENT,
+                ),
+                lastMessageSenderUsername = "Cinderella",
+            ),
         )
     }
 }

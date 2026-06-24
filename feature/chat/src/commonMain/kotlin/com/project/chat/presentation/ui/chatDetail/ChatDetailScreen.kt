@@ -65,6 +65,7 @@ import com.project.chat.presentation.ui.chatDetail.components.MessageBannerListe
 import com.project.chat.presentation.ui.chatDetail.components.MessageBox
 import com.project.chat.presentation.ui.chatDetail.components.MessageList
 import com.project.chat.presentation.ui.chatDetail.components.PaginationScrollListener
+import com.project.chat.presentation.ui.chatDetail.components.TypingIndicatorRow
 import com.project.core.designsystem.components.avatar.ChatParticipantUi
 import com.project.core.designsystem.theme.ChirpTheme
 import com.project.core.designsystem.theme.extended
@@ -352,6 +353,17 @@ fun ChatDetailScreen(
                         )
 
                         AnimatedVisibility(
+                            visible = !configuration.isWideScreen && state.typingUsernames.isNotEmpty(),
+                        ) {
+                            TypingIndicatorRow(
+                                usernames = state.typingUsernames,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                            )
+                        }
+
+                        AnimatedVisibility(
                             visible = !configuration.isWideScreen,
                         ) {
                             MessageBox(
@@ -407,6 +419,17 @@ fun ChatDetailScreen(
                     DynamicRoundedCornerColumn(
                         isCornersRounded = configuration.isWideScreen,
                     ) {
+                        AnimatedVisibility(
+                            visible = state.typingUsernames.isNotEmpty(),
+                        ) {
+                            TypingIndicatorRow(
+                                usernames = state.typingUsernames,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                            )
+                        }
+
                         MessageBox(
                             messageTextFieldState = state.messageTextFieldState,
                             isSendButtonEnabled = state.canSendMessage,

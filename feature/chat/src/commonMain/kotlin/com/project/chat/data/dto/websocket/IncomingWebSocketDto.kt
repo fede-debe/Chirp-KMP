@@ -8,6 +8,7 @@ enum class IncomingWebSocketType {
     MESSAGE_DELETED,
     PROFILE_PICTURE_UPDATED,
     CHAT_PARTICIPANTS_CHANGED,
+    TYPING_INDICATOR,
 }
 
 @Serializable
@@ -42,5 +43,14 @@ sealed interface IncomingWebSocketDto {
     data class ChatParticipantsChangedDto(
         val chatId: String,
         val type: IncomingWebSocketType = IncomingWebSocketType.CHAT_PARTICIPANTS_CHANGED,
+    ) : IncomingWebSocketDto
+
+    @Serializable
+    data class TypingIndicatorDto(
+        val chatId: String,
+        val userId: String,
+        val username: String,
+        val isTyping: Boolean,
+        val type: IncomingWebSocketType = IncomingWebSocketType.TYPING_INDICATOR,
     ) : IncomingWebSocketDto
 }

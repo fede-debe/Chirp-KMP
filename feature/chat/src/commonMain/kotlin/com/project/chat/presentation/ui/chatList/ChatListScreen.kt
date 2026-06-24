@@ -181,6 +181,7 @@ fun ChatListScreen(
                             ChatListItemUi(
                                 chat = chatUi,
                                 isSelected = chatUi.id == state.selectedChatId,
+                                typingUsernames = state.typingUsersByChat[chatUi.id].orEmpty(),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {

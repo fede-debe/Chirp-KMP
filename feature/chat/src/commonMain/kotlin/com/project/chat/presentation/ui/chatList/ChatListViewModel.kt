@@ -2,6 +2,7 @@ package com.project.chat.presentation.ui.chatList
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.project.chat.domain.chat.ChatConnectionClient
 import com.project.chat.domain.chat.ChatRepository
 import com.project.chat.domain.notification.DeviceTokenService
 import com.project.chat.domain.participant.ChatParticipantRepository
@@ -15,9 +16,14 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -43,6 +49,7 @@ class ChatListViewModel(
     private val deviceTokenService: DeviceTokenService,
     private val authService: AuthService,
     private val chatParticipantRepository: ChatParticipantRepository,
+    private val connectionClient: ChatConnectionClient,
 ) : ViewModel() {
 
     private val eventChannel = Channel<ChatListEvent>()
@@ -69,6 +76,7 @@ class ChatListViewModel(
             if (!hasLoadedInitialData) {
                 loadChats()
                 fetchLocalUserProfile()
+                observeTypingUsers()
                 hasLoadedInitialData = true
             }
         }
@@ -121,6 +129,35 @@ class ChatListViewModel(
             chatParticipantRepository
                 .fetchLocalParticipant()
         }
+    }
+
+    /**
+     * Tracks who is typing in each chat across the whole list — the server pushes typing for every chat the
+     * user belongs to, not just the open one. Folds the stream into a chatId → (userId → username) map so a
+     * chat drops off only once all its typists stop and the list can name them. `scan` seeds an empty map
+     * immediately, so this never delays the initial list render.
+     */
+    private fun observeTypingUsers() {
+        connectionClient.typingUsers
+            .scan(emptyMap<String, Map<String, String>>()) { typersByChat, event ->
+                val current = typersByChat[event.chatId].orEmpty()
+                val updated = if (event.isTyping) {
+                    current + (event.userId to event.username)
+                } else {
+                    current - event.userId
+                }
+                if (updated.isEmpty()) {
+                    typersByChat - event.chatId
+                } else {
+                    typersByChat + (event.chatId to updated)
+                }
+            }
+            .map { typersByChat -> typersByChat.mapValues { (_, typers) -> typers.values.toList() } }
+            .distinctUntilChanged()
+            .onEach { typingUsersByChat ->
+                _state.update { it.copy(typingUsersByChat = typingUsersByChat) }
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun logout() {

@@ -30,6 +30,8 @@ data class ChatDetailState(
     val isAttachmentSheetOpen: Boolean = false,
     val pendingAttachmentSource: AttachmentSource? = null,
     val recording: RecordingState? = null,
+    /** Usernames of other participants currently typing in this chat (server-supplied, ephemeral). */
+    val typingUsernames: List<String> = emptyList(),
 )
 
 /** Present only while a voice message is being recorded; drives the composer's recording bar. */
