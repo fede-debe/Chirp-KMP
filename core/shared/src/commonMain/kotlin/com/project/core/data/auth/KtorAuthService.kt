@@ -1,8 +1,10 @@
 package com.project.core.data.auth
 
 import com.project.core.data.dto.AuthInfoSerializable
+import com.project.core.data.dto.requests.AppleLoginRequest
 import com.project.core.data.dto.requests.ChangePasswordRequest
 import com.project.core.data.dto.requests.EmailRequest
+import com.project.core.data.dto.requests.GoogleLoginRequest
 import com.project.core.data.dto.requests.LoginRequest
 import com.project.core.data.dto.requests.RefreshRequest
 import com.project.core.data.dto.requests.RegisterRequest
@@ -59,6 +61,38 @@ class KtorAuthService(
             body = LoginRequest(
                 email = email,
                 password = password,
+            ),
+        ).map { authInfoSerializable ->
+            authInfoSerializable.toDomain()
+        }
+    }
+
+    override suspend fun loginWithGoogle(
+        idToken: String,
+        rawNonce: String,
+    ): Result<AuthInfo, DataError.Remote> {
+        return httpClient.post<GoogleLoginRequest, AuthInfoSerializable>(
+            route = "/auth/google",
+            body = GoogleLoginRequest(
+                idToken = idToken,
+                rawNonce = rawNonce,
+            ),
+        ).map { authInfoSerializable ->
+            authInfoSerializable.toDomain()
+        }
+    }
+
+    override suspend fun loginWithApple(
+        identityToken: String,
+        rawNonce: String,
+        fullName: String?,
+    ): Result<AuthInfo, DataError.Remote> {
+        return httpClient.post<AppleLoginRequest, AuthInfoSerializable>(
+            route = "/auth/apple",
+            body = AppleLoginRequest(
+                identityToken = identityToken,
+                rawNonce = rawNonce,
+                fullName = fullName,
             ),
         ).map { authInfoSerializable ->
             authInfoSerializable.toDomain()

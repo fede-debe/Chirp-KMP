@@ -46,4 +46,8 @@
     <string name="reset_password_successfully">
         Your password has successfully been changed. You can now log in with your new password.
     </string>
+    <string name="or">or</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="continue_with_apple">Continue with Apple</string>
+    <string name="error_social_sign_in_failed">Sign-in failed. Please try again.</string>
 </resources>

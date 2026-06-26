@@ -21,6 +21,8 @@ uiToolingPreview = "1.10.3"
 
 # AndroidX
 androidx-activity = "1.13.0"
+androidx-credentials = "1.3.0" # Credential Manager (Google social sign-in on Android)
+googleid = "1.1.1" # Google ID token helper for Credential Manager
 androidx-core = "1.18.0"
 androidx-lifecycle = "2.9.0"
 androidx-test-ext = "1.2.1"
@@ -82,6 +84,11 @@ androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", ve
 jetbrains-compose-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "compose-lifecycle" }
 koin-core-viewmodel = { group = "io.insert-koin", name = "koin-core-viewmodel", version.ref = "koin" }
 core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
+
+# Credential Manager / Google sign-in (Android)
+androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "androidx-credentials" }
+androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "androidx-credentials" }
+google-identity-googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 
 androidx-test-core = { module = "androidx.test:core", version.ref = "androidx-test-core" }
 

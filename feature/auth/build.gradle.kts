@@ -19,6 +19,15 @@ kotlin {
                 implementation(projects.core.shared)
             }
         }
+        androidMain {
+            dependencies {
+                // Native Google sign-in via Credential Manager + Google ID token helper.
+                implementation(libs.androidx.credentials)
+                implementation(libs.androidx.credentials.play.services.auth)
+                implementation(libs.google.identity.googleid)
+                implementation(libs.kotlinx.coroutines.core)
+            }
+        }
     }
 }
 

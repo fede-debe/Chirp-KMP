@@ -3,6 +3,7 @@ package com.project.core.data.di
 import com.project.core.data.auth.KtorAuthService
 import com.project.core.data.logging.KermitLogger
 import com.project.core.data.networking.HttpClientFactory
+import com.project.core.data.util.NonceFactory
 import com.project.core.domain.auth.AuthService
 import com.project.core.domain.logging.ChirpLogger
 import org.koin.core.module.Module
@@ -46,6 +47,7 @@ val coreDataModule = module {
         HttpClientFactory(get(), get()).create(get())
     }
     singleOf(::KtorAuthService) bind AuthService::class
+    singleOf(::NonceFactory)
     // SessionStorage is bound per-platform: encrypted (Keystore/Keychain) on mobile,
     // DataStore on desktop. See each platformCoreDataModule.
 }
