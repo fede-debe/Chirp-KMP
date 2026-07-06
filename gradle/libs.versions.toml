@@ -5,7 +5,7 @@ kotlin = "2.4.0"
 composeBom = "2026.03.01"
 ksp = "2.3.9"
 google-services = "4.4.4"
-conveyor = "1.12"
+conveyor = "2.0"
 
 androidDesugarJdkLibs = "2.1.5"
 androidTools = "32.1.0"
