@@ -7,6 +7,7 @@ import com.project.auth.presentation.navigation.AuthGraphRoutes
 import com.project.auth.presentation.navigation.authGraph
 import com.project.chat.presentation.navigation.ChatGraphRoutes
 import com.project.chat.presentation.navigation.chatGraph
+import com.project.chirp.BuildKonfig
 
 /**
  * The root composable that hosts the application's primary `NavHost` and wires independent feature modules together.
@@ -33,22 +34,31 @@ fun NavigationRoot(
         authGraph(
             navController = navController,
             onLoginSuccess = {
-                navController.navigate(ChatGraphRoutes.Graph) {
-                    popUpTo(AuthGraphRoutes.Graph) {
-                        inclusive = true
+                if (BuildKonfig.CHAT_ENABLED) {
+                    navController.navigate(ChatGraphRoutes.Graph) {
+                        popUpTo(AuthGraphRoutes.Graph) {
+                            inclusive = true
+                        }
                     }
+                } else {
+                    // No placeholder by design: the consuming project routes to its own feature here.
+                    TODO("Wire your app's post-login destination on login success")
                 }
             },
         )
-        chatGraph(
-            navController = navController,
-            onLogout = {
-                navController.navigate(AuthGraphRoutes.Graph) {
-                    popUpTo(ChatGraphRoutes.Graph) {
-                        inclusive = true
+        // Chat is dormant unless CHAT_ENABLED. When off, its routes are never registered, so the
+        // module stays fully retained but unreachable. Retained for possible future use.
+        if (BuildKonfig.CHAT_ENABLED) {
+            chatGraph(
+                navController = navController,
+                onLogout = {
+                    navController.navigate(AuthGraphRoutes.Graph) {
+                        popUpTo(ChatGraphRoutes.Graph) {
+                            inclusive = true
+                        }
                     }
-                }
-            },
-        )
+                },
+            )
+        }
     }
 }
