@@ -51,6 +51,14 @@ class BuildKonfigConventionPlugin: Plugin<Project> {
                             "Missing API_KEY property in local.properties"
                         )
                     buildConfigField(FieldSpec.Type.STRING, "API_KEY", apiKey)
+
+                    // Feature flag: chat is dormant by default and enabled per-project via
+                    // local.properties (CHAT_ENABLED=true). Unlike API_KEY it is optional — absent
+                    // means chat off — so a fresh clone builds without extra setup. Single source of
+                    // truth for the chat gate.
+                    val chatEnabled = gradleLocalProperties(rootDir, rootProject.providers)
+                        .getProperty("CHAT_ENABLED") ?: "false"
+                    buildConfigField(FieldSpec.Type.BOOLEAN, "CHAT_ENABLED", chatEnabled)
                 }
             }
         }
