@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.convention.cmp.application)
     alias(libs.plugins.conveyor)
+    alias(libs.plugins.convention.buildkonfig)
 }
 
 version = "1.0.0"
@@ -88,4 +89,10 @@ tasks.withType<JavaExec>().configureEach {
             languageVersion.set(JavaLanguageVersion.of(17))
         },
     )
+}
+
+// Generate BuildKonfig in composeApp's own package so App/NavigationRoot can read CHAT_ENABLED.
+// (BuildKonfig objects are internal per-module — composeApp cannot read another module's.)
+buildkonfig {
+    packageName = "com.project.chirp"
 }
