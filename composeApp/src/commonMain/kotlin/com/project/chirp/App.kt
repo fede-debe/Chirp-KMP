@@ -65,10 +65,12 @@ fun App(
         if (!state.isCheckingAuth) {
             NavigationRoot(
                 navController = navController,
-                startDestination = if (state.isLoggedIn) {
-                    ChatGraphRoutes.Graph
-                } else {
-                    AuthGraphRoutes.Graph
+                startDestination = when {
+                    !state.isLoggedIn -> AuthGraphRoutes.Graph
+                    // Chat is gated by CHAT_ENABLED. When off, the consuming project wires its own
+                    // post-login destination here (there is intentionally no placeholder screen).
+                    BuildKonfig.CHAT_ENABLED -> ChatGraphRoutes.Graph
+                    else -> TODO("Wire your app's post-login start destination")
                 },
             )
             DeepLinkListener(navController, onDeepLinkListenerSetup)

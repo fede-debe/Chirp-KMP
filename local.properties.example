@@ -1,0 +1,25 @@
+# Copy this file to `local.properties` and fill in real values.
+# `local.properties` is gitignored — NEVER commit real keys.
+#
+#   cp local.properties.example local.properties
+#
+# Android Studio auto-generates `sdk.dir` when you open the project; if not, set it:
+# sdk.dir=/Users/you/Library/Android/sdk
+
+# --- REQUIRED (build fails without these) ---
+
+# Backend API key, sent as the `x-api-key` header.
+API_KEY=your-backend-api-key
+
+# Backend endpoints — point these at YOUR deployed backend.
+BASE_URL_HTTP=https://your-backend.example.com/api
+BASE_URL_WS=wss://your-backend.example.com/ws
+
+# --- OPTIONAL ---
+
+# Deep-link / app-link domain for this app. Defaults to `example.com` if omitted,
+# so universal links won't resolve until you set your real domain.
+DEEP_LINK_HOST=your-domain.example.com
+
+# Enable the dormant chat feature. Default is false (chat off).
+CHAT_ENABLED=false

@@ -18,4 +18,6 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 iosApp/iosApp/GoogleService-Info.plist
 node_modules/
-.claude/
+# Track the shared Claude skills so they travel with the template; keep local/personal bits out.
+.claude/*
+!.claude/skills/
