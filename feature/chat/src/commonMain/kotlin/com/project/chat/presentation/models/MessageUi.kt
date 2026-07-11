@@ -10,6 +10,7 @@ sealed class MessageUi(open val id: String) {
         val content: String,
         val deliveryStatus: ChatMessageDeliveryStatus,
         val formattedSentTime: UiText,
+        val attachments: List<MessageAttachmentUi> = emptyList(),
     ) : MessageUi(id)
 
     data class OtherUserMessage(
@@ -17,6 +18,7 @@ sealed class MessageUi(open val id: String) {
         val content: String,
         val formattedSentTime: UiText,
         val sender: ChatParticipantUi,
+        val attachments: List<MessageAttachmentUi> = emptyList(),
     ) : MessageUi(id)
 
     data class DateSeparator(

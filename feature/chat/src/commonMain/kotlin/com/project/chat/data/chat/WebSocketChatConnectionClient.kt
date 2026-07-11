@@ -2,6 +2,8 @@ package com.project.chat.data.chat
 
 import com.project.chat.data.dto.websocket.IncomingWebSocketDto
 import com.project.chat.data.dto.websocket.IncomingWebSocketType
+import com.project.chat.data.dto.websocket.OutgoingWebSocketDto
+import com.project.chat.data.dto.websocket.OutgoingWebSocketType
 import com.project.chat.data.dto.websocket.WebSocketMessageDto
 import com.project.chat.data.mappers.toDomain
 import com.project.chat.data.mappers.toEntity
@@ -10,11 +12,16 @@ import com.project.chat.database.ChirpChatDatabase
 import com.project.chat.domain.chat.ChatConnectionClient
 import com.project.chat.domain.chat.ChatRepository
 import com.project.chat.domain.models.ChatMessage
+import com.project.chat.domain.models.ChatRemoval
+import com.project.chat.domain.models.ChatRemovalReason
 import com.project.core.domain.auth.SessionStorage
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
@@ -49,20 +56,67 @@ class WebSocketChatConnectionClient(
     private val applicationScope: CoroutineScope,
 ) : ChatConnectionClient {
 
-    override val chatMessages = webSocketConnector
+    /**
+     * One shared subscription to the raw socket: parse each frame and apply its DB side effect exactly once.
+     * Both [chatMessages] and [typingUsers] derive from this — `webSocketConnector.messages` is a cold flow,
+     * so collecting it twice would open a second WebSocket session (and persist every message twice).
+     */
+    private val incomingMessages = webSocketConnector
         .messages
         .mapNotNull { parseIncomingMessage(it) }
         .onEach { handleIncomingMessage(it) }
-        .filterIsInstance<IncomingWebSocketDto.NewMessageDto>()
-        .mapNotNull {
-            database.chatMessageDao.getMessageById(it.id)?.toDomain()
-        }
         .shareIn(
             applicationScope,
             SharingStarted.WhileSubscribed(5000),
         )
 
+    override val chatMessages = incomingMessages
+        .filterIsInstance<IncomingWebSocketDto.NewMessageDto>()
+        .mapNotNull {
+            database.chatMessageDao.getMessageById(it.id)?.toDomain()
+        }
+
     override val connectionState = webSocketConnector.connectionState
+
+    /**
+     * Ephemeral typing presence. Exposed in-memory — typing is a live signal, not chat content, so (unlike
+     * [chatMessages]) it is never written to the database. The server already supplies the username and only
+     * broadcasts to *other* participants.
+     */
+    override val typingUsers = incomingMessages
+        .filterIsInstance<IncomingWebSocketDto.TypingIndicatorDto>()
+        .map { it.toDomain() }
+
+    /**
+     * Chats the local user just lost access to. Emitted from [handleIncomingMessage] (which also deletes the
+     * local chat row, so the list updates on its own) — emitting there lets us read the chat's creator before
+     * the row is gone, to tell "I deleted this" apart from "an admin deleted this". Lets an open chat-detail
+     * screen navigate away too.
+     */
+    private val _chatRemovals = MutableSharedFlow<ChatRemoval>(extraBufferCapacity = 8)
+    override val chatRemovals = _chatRemovals.asSharedFlow()
+
+    override suspend fun sendTypingStarted(chatId: String) {
+        val dto = OutgoingWebSocketDto.TypingStarted(chatId)
+        sendOutgoing(dto.type, json.encodeToString(dto))
+    }
+
+    override suspend fun sendTypingStopped(chatId: String) {
+        val dto = OutgoingWebSocketDto.TypingStopped(chatId)
+        sendOutgoing(dto.type, json.encodeToString(dto))
+    }
+
+    /**
+     * Wraps an already-serialized payload in the generic [WebSocketMessageDto] envelope and transmits it.
+     * Fire-and-forget: a dropped typing frame is harmless (the server's auto-stop and re-sends recover it).
+     */
+    private suspend fun sendOutgoing(type: OutgoingWebSocketType, payload: String) {
+        val envelope = WebSocketMessageDto(
+            type = type.name,
+            payload = payload,
+        )
+        webSocketConnector.sendMessage(json.encodeToString(envelope))
+    }
 
     private fun parseIncomingMessage(message: WebSocketMessageDto): IncomingWebSocketDto? {
         return when (message.type) {
@@ -78,6 +132,15 @@ class WebSocketChatConnectionClient(
             IncomingWebSocketType.CHAT_PARTICIPANTS_CHANGED.name -> {
                 json.decodeFromString<IncomingWebSocketDto.ChatParticipantsChangedDto>(message.payload)
             }
+            IncomingWebSocketType.TYPING_INDICATOR.name -> {
+                json.decodeFromString<IncomingWebSocketDto.TypingIndicatorDto>(message.payload)
+            }
+            IncomingWebSocketType.REMOVED_FROM_CHAT.name -> {
+                json.decodeFromString<IncomingWebSocketDto.RemovedFromChatDto>(message.payload)
+            }
+            IncomingWebSocketType.CHAT_DELETED.name -> {
+                json.decodeFromString<IncomingWebSocketDto.ChatDeletedDto>(message.payload)
+            }
             else -> null
         }
     }
@@ -88,11 +151,39 @@ class WebSocketChatConnectionClient(
             is IncomingWebSocketDto.MessageDeletedDto -> deleteMessage(message)
             is IncomingWebSocketDto.NewMessageDto -> handleNewMessage(message)
             is IncomingWebSocketDto.ProfilePictureUpdated -> updateProfilePicture(message)
+            // Typing presence is ephemeral and never persisted — surfaced via the typingUsers flow instead.
+            is IncomingWebSocketDto.TypingIndicatorDto -> Unit
+            // Lost access to the chat (removed by admin, or chat deleted): drop it locally; cascade cleans up.
+            is IncomingWebSocketDto.RemovedFromChatDto ->
+                handleChatRemoval(message.chatId, ChatRemovalReason.REMOVED_BY_ADMIN)
+            is IncomingWebSocketDto.ChatDeletedDto -> handleChatDeleted(message.chatId)
         }
     }
 
     private suspend fun refreshChat(message: IncomingWebSocketDto.ChatParticipantsChangedDto) {
         chatRepository.fetchChatById(message.chatId)
+    }
+
+    /**
+     * A chat was deleted. Decide whether the local user is the one who deleted it (they're the creator) so the
+     * UI can show a "deleted successfully" confirmation rather than a "deleted by the admin" notice. The
+     * creator check reads the local chat before it is removed; if the row is already gone, the local user
+     * removed it via their own delete, which is also "by me".
+     */
+    private suspend fun handleChatDeleted(chatId: String) {
+        val creatorId = database.chatDao.getChatById(chatId)?.chat?.creatorId
+        val localUserId = sessionStorage.observeAuthInfo().firstOrNull()?.user?.id
+        val reason = if (creatorId == null || creatorId == localUserId) {
+            ChatRemovalReason.CHAT_DELETED_BY_ME
+        } else {
+            ChatRemovalReason.CHAT_DELETED
+        }
+        handleChatRemoval(chatId, reason)
+    }
+
+    private suspend fun handleChatRemoval(chatId: String, reason: ChatRemovalReason) {
+        database.chatDao.deleteChatById(chatId)
+        _chatRemovals.emit(ChatRemoval(chatId, reason))
     }
 
     private suspend fun deleteMessage(message: IncomingWebSocketDto.MessageDeletedDto) {

@@ -2,8 +2,10 @@
 
 package com.project.core.data.di
 
+import com.project.core.data.auth.DataStoreSessionStorage
 import com.project.core.data.auth.createDataStore
 import com.project.core.data.preferences.DataStoreThemePreferences
+import com.project.core.domain.auth.SessionStorage
 import com.project.core.domain.preferences.ThemePreferences
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.okhttp.OkHttp
@@ -35,4 +37,8 @@ actual val platformCoreDataModule = module {
     single { createDataStore() }
     single<HttpClientEngine> { OkHttp.create() }
     singleOf(::DataStoreThemePreferences) bind ThemePreferences::class
+    // TODO: Encrypt session/preferences on desktop using the per-OS secret store
+    //  (Windows Credential Manager/DPAPI, macOS Keychain, Linux Secret Service).
+    //  For now desktop keeps the plaintext DataStore-backed session storage.
+    singleOf(::DataStoreSessionStorage) bind SessionStorage::class
 }

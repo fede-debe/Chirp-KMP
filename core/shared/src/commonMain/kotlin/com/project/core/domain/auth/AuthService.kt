@@ -28,6 +28,26 @@ interface AuthService {
         password: String,
     ): Result<AuthInfo, DataError.Remote>
 
+    /**
+     * Exchanges a Google ID token (obtained natively on-device) for a Chirp session. The backend
+     * verifies the token's `nonce` claim equals SHA-256(rawNonce); pass the same raw nonce whose
+     * hash was handed to the Google sign-in request. Succeeds with the same [AuthInfo] as [login].
+     */
+    suspend fun loginWithGoogle(
+        idToken: String,
+        rawNonce: String,
+    ): Result<AuthInfo, DataError.Remote>
+
+    /**
+     * Exchanges an Apple identity token for a Chirp session, mirroring [loginWithGoogle].
+     * [fullName] is only available on the user's first authorization and is omitted afterwards.
+     */
+    suspend fun loginWithApple(
+        identityToken: String,
+        rawNonce: String,
+        fullName: String?,
+    ): Result<AuthInfo, DataError.Remote>
+
     suspend fun register(
         email: String,
         username: String,

@@ -2,6 +2,7 @@ package com.project.chat.presentation.ui.chatDetail.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
@@ -16,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.project.chat.domain.models.ChatMessageDeliveryStatus
 import com.project.chat.presentation.Res
 import com.project.chat.presentation.delete_for_everyone
+import com.project.chat.presentation.models.MessageAttachmentUi
 import com.project.chat.presentation.models.MessageUi
 import com.project.chat.presentation.reload_icon
 import com.project.chat.presentation.retry
@@ -36,6 +38,9 @@ fun LocalUserMessage(
     onDismissMessageMenu: () -> Unit,
     onDeleteClick: () -> Unit,
     onRetryClick: () -> Unit,
+    onAttachmentClick: (MessageAttachmentUi) -> Unit,
+    onPlayAttachment: (MessageAttachmentUi) -> Unit,
+    onPauseAttachment: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -45,20 +50,52 @@ fun LocalUserMessage(
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
     ) {
         Box {
-            ChirpChatBubble(
-                messageContent = message.content,
-                sender = stringResource(Res.string.you),
-                formattedDateTime = message.formattedSentTime.asString(),
-                trianglePosition = TrianglePosition.RIGHT,
-                messageStatus = {
-                    MessageStatus(
-                        status = message.deliveryStatus,
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                val audioAttachments = message.attachments.filter { it.mimeType.startsWith("audio/") }
+                val imageAttachments = message.attachments
+                    .filterNot { it.mimeType.startsWith("audio/") }
+
+                if (message.content.isNotBlank() || audioAttachments.isNotEmpty()) {
+                    ChirpChatBubble(
+                        messageContent = message.content,
+                        sender = stringResource(Res.string.you),
+                        formattedDateTime = message.formattedSentTime.asString(),
+                        trianglePosition = TrianglePosition.RIGHT,
+                        messageStatus = {
+                            MessageStatus(
+                                status = message.deliveryStatus,
+                            )
+                        },
+                        onLongClick = {
+                            onMessageLongClick()
+                        },
+                        content = if (audioAttachments.isNotEmpty()) {
+                            {
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    audioAttachments.forEach { audio ->
+                                        VoiceMessagePlayer(
+                                            attachment = audio,
+                                            onPlay = { onPlayAttachment(audio) },
+                                            onPause = onPauseAttachment,
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            null
+                        },
                     )
-                },
-                onLongClick = {
-                    onMessageLongClick()
-                },
-            )
+                }
+                if (imageAttachments.isNotEmpty()) {
+                    BubbleAttachmentsRow(
+                        attachments = imageAttachments,
+                        onAttachmentClick = onAttachmentClick,
+                    )
+                }
+            }
 
             ChirpDropDownMenu(
                 isOpen = message.id == messageWithOpenMenu?.id,

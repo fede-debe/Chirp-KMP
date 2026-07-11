@@ -15,10 +15,24 @@
 				<string>https</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>google-signin</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.900654509612-k1mcp8srdn90gfr9u68bpsridjllme73</string>
+			</array>
+		</dict>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
 	</array>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Chirp needs access to save chat images to your photo library.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Chirp needs access to your camera to take and send photos in chats.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Chirp needs access to your microphone to record and send voice messages in chats.</string>
 </dict>
 </plist>

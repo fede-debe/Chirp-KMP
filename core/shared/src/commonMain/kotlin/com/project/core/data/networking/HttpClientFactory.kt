@@ -104,7 +104,17 @@ class HttpClientFactory(
                         chirpLogger.debug(message)
                     }
                 }
-                level = LogLevel.ALL
+                // HEADERS (not ALL): logs request/response metadata and headers but omits
+                // bodies. This keeps binary uploads (e.g. JPEG attachments) out of the log
+                // and avoids leaking the refresh token, which travels in the /auth/refresh
+                // request body.
+                level = LogLevel.HEADERS
+                // Redact credentials so the access-token JWT and the shared API key are
+                // never printed verbatim to Logcat (shown as "***" instead).
+                sanitizeHeader { header ->
+                    header.equals("Authorization", ignoreCase = true) ||
+                        header.equals("x-api-key", ignoreCase = true)
+                }
             }
             install(WebSockets) {
                 pingIntervalMillis = 20_000L

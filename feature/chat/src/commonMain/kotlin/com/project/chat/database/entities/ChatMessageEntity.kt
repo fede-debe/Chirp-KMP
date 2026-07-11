@@ -66,4 +66,7 @@ data class ChatMessageEntity(
     val timestamp: Long,
     val deliveryStatus: String,
     val deliveryStatusTimestamp: Long = timestamp,
+    // JSON-serialized List<ChatAttachmentDto>. Attachments are always loaded with their message and
+    // never queried independently, so a JSON column is simpler than a child table + relation.
+    val attachments: String = "[]",
 )

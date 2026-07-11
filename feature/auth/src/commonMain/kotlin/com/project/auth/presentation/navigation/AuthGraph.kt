@@ -11,6 +11,7 @@ import com.project.auth.presentation.ui.login.LoginRoot
 import com.project.auth.presentation.ui.register.RegisterRoot
 import com.project.auth.presentation.ui.registerSuccess.RegisterSuccessRoot
 import com.project.auth.presentation.ui.resetPassword.ResetPasswordRoot
+import com.project.auth.presentation.ui.verificationSent.VerificationSentRoot
 
 /**
  * Extension function on `NavGraphBuilder` that constructs the nested navigation graph for the Authentication feature.
@@ -73,6 +74,9 @@ fun NavGraphBuilder.authGraph(
                         launchSingleTop = true
                     }
                 },
+                onEmailNotVerified = { email ->
+                    navController.navigate(AuthGraphRoutes.VerificationSent(email))
+                },
             )
         }
         composable<AuthGraphRoutes.Register> {
@@ -103,6 +107,17 @@ fun NavGraphBuilder.authGraph(
                 onLoginClick = {
                     navController.navigate(AuthGraphRoutes.Login) {
                         popUpTo<AuthGraphRoutes.RegisterSuccess> {
+                            inclusive = true
+                        }
+                    }
+                },
+            )
+        }
+        composable<AuthGraphRoutes.VerificationSent> {
+            VerificationSentRoot(
+                onLoginClick = {
+                    navController.navigate(AuthGraphRoutes.Login) {
+                        popUpTo<AuthGraphRoutes.VerificationSent> {
                             inclusive = true
                         }
                     }

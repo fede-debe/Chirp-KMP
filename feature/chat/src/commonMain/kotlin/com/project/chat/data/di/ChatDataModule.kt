@@ -1,6 +1,7 @@
 package com.project.chat.data.di
 
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import com.project.chat.data.attachment.KtorAttachmentService
 import com.project.chat.data.chat.KtorChatService
 import com.project.chat.data.chat.OfflineFirstChatRepository
 import com.project.chat.data.chat.WebSocketChatConnectionClient
@@ -12,6 +13,7 @@ import com.project.chat.data.notification.KtorDeviceTokenService
 import com.project.chat.data.participant.KtorChatParticipantService
 import com.project.chat.data.participant.OfflineFirstChatParticipantRepository
 import com.project.chat.database.DatabaseFactory
+import com.project.chat.domain.attachment.AttachmentService
 import com.project.chat.domain.chat.ChatConnectionClient
 import com.project.chat.domain.chat.ChatRepository
 import com.project.chat.domain.chat.ChatService
@@ -62,6 +64,7 @@ val chatDataModule = module {
     singleOf(::ConnectionRetryHandler)
     singleOf(::KtorWebSocketConnector)
     singleOf(::KtorChatMessageService) bind ChatMessageService::class
+    singleOf(::KtorAttachmentService) bind AttachmentService::class
     singleOf(::KtorDeviceTokenService) bind DeviceTokenService::class
     singleOf(::OfflineFirstChatParticipantRepository) bind ChatParticipantRepository::class
     single {

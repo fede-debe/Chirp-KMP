@@ -10,7 +10,6 @@ import platform.UIKit.UIApplicationDidBecomeActiveNotification
 import platform.UIKit.UIApplicationDidEnterBackgroundNotification
 import platform.UIKit.UIApplicationState
 import platform.UIKit.UIApplicationWillEnterForegroundNotification
-import platform.UIKit.UIApplicationWillResignActiveNotification
 
 /**
  * iOS-specific implementation of the application lifecycle observer using UIKit APIs.
@@ -26,12 +25,19 @@ import platform.UIKit.UIApplicationWillResignActiveNotification
  * (Inactive means the app is technically visible but not receiving touch events—e.g., an incoming phone call
  * or the notification center is pulled down).
  * 3. Bridges UIKit notification callbacks to a Kotlin Flow using `callbackFlow`.
- * 4. Registers four distinct observers on the `NSNotificationCenter.defaultCenter` main queue:
+ * 4. Registers three distinct observers on the `NSNotificationCenter.defaultCenter` main queue:
  * - `didBecomeActive` -> emits `true`
  * - `willEnterForeground` -> emits `true`
  * - `didEnterBackground` -> emits `false`
- * - `willResignActive` -> emits `false`
- * 5. In `awaitClose`, calls `removeObserver` for all four registered callbacks to cleanly tear down the listeners.
+ * 5. In `awaitClose`, calls `removeObserver` for all three registered callbacks to cleanly tear down the listeners.
+ *
+ * ## Why not `willResignActive`?
+ * `willResignActive` also fires for *transient* interruptions that are NOT a real backgrounding — opening
+ * the camera/photo picker, pulling down Control/Notification Center, an incoming call. Treating those as
+ * "background" tore down the websocket and immediately reconnected it (a visible flicker every time the
+ * user attached a photo). Only `didEnterBackground` represents an actual move to the background, so the
+ * socket now stays connected through transient interruptions. This also matches the initial-state check
+ * above, which already counts `UIApplicationStateInactive` as foreground.
  *
  * Technical Details
  * - **Queue Handling:** Notification observers are explicitly queued on `NSOperationQueue.mainQueue` to
@@ -75,19 +81,10 @@ actual class AppLifecycleObserver {
             trySend(false)
         }
 
-        val willResignActiveObserver = notificationCenter.addObserverForName(
-            name = UIApplicationWillResignActiveNotification,
-            `object` = null,
-            queue = NSOperationQueue.mainQueue,
-        ) {
-            trySend(false)
-        }
-
         awaitClose {
             notificationCenter.removeObserver(foregroundObserver)
             notificationCenter.removeObserver(willEnterForegroundObserver)
             notificationCenter.removeObserver(backgroundObserver)
-            notificationCenter.removeObserver(willResignActiveObserver)
         }
     }
 }

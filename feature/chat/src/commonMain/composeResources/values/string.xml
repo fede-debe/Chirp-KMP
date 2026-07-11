@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <resources>
+    <string name="delete_chat">Delete chat</string>
+    <string name="remove_member">Remove member</string>
+    <string name="remove_member_confirmation">Remove %1$s from this chat? They will lose access to it.</string>
+    <string name="remove">Remove</string>
+    <string name="removed_from_chat_notice">You were removed from a chat by the admin</string>
+    <string name="chat_deleted_notice">A chat was deleted by the admin</string>
+    <string name="chat_deleted_by_me_notice">Chat deleted successfully</string>
+    <string name="typing_one">%1$s is typing…</string>
+    <string name="typing_two">%1$s and %2$s are typing…</string>
+    <string name="typing_many">%1$s and %2$d others are typing…</string>
     <string name="create_chat">Create Chat</string>
     <string name="add">Add</string>
     <string name="cancel">Cancel</string>
@@ -59,4 +69,23 @@
     <string name="error_current_password_incorrect">Your current password is not correct</string>
     <string name="error_current_password_equal_to_new_one">Your new password can't be equal to the old one.</string>
     <string name="error_invalid_file_type">This file type is not supported.</string>
+    <string name="image_viewer">Image viewer</string>
+    <string name="close">Close</string>
+    <string name="save_to_device">Save to device</string>
+    <string name="saved_to_device">Saved to device</string>
+    <string name="add_attachment">Add attachment</string>
+    <string name="take_photo">Take photo</string>
+    <string name="choose_from_gallery">Choose from gallery</string>
+    <string name="record_voice_message">Record voice message</string>
+    <string name="stop_recording">Stop recording</string>
+    <string name="cancel_recording">Cancel recording</string>
+    <string name="delete_recording">Delete recording</string>
+    <string name="confirm_recording">Confirm recording</string>
+    <string name="pause_recording">Pause recording</string>
+    <string name="resume_recording">Resume recording</string>
+    <string name="voice_message">Voice message</string>
+    <string name="scroll_to_latest">Scroll to latest message</string>
+    <string name="mic_permission_denied">Microphone permission is needed to record voice messages.</string>
+    <string name="record_failed">Couldn\'t record audio. Please try again.</string>
+    <string name="playback_failed">Couldn\'t play this voice message.</string>
 </resources>

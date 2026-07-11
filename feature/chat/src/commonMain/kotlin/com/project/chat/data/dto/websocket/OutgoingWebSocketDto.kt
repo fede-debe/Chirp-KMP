@@ -1,5 +1,6 @@
 package com.project.chat.data.dto.websocket
 
+import com.project.chat.data.dto.request.AttachmentInput
 import kotlinx.serialization.Serializable
 
 /**
@@ -17,6 +18,8 @@ import kotlinx.serialization.Serializable
  */
 enum class OutgoingWebSocketType {
     NEW_MESSAGE,
+    TYPING_STARTED,
+    TYPING_STOPPED,
 }
 
 @Serializable
@@ -29,5 +32,22 @@ sealed class OutgoingWebSocketDto(
         val chatId: String,
         val messageId: String,
         val content: String,
+        val attachments: List<AttachmentInput> = emptyList(),
     ) : OutgoingWebSocketDto(OutgoingWebSocketType.NEW_MESSAGE)
+
+    /**
+     * Sent when the local user starts (or keeps) typing. The server (re)schedules a 3s auto-stop on each
+     * one, so the client re-sends this on a heartbeat while typing continues. Payload mirrors the backend's
+     * `TypingEventDto { chatId }`.
+     */
+    @Serializable
+    data class TypingStarted(
+        val chatId: String,
+    ) : OutgoingWebSocketDto(OutgoingWebSocketType.TYPING_STARTED)
+
+    /** Sent when the local user stops typing (idle, message sent, or chat left). */
+    @Serializable
+    data class TypingStopped(
+        val chatId: String,
+    ) : OutgoingWebSocketDto(OutgoingWebSocketType.TYPING_STOPPED)
 }

@@ -9,4 +9,5 @@ data class ChatMessage(
     val createdAt: Instant,
     val senderId: String,
     val deliveryStatus: ChatMessageDeliveryStatus,
+    val attachments: List<MessageAttachment> = emptyList(),
 )

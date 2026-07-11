@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.project.chat.presentation.Res
 import com.project.chat.presentation.components.EmptySection
+import com.project.chat.presentation.models.MessageAttachmentUi
 import com.project.chat.presentation.models.MessageUi
 import com.project.chat.presentation.no_messages
 import com.project.chat.presentation.no_messages_subtitle
@@ -41,6 +42,9 @@ fun MessageList(
     onRetryPaginationClick: () -> Unit,
     onDismissMessageMenu: () -> Unit,
     onDeleteMessageClick: (MessageUi.LocalUserMessage) -> Unit,
+    onAttachmentClick: (MessageAttachmentUi) -> Unit,
+    onPlayAttachment: (MessageAttachmentUi) -> Unit,
+    onPauseAttachment: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (messages.isEmpty()) {
@@ -73,6 +77,9 @@ fun MessageList(
                     onDismissMessageMenu = onDismissMessageMenu,
                     onDeleteClick = onDeleteMessageClick,
                     onRetryClick = onMessageRetryClick,
+                    onAttachmentClick = onAttachmentClick,
+                    onPlayAttachment = onPlayAttachment,
+                    onPauseAttachment = onPauseAttachment,
                     modifier = Modifier
                         .fillMaxWidth()
                         .animateItem(),

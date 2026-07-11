@@ -1,6 +1,8 @@
 package com.project.chat.presentation.mappers
 
+import com.project.chat.domain.models.MessageAttachment
 import com.project.chat.domain.models.MessageWithSender
+import com.project.chat.presentation.models.MessageAttachmentUi
 import com.project.chat.presentation.models.MessageUi
 import com.project.chat.presentation.util.DateUtils
 import kotlinx.datetime.TimeZone
@@ -24,12 +26,14 @@ fun MessageWithSender.toUi(
     localUserId: String,
 ): MessageUi {
     val isFromLocalUser = this.sender.userId == localUserId
+    val attachmentsUi = message.attachments.map { it.toUi() }
     return if (isFromLocalUser) {
         MessageUi.LocalUserMessage(
             id = message.id,
             content = message.content,
             deliveryStatus = message.deliveryStatus,
             formattedSentTime = DateUtils.formatMessageTime(instant = message.createdAt),
+            attachments = attachmentsUi,
         )
     } else {
         MessageUi.OtherUserMessage(
@@ -37,6 +41,16 @@ fun MessageWithSender.toUi(
             content = message.content,
             formattedSentTime = DateUtils.formatMessageTime(instant = message.createdAt),
             sender = sender.toUi(),
+            attachments = attachmentsUi,
         )
     }
+}
+
+private fun MessageAttachment.toUi(): MessageAttachmentUi {
+    return MessageAttachmentUi(
+        url = storageUrl,
+        fileName = fileName,
+        mimeType = mimeType,
+        durationInSeconds = durationInSeconds,
+    )
 }

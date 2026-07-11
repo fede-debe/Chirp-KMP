@@ -11,5 +11,6 @@ fun Chat.toUi(localParticipantId: String): ChatUi {
         otherParticipants = other.map { it.toUi() },
         lastMessage = lastMessage,
         lastMessageSenderUsername = lastMessageSenderUsername,
+        creatorId = creatorId,
     )
 }

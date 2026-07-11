@@ -6,6 +6,7 @@ import com.project.auth.presentation.ui.login.LoginViewModel
 import com.project.auth.presentation.ui.register.RegisterViewModel
 import com.project.auth.presentation.ui.registerSuccess.RegisterSuccessViewModel
 import com.project.auth.presentation.ui.resetPassword.ResetPasswordViewModel
+import com.project.auth.presentation.ui.verificationSent.VerificationSentViewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
@@ -25,6 +26,7 @@ import org.koin.dsl.module
 val authPresentationModule = module {
     viewModelOf(::RegisterViewModel)
     viewModelOf(::RegisterSuccessViewModel)
+    viewModelOf(::VerificationSentViewModel)
     viewModelOf(::EmailVerificationViewModel)
     viewModelOf(::LoginViewModel)
     viewModelOf(::ForgotPasswordViewModel)

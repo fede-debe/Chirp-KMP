@@ -29,4 +29,6 @@ data class ChatEntity(
     @PrimaryKey
     val chatId: String,
     val lastActivityAt: Long,
+    // User id of the chat's creator (the only "admin"). Drives member-management permissions.
+    val creatorId: String = "",
 )

@@ -8,4 +8,6 @@ data class Chat(
     val lastActivityAt: Instant,
     val lastMessage: ChatMessage?,
     val lastMessageSenderUsername: String? = null,
+    /** User id of the chat's creator — the only participant allowed to remove others. */
+    val creatorId: String,
 )
