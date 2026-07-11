@@ -52,6 +52,22 @@ class BuildKonfigConventionPlugin: Plugin<Project> {
                         )
                     buildConfigField(FieldSpec.Type.STRING, "API_KEY", apiKey)
 
+                    // Backend endpoints — required, sourced from local.properties so no URL is
+                    // hardcoded in source. Each project points these at its own backend.
+                    val baseUrlHttp = gradleLocalProperties(rootDir, rootProject.providers)
+                        .getProperty("BASE_URL_HTTP")
+                        ?: throw IllegalStateException(
+                            "Missing BASE_URL_HTTP property in local.properties"
+                        )
+                    buildConfigField(FieldSpec.Type.STRING, "BASE_URL_HTTP", baseUrlHttp)
+
+                    val baseUrlWs = gradleLocalProperties(rootDir, rootProject.providers)
+                        .getProperty("BASE_URL_WS")
+                        ?: throw IllegalStateException(
+                            "Missing BASE_URL_WS property in local.properties"
+                        )
+                    buildConfigField(FieldSpec.Type.STRING, "BASE_URL_WS", baseUrlWs)
+
                     // Feature flag: chat is dormant by default and enabled per-project via
                     // local.properties (CHAT_ENABLED=true). Unlike API_KEY it is optional — absent
                     // means chat off — so a fresh clone builds without extra setup. Single source of
