@@ -23,6 +23,7 @@ import com.project.chat.presentation.Res
 import com.project.chat.presentation.chat_members
 import com.project.chat.presentation.components.ChatHeader
 import com.project.chat.presentation.components.ChatItemHeaderRow
+import com.project.chat.presentation.config.ChatFeatureFlags
 import com.project.chat.presentation.delete_chat
 import com.project.chat.presentation.go_back
 import com.project.chat.presentation.leave_chat
@@ -114,20 +115,26 @@ fun ChatDetailHeader(
             ChirpDropDownMenu(
                 isOpen = isChatOptionsDropDownOpen,
                 onDismiss = onDismissChatOptions,
-                items = listOf(
-                    DropDownItem(
-                        title = stringResource(Res.string.chat_members),
-                        icon = vectorResource(Res.drawable.users_icon),
-                        contentColor = MaterialTheme.colorScheme.extended.textSecondary,
-                        onClick = onManageChatClick,
-                    ),
-                    DropDownItem(
-                        title = leaveOrDeleteTitle,
-                        icon = vectorResource(DesignSystemRes.drawable.log_out_icon),
-                        contentColor = MaterialTheme.colorScheme.extended.destructiveHover,
-                        onClick = onLeaveChatClick,
-                    ),
-                ),
+                items = buildList {
+                    if (ChatFeatureFlags.admin) {
+                        add(
+                            DropDownItem(
+                                title = stringResource(Res.string.chat_members),
+                                icon = vectorResource(Res.drawable.users_icon),
+                                contentColor = MaterialTheme.colorScheme.extended.textSecondary,
+                                onClick = onManageChatClick,
+                            ),
+                        )
+                    }
+                    add(
+                        DropDownItem(
+                            title = leaveOrDeleteTitle,
+                            icon = vectorResource(DesignSystemRes.drawable.log_out_icon),
+                            contentColor = MaterialTheme.colorScheme.extended.destructiveHover,
+                            onClick = onLeaveChatClick,
+                        ),
+                    )
+                },
             )
         }
     }
