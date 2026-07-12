@@ -75,6 +75,19 @@ class BuildKonfigConventionPlugin: Plugin<Project> {
                     val chatEnabled = gradleLocalProperties(rootDir, rootProject.providers)
                         .getProperty("CHAT_ENABLED") ?: "false"
                     buildConfigField(FieldSpec.Type.BOOLEAN, "CHAT_ENABLED", chatEnabled)
+
+                    // Chat sub-features — only meaningful when CHAT_ENABLED=true. Default off for the
+                    // template; a project turns on exactly the chat capabilities it wants.
+                    for (flag in listOf(
+                        "CHAT_VOICE_ENABLED",
+                        "CHAT_TYPING_ENABLED",
+                        "CHAT_ATTACHMENTS_ENABLED",
+                        "CHAT_ADMIN_ENABLED",
+                    )) {
+                        val value = gradleLocalProperties(rootDir, rootProject.providers)
+                            .getProperty(flag) ?: "false"
+                        buildConfigField(FieldSpec.Type.BOOLEAN, flag, value)
+                    }
                 }
             }
         }
