@@ -19,6 +19,7 @@ import com.project.chat.domain.models.ConnectionState
 import com.project.chat.domain.models.MessageAttachment
 import com.project.chat.domain.models.OutgoingNewMessage
 import com.project.chat.presentation.Res
+import com.project.chat.presentation.config.ChatFeatureFlags
 import com.project.chat.presentation.mappers.toUi
 import com.project.chat.presentation.mappers.toUiList
 import com.project.chat.presentation.mediapicker.PickedAttachment
@@ -188,7 +189,7 @@ class ChatDetailViewModel(
                 observeChatMessages()
                 observeCanSendMessage()
                 observeTypingUsers()
-                observeOutgoingTyping()
+                if (ChatFeatureFlags.typing) observeOutgoingTyping()
                 observeChatRemovals()
                 hasLoadedInitialData = true
             }
