@@ -35,6 +35,7 @@ import com.project.chat.domain.models.ConnectionState
 import com.project.chat.presentation.Res
 import com.project.chat.presentation.check_icon
 import com.project.chat.presentation.cloud_off_icon
+import com.project.chat.presentation.config.ChatFeatureFlags
 import com.project.chat.presentation.confirm_recording
 import com.project.chat.presentation.delete_recording
 import com.project.chat.presentation.mic_icon
@@ -121,27 +122,31 @@ fun MessageBox(
                 ),
                 onKeyboardAction = onSendClick,
                 bottomContent = {
-                    IconButton(
-                        onClick = onAttachClick,
-                        modifier = Modifier.size(32.dp),
-                    ) {
-                        Icon(
-                            imageVector = vectorResource(Res.drawable.upload_icon),
-                            contentDescription = "Attach images",
-                            modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.extended.textSecondary,
-                        )
+                    if (ChatFeatureFlags.attachments) {
+                        IconButton(
+                            onClick = onAttachClick,
+                            modifier = Modifier.size(32.dp),
+                        ) {
+                            Icon(
+                                imageVector = vectorResource(Res.drawable.upload_icon),
+                                contentDescription = "Attach images",
+                                modifier = Modifier.size(20.dp),
+                                tint = MaterialTheme.colorScheme.extended.textSecondary,
+                            )
+                        }
                     }
-                    IconButton(
-                        onClick = onMicClick,
-                        modifier = Modifier.size(32.dp),
-                    ) {
-                        Icon(
-                            imageVector = vectorResource(Res.drawable.mic_icon),
-                            contentDescription = stringResource(Res.string.record_voice_message),
-                            modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.extended.textSecondary,
-                        )
+                    if (ChatFeatureFlags.voice) {
+                        IconButton(
+                            onClick = onMicClick,
+                            modifier = Modifier.size(32.dp),
+                        ) {
+                            Icon(
+                                imageVector = vectorResource(Res.drawable.mic_icon),
+                                contentDescription = stringResource(Res.string.record_voice_message),
+                                modifier = Modifier.size(20.dp),
+                                tint = MaterialTheme.colorScheme.extended.textSecondary,
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.weight(1f))
                     if (!isConnected) {
